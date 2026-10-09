@@ -1,0 +1,146 @@
+shakespeare|William Shakespeare|وليم شكسبير|1564–1616|shakespeare
+dostoevsky|Fyodor Dostoevsky|فيودور دوستويفسكي|1821–1881|dostoyevsky,dostoevsky
+tolstoy|Leo Tolstoy|ليو تولستوي|1828–1910|leo tolstoy,lev tolstoy
+dickens|Charles Dickens|تشارلز ديكنز|1812–1870|charles dickens
+austen|Jane Austen|جين أوستن|1775–1817|jane austen
+hugo|Victor Hugo|فيكتور هوغو|1802–1885|victor hugo
+twain|Mark Twain|مارك توين|1835–1910|mark twain
+doyle|Arthur Conan Doyle|آرثر كونان دويل|1859–1930|arthur conan doyle,conan doyle
+wilde|Oscar Wilde|أوسكار وايلد|1854–1900|oscar wilde
+kafka|Franz Kafka|فرانز كافكا|1883–1924|kafka
+plato|Plato|أفلاطون|c. 428–348 BC|plato
+aristotle|Aristotle|أرسطو|384–322 BC|aristotle
+nietzsche|Friedrich Nietzsche|فريدريك نيتشه|1844–1900|nietzsche
+gibran|Kahlil Gibran|جبران خليل جبران|1883–1931|gibran,jubran|a
+avicenna|Ibn Sina (Avicenna)|ابن سينا|980–1037|avicenna,ibn sina|a
+khaldun|Ibn Khaldun|ابن خلدون|1332–1406|ibn khaldun,khaldun|a
+ghazali|Al-Ghazali|أبو حامد الغزالي|1058–1111|ghazali,ghazzali|a
+mutanabbi|Al-Mutanabbi|المتنبي|915–965|mutanabbi|a
+jahiz|Al-Jahiz|الجاحظ|776–868|jahiz|a
+rumi|Jalal al-Din Rumi|جلال الدين الرومي|1207–1273|rumi|a
+khayyam|Omar Khayyam|عمر الخيام|1048–1131|khayyam,omar khayyam|a
+verne|Jules Verne|جول فيرن|1828–1905|jules verne
+poe|Edgar Allan Poe|إدغار آلان بو|1809–1849|edgar allan poe
+dumas|Alexandre Dumas|ألكسندر دوما|1802–1870|alexandre dumas
+shelley|Mary Shelley|ماري شيلي|1797–1851|mary wollstonecraft shelley,mary shelley
+stoker|Bram Stoker|برام ستوكر|1847–1912|bram stoker
+melville|Herman Melville|هرمان ملفيل|1819–1891|herman melville
+darwin|Charles Darwin|تشارلز داروين|1809–1882|charles darwin
+newton|Isaac Newton|إسحاق نيوتن|1643–1727|isaac newton
+marx|Karl Marx|كارل ماركس|1818–1883|karl marx
+kant|Immanuel Kant|إيمانويل كانط|1724–1804|immanuel kant
+freud|Sigmund Freud|سيغموند فرويد|1856–1939|sigmund freud
+goethe|Johann Wolfgang von Goethe|يوهان فولفغانغ فون غوته|1749–1832|goethe
+cervantes|Miguel de Cervantes|ميغيل دي ثربانتس|1547–1616|cervantes
+dante|Dante Alighieri|دانتي أليغييري|1265–1321|dante
+homer|Homer|هوميروس|c. 8th c. BC|homer
+chekhov|Anton Chekhov|أنطون تشيخوف|1860–1904|chekhov,tchekhov
+wells|H. G. Wells|هربرت جورج ويلز|1866–1946|h g wells,herbert george wells
+stevenson|Robert Louis Stevenson|روبرت لويس ستيفنسون|1850–1894|robert louis stevenson
+carroll|Lewis Carroll|لويس كارول|1832–1898|lewis carroll
+andersen|Hans Christian Andersen|هانس كريستيان أندرسن|1805–1875|hans christian andersen,h c andersen
+ibnrushd|Ibn Rushd (Averroes)|ابن رشد|1126–1198|averroes,ibn rushd|a
+khwarizmi|Al-Khwarizmi|الخوارزمي|c. 780–850|khwarizmi,khowarizmi|a
+haytham|Ibn al-Haytham|ابن الهيثم|965–1040|haytham,alhazen|a
+battuta|Ibn Battuta|ابن بطوطة|1304–1369|battuta|a
+maarri|Abu al-Ala al-Ma'arri|أبو العلاء المعري|973–1057|maarri,ma'arri|a
+shawqi|Ahmed Shawqi|أحمد شوقي|1868–1932|shawqi,shauqi|a
+zaydan|Jurji Zaydan|جرجي زيدان|1861–1914|zaydan,zaidan|a
+manfaluti|Mustafa Lutfi al-Manfaluti|مصطفى لطفي المنفلوطي|1876–1924|manfaluti|a
+amin|Qasim Amin|قاسم أمين|1863–1908|qasim amin|a
+abduh|Muhammad Abduh|محمد عبده|1849–1905|abduh|a
+ibnmuqaffa|Ibn al-Muqaffa|ابن المقفع|c. 720–756|muqaffa|a
+farabi|Al-Farabi|الفارابي|872–950|farabi,alfarabi|a
+ibntufail|Ibn Tufail|ابن طفيل|1105–1185|tufail|a
+hazm|Ibn Hazm|ابن حزم|994–1064|hazm|a
+masudi|Al-Masudi|المسعودي|896–956|masudi,mas'udi|a
+tabari|Al-Tabari|الطبري|839–923|tabari|a
+mawardi|Al-Mawardi|الماوردي|974–1058|mawardi|a
+arabi|Ibn Arabi|ابن عربي|1165–1240|ibn arabi,ibn al-arabi|a
+razi|Al-Razi (Rhazes)|أبو بكر الرازي|854–925|rhazes,abu bakr al razi|a
+zahrawi|Al-Zahrawi (Albucasis)|أبو القاسم الزهراوي|936–1013|albucasis,zahrawi|a
+jazari|Al-Jazari|الجزري|1136–1206|jazari|a
+idrisi|Al-Idrisi|الإدريسي|1100–1165|idrisi,edrisi|a
+jubayr|Ibn Jubayr|ابن جبير|1145–1217|jubayr|a
+hariri|Al-Hariri|الحريري|1054–1122|hariri|a
+hamadhani|Badi al-Zaman al-Hamadhani|بديع الزمان الهمذاني|969–1007|hamadhani|a
+nuwas|Abu Nuwas|أبو نواس|c. 756–814|nuwas|a
+imru|Imru al-Qais|امرؤ القيس|c. 501–544|imru|a
+tahtawi|Rifa'a al-Tahtawi|رفاعة الطهطاوي|1801–1873|tahtawi|a
+anon|Anonymous & Folk Tradition|مجهول / تراث شعبي|—|anonymous
+homerus|Herodotus|هيرودوت|c. 484–425 BC|herodotus
+thucydides|Thucydides|ثيوسيديدس|c. 460–400 BC|thucydides
+plutarch|Plutarch|بلوتارخ|c. 46–119|plutarch
+gibbon|Edward Gibbon|إدوارد غيبون|1737–1794|edward gibbon
+marcopolo|Marco Polo|ماركو بولو|1254–1324|marco polo
+marcus|Marcus Aurelius|ماركوس أوريليوس|121–180|marcus aurelius
+sunzi|Sun Tzu|سون تزو|c. 5th c. BC|sunzi,sun tzu
+laozi|Lao Tzu|لاو تزو|c. 6th c. BC|laozi,lao tzu
+confucius|Confucius|كونفوشيوس|551–479 BC|confucius
+machiavelli|Niccolò Machiavelli|نيكولو مكيافيلي|1469–1527|machiavelli
+smith|Adam Smith|آدم سميث|1723–1790|adam smith
+mill|John Stuart Mill|جون ستيوارت مل|1806–1873|john stuart mill
+locke|John Locke|جون لوك|1632–1704|john locke
+hobbes|Thomas Hobbes|توماس هوبز|1588–1679|thomas hobbes
+rousseau|Jean-Jacques Rousseau|جان جاك روسو|1712–1778|jean jacques rousseau
+descartes|René Descartes|رينيه ديكارت|1596–1650|descartes
+spinoza|Baruch Spinoza|باروخ سبينوزا|1632–1677|spinoza
+hume|David Hume|ديفيد هيوم|1711–1776|david hume
+voltaire|Voltaire|فولتير|1694–1778|voltaire
+schopenhauer|Arthur Schopenhauer|آرثر شوبنهاور|1788–1860|schopenhauer
+emerson|Ralph Waldo Emerson|رالف والدو إمرسون|1803–1882|ralph waldo emerson
+thoreau|Henry David Thoreau|هنري ديفيد ثورو|1817–1862|thoreau
+whitman|Walt Whitman|والت ويتمان|1819–1892|walt whitman
+dickinson|Emily Dickinson|إميلي ديكنسون|1830–1886|emily dickinson
+wordsworth|William Wordsworth|وليم وردزورث|1770–1850|wordsworth
+keats|John Keats|جون كيتس|1795–1821|keats
+byron|Lord Byron|اللورد بايرون|1788–1824|byron
+milton|John Milton|جون ميلتون|1608–1674|john milton
+chaucer|Geoffrey Chaucer|جفري تشوسر|c. 1343–1400|chaucer
+wollstonecraft|Mary Wollstonecraft|ماري وولستونكرافت|1759–1797|wollstonecraft
+defoe|Daniel Defoe|دانيال ديفو|1660–1731|defoe
+swift|Jonathan Swift|جوناثان سويفت|1667–1745|jonathan swift
+cbronte|Charlotte Brontë|شارلوت برونتي|1816–1855|charlotte bronte
+ebronte|Emily Brontë|إميلي برونتي|1818–1848|emily bronte
+hardy|Thomas Hardy|توماس هاردي|1840–1928|thomas hardy
+london|Jack London|جاك لندن|1876–1916|jack london
+alcott|Louisa May Alcott|لويزا ماي ألكوت|1832–1888|louisa may alcott
+baum|L. Frank Baum|ل. فرانك باوم|1856–1919|l frank baum,lyman frank baum
+burnett|Frances Hodgson Burnett|فرانسيس هودجسون برنيت|1849–1924|frances hodgson burnett
+grimm|Brothers Grimm|الأخوان غريم|1785–1863|grimm
+aesop|Aesop|إيسوب|c. 620–564 BC|aesop
+maupassant|Guy de Maupassant|غي دو موباسان|1850–1893|maupassant
+balzac|Honoré de Balzac|أونوريه دو بلزاك|1799–1850|balzac
+flaubert|Gustave Flaubert|غوستاف فلوبير|1821–1880|flaubert
+zola|Émile Zola|إميل زولا|1840–1902|zola
+proust|Marcel Proust|مارسيل بروست|1871–1922|proust
+gogol|Nikolai Gogol|نيكولاي غوغول|1809–1852|gogol
+turgenev|Ivan Turgenev|إيفان تورغينيف|1818–1883|turgenev
+pushkin|Alexander Pushkin|ألكسندر بوشكين|1799–1837|pushkin
+ibsen|Henrik Ibsen|هنريك إبسن|1828–1906|ibsen
+conrad|Joseph Conrad|جوزيف كونراد|1857–1924|joseph conrad
+joyce|James Joyce|جيمس جويس|1882–1941|james joyce
+woolf|Virginia Woolf|فرجينيا وولف|1882–1941|virginia woolf
+fitzgerald|F. Scott Fitzgerald|ف. سكوت فيتزجيرالد|1896–1940|f scott fitzgerald
+jamesh|Henry James|هنري جيمس|1843–1916|henry james
+lawrence|D. H. Lawrence|د. هـ. لورنس|1885–1930|d h lawrence,david herbert lawrence
+kipling|Rudyard Kipling|روديارد كيبلينغ|1865–1936|kipling
+tagore|Rabindranath Tagore|رابندرانات طاغور|1861–1941|tagore
+hippocrates|Hippocrates|أبقراط|c. 460–370 BC|hippocrates
+harvey|William Harvey|وليم هارفي|1578–1657|william harvey
+gray|Henry Gray|هنري غراي|1827–1861|henry gray
+nightingale|Florence Nightingale|فلورنس نايتنغيل|1820–1910|florence nightingale
+euclid|Euclid|إقليدس|c. 300 BC|euclid
+galileo|Galileo Galilei|غاليليو غاليلي|1564–1642|galilei,galileo
+copernicus|Nicolaus Copernicus|نيقولاوس كوبرنيكوس|1473–1543|copernicus
+maxwell|James Clerk Maxwell|جيمس كلارك ماكسويل|1831–1879|james clerk maxwell
+faraday|Michael Faraday|مايكل فاراداي|1791–1867|faraday
+tesla|Nikola Tesla|نيكولا تسلا|1856–1943|nikola tesla
+babbage|Charles Babbage|تشارلز بابيج|1791–1871|babbage
+vitruvius|Vitruvius|فيتروفيوس|c. 80–15 BC|vitruvius
+agricola|Georgius Agricola|جورجيوس أغريكولا|1494–1555|georgius agricola
+vinci|Leonardo da Vinci|ليوناردو دا فينشي|1452–1519|da vinci,leonardo da vinci
+abbott|Edwin A. Abbott|إدوين أبوت|1838–1926|edwin a abbott,edwin abbott abbott
+james|William James|وليم جيمس|1842–1910|william james
+lebon|Gustave Le Bon|غوستاف لوبون|1841–1931|gustave le bon
+veblen|Thorstein Veblen|ثورستين فيبلن|1857–1929|veblen

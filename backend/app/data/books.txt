@@ -1,0 +1,386 @@
+shakespeare|dra|Hamlet|هاملت
+shakespeare|dra|Macbeth|ماكبث
+shakespeare|dra|Romeo and Juliet|روميو وجولييت
+shakespeare|dra|Othello|عطيل
+shakespeare|dra|King Lear|الملك لير
+shakespeare|dra|A Midsummer Night's Dream|حلم ليلة صيف
+shakespeare|dra|The Tempest|العاصفة
+shakespeare|dra|The Merchant of Venice|تاجر البندقية
+shakespeare|dra|Julius Caesar|يوليوس قيصر
+shakespeare|dra|Twelfth Night|الليلة الثانية عشرة
+shakespeare|poe|The Sonnets|السوناتات
+dostoevsky|nov|Crime and Punishment|الجريمة والعقاب
+dostoevsky|nov|The Brothers Karamazov|الإخوة كارامازوف
+dostoevsky|nov|The Idiot|الأبله
+dostoevsky|nov|Notes from Underground|ملاحظات من القبو
+dostoevsky|nov|Demons|الشياطين
+dostoevsky|nov|White Nights|الليالي البيضاء
+dostoevsky|nov|The Gambler|المقامر
+dostoevsky|nov|Poor Folk|الفقراء
+dostoevsky|bio|The House of the Dead|ذكريات من بيت الموتى
+tolstoy|nov|War and Peace|الحرب والسلم
+tolstoy|nov|Anna Karenina|آنا كارينينا
+tolstoy|nov|The Death of Ivan Ilyich|موت إيفان إيليتش
+tolstoy|nov|Resurrection|البعث
+tolstoy|nov|The Kreutzer Sonata|سوناتا كرويتزر
+tolstoy|nov|Hadji Murat|الحاج مراد
+tolstoy|rel|A Confession|اعتراف
+tolstoy|pol|The Kingdom of God Is Within You|مملكة الله في داخلكم
+dickens|nov|Great Expectations|آمال كبيرة
+dickens|nov|A Tale of Two Cities|قصة مدينتين
+dickens|nov|Oliver Twist|أوليفر تويست
+dickens|nov|David Copperfield|ديفيد كوبرفيلد
+dickens|nov|A Christmas Carol|ترنيمة عيد الميلاد
+dickens|nov|Hard Times|أوقات عصيبة
+dickens|nov|Bleak House|البيت الموحش
+dickens|nov|Little Dorrit|دوريت الصغيرة
+dickens|nov|The Pickwick Papers|أوراق بكويك
+austen|nov|Pride and Prejudice|كبرياء وتحامل
+austen|nov|Emma|إيما
+austen|nov|Sense and Sensibility|العقل والعاطفة
+austen|nov|Persuasion|إقناع
+austen|nov|Northanger Abbey|دير نورثانجر
+austen|nov|Mansfield Park|مانسفيلد بارك
+hugo|nov|Les Misérables|البؤساء
+hugo|nov|The Hunchback of Notre-Dame|أحدب نوتردام
+hugo|nov|Toilers of the Sea|عمال البحر
+hugo|nov|The Last Day of a Condemned Man|آخر يوم لمحكوم بالإعدام
+twain|nov|The Adventures of Tom Sawyer|مغامرات توم سوير
+twain|nov|Adventures of Huckleberry Finn|مغامرات هكلبري فن
+twain|nov|The Prince and the Pauper|الأمير والفقير
+twain|nov|A Connecticut Yankee in King Arthur's Court|يانكي في بلاط الملك آرثر
+twain|tra|The Innocents Abroad|الأبرياء في الخارج
+twain|tra|Life on the Mississippi|الحياة على المسيسيبي
+doyle|nov|The Adventures of Sherlock Holmes|مغامرات شرلوك هولمز
+doyle|nov|The Hound of the Baskervilles|كلب آل باسكرفيل
+doyle|nov|A Study in Scarlet|دراسة في القرمزي
+doyle|nov|The Sign of the Four|علامة الأربعة
+doyle|nov|The Memoirs of Sherlock Holmes|مذكرات شرلوك هولمز
+doyle|nov|The Return of Sherlock Holmes|عودة شرلوك هولمز
+doyle|nov|The Valley of Fear|وادي الرعب
+doyle|nov|The Lost World|العالم المفقود
+wilde|nov|The Picture of Dorian Gray|صورة دوريان غراي
+wilde|dra|The Importance of Being Earnest|أهمية أن تكون جاداً
+wilde|dra|An Ideal Husband|زوج مثالي
+wilde|dra|Lady Windermere's Fan|مروحة السيدة وندرمير
+wilde|dra|Salomé|سالومي
+wilde|chi|The Happy Prince and Other Tales|الأمير السعيد وحكايات أخرى
+wilde|bio|De Profundis|من الأعماق
+kafka|nov|The Metamorphosis|المسخ
+kafka|nov|The Trial|المحاكمة
+kafka|nov|The Castle|القلعة
+kafka|nov|Amerika|أمريكا
+kafka|nov|A Hunger Artist|فنان الجوع
+plato|phi|The Republic|الجمهورية
+plato|phi|Apology|دفاع سقراط
+plato|phi|Symposium|المأدبة
+plato|phi|Phaedo|فيدون
+plato|phi|Phaedrus|فايدروس
+plato|phi|Timaeus|طيماوس
+plato|phi|The Laws|القوانين
+plato|phi|Meno|مينون
+plato|phi|Crito|كريتون
+aristotle|phi|Nicomachean Ethics|الأخلاق إلى نيقوماخوس
+aristotle|pol|Politics|السياسة
+aristotle|art|Poetics|فن الشعر
+aristotle|phi|Metaphysics|ما بعد الطبيعة
+aristotle|phi|On the Soul|في النفس
+aristotle|phi|Rhetoric|الخطابة
+aristotle|phi|Organon|الأورغانون
+aristotle|sci|Physics|الطبيعة
+nietzsche|phi|Thus Spake Zarathustra|هكذا تكلم زرادشت
+nietzsche|phi|Beyond Good and Evil|ما وراء الخير والشر
+nietzsche|phi|The Birth of Tragedy|ولادة التراجيديا
+nietzsche|phi|On the Genealogy of Morals|في جينالوجيا الأخلاق
+nietzsche|phi|Twilight of the Idols|أفول الأصنام
+nietzsche|phi|The Antichrist|ضد المسيح
+nietzsche|bio|Ecce Homo|هذا هو الإنسان
+gibran|nov|The Prophet|النبي
+gibran|nov|The Broken Wings|الأجنحة المتكسرة
+gibran|nov|Spirits Rebellious|الأرواح المتمردة
+gibran|nov|The Madman|المجنون
+gibran|poe|Tears and Laughter|دمعة وابتسامة
+gibran|poe|Sand and Foam|رمل وزبد
+avicenna|med|The Canon of Medicine|القانون في الطب
+avicenna|phi|The Book of Healing (Al-Shifa)|الشفاء
+avicenna|phi|Al-Isharat wa al-Tanbihat|الإشارات والتنبيهات
+khaldun|his|The Muqaddimah|المقدمة
+khaldun|his|Kitab al-Ibar|كتاب العبر
+ghazali|phi|The Incoherence of the Philosophers|تهافت الفلاسفة
+ghazali|rel|Ihya Ulum al-Din|إحياء علوم الدين
+ghazali|rel|The Alchemy of Happiness|كيمياء السعادة
+ghazali|phi|Al-Munqidh min al-Dalal|المنقذ من الضلال
+ghazali|rel|Mishkat al-Anwar|مشكاة الأنوار
+mutanabbi|poe|Diwan al-Mutanabbi|ديوان المتنبي
+jahiz|nov|Al-Bukhala (The Misers)|البخلاء
+jahiz|sci|Kitab al-Hayawan|كتاب الحيوان
+jahiz|phi|Al-Bayan wa al-Tabyin|البيان والتبيين
+rumi|poe|The Masnavi|المثنوي
+rumi|poe|Divan-i Shams-i Tabrizi|ديوان شمس تبريزي
+khayyam|poe|The Rubaiyat of Omar Khayyam|رباعيات الخيام
+verne|nov|Twenty Thousand Leagues Under the Sea|عشرون ألف فرسخ تحت الماء
+verne|nov|Around the World in Eighty Days|حول العالم في ثمانين يوماً
+verne|nov|Journey to the Center of the Earth|رحلة إلى مركز الأرض
+verne|nov|From the Earth to the Moon|من الأرض إلى القمر
+verne|nov|The Mysterious Island|الجزيرة الغامضة
+verne|nov|Five Weeks in a Balloon|خمسة أسابيع في منطاد
+poe|poe|The Raven and Other Poems|الغراب وقصائد أخرى
+poe|nov|The Fall of the House of Usher|سقوط بيت آشر
+poe|nov|The Tell-Tale Heart|القلب الواشي
+poe|nov|The Murders in the Rue Morgue|جرائم شارع المشرحة
+poe|nov|The Gold-Bug|الخنفساء الذهبية
+dumas|nov|The Count of Monte Cristo|الكونت دي مونتي كريستو
+dumas|nov|The Three Musketeers|الفرسان الثلاثة
+dumas|nov|The Man in the Iron Mask|الرجل ذو القناع الحديدي
+dumas|nov|Twenty Years After|بعد عشرين عاماً
+dumas|nov|The Black Tulip|التوليب الأسود
+shelley|nov|Frankenstein|فرانكنشتاين
+shelley|nov|The Last Man|الرجل الأخير
+stoker|nov|Dracula|دراكولا
+stoker|nov|Dracula's Guest|ضيف دراكولا
+melville|nov|Moby-Dick|موبي ديك
+melville|nov|Bartleby, the Scrivener|بارتلبي الكاتب
+melville|nov|Typee|تايبي
+melville|nov|Billy Budd|بيلي بَد
+darwin|sci|On the Origin of Species|أصل الأنواع
+darwin|sci|The Descent of Man|نسب الإنسان
+darwin|tra|The Voyage of the Beagle|رحلة البيغل
+darwin|psy|The Expression of the Emotions in Man and Animals|التعبير عن الانفعالات
+newton|mat|Philosophiæ Naturalis Principia Mathematica|المبادئ الرياضية للفلسفة الطبيعية
+newton|sci|Opticks|البصريات
+marx|pol|The Communist Manifesto|بيان الحزب الشيوعي
+marx|pol|Capital|رأس المال
+marx|pol|Wage Labour and Capital|العمل المأجور ورأس المال
+kant|phi|Critique of Pure Reason|نقد العقل الخالص
+kant|phi|Critique of Practical Reason|نقد العقل العملي
+kant|phi|Groundwork of the Metaphysic of Morals|تأسيس ميتافيزيقا الأخلاق
+kant|pol|Perpetual Peace|السلام الدائم
+kant|phi|Critique of Judgment|نقد ملكة الحكم
+freud|psy|The Interpretation of Dreams|تفسير الأحلام
+freud|psy|Totem and Taboo|الطوطم والمحرم
+freud|psy|Three Contributions to the Theory of Sex|ثلاث مساهمات في نظرية الجنس
+freud|psy|A General Introduction to Psychoanalysis|مدخل عام إلى التحليل النفسي
+freud|psy|Beyond the Pleasure Principle|ما فوق مبدأ اللذة
+freud|psy|The Ego and the Id|الأنا والهو
+goethe|dra|Faust|فاوست
+goethe|nov|The Sorrows of Young Werther|آلام فرتر
+goethe|nov|Wilhelm Meister's Apprenticeship|سنوات تلمذة فيلهلم مايستر
+cervantes|nov|Don Quixote|دون كيخوته
+cervantes|nov|Exemplary Novels|الروايات النموذجية
+dante|poe|The Divine Comedy|الكوميديا الإلهية
+dante|poe|La Vita Nuova|الحياة الجديدة
+homer|poe|The Iliad|الإلياذة
+homer|poe|The Odyssey|الأوديسة
+chekhov|dra|The Cherry Orchard|بستان الكرز
+chekhov|dra|Uncle Vanya|الخال فانيا
+chekhov|dra|The Seagull|النورس
+chekhov|dra|Three Sisters|الأخوات الثلاث
+chekhov|nov|The Lady with the Dog|السيدة ذات الكلب
+wells|nov|The Time Machine|آلة الزمن
+wells|nov|The War of the Worlds|حرب العوالم
+wells|nov|The Invisible Man|الرجل الخفي
+wells|nov|The Island of Doctor Moreau|جزيرة الدكتور مورو
+wells|nov|The First Men in the Moon|أول الرجال على القمر
+wells|his|A Short History of the World|موجز تاريخ العالم
+stevenson|nov|Treasure Island|جزيرة الكنز
+stevenson|nov|Strange Case of Dr Jekyll and Mr Hyde|الدكتور جيكل والسيد هايد
+stevenson|nov|Kidnapped|مخطوف
+stevenson|chi|A Child's Garden of Verses|حديقة طفل من الأشعار
+carroll|chi|Alice's Adventures in Wonderland|أليس في بلاد العجائب
+carroll|chi|Through the Looking-Glass|عبر المرآة
+carroll|poe|The Hunting of the Snark|صيد السنارك
+andersen|chi|Fairy Tales|حكايات أندرسن
+andersen|chi|The Little Mermaid|حورية البحر الصغيرة
+andersen|chi|The Ugly Duckling|البطة القبيحة
+andersen|chi|The Snow Queen|ملكة الثلج
+ibnrushd|phi|Tahafut al-Tahafut (The Incoherence of the Incoherence)|تهافت التهافت
+ibnrushd|phi|Fasl al-Maqal|فصل المقال
+ibnrushd|rel|Bidayat al-Mujtahid|بداية المجتهد ونهاية المقتصد
+khwarizmi|mat|Al-Jabr wa al-Muqabala|الجبر والمقابلة
+khwarizmi|tra|Surat al-Ard|صورة الأرض
+haytham|sci|Kitab al-Manazir (Book of Optics)|كتاب المناظر
+battuta|tra|The Travels of Ibn Battuta (Rihla)|رحلة ابن بطوطة
+maarri|nov|Risalat al-Ghufran|رسالة الغفران
+maarri|poe|Luzumiyat|اللزوميات
+maarri|poe|Saqt al-Zand|سقط الزند
+shawqi|poe|Al-Shawqiyyat|الشوقيات
+shawqi|dra|Majnun Layla|مجنون ليلى
+shawqi|dra|Masra Cleopatra|مصرع كليوباترا
+shawqi|dra|Ali Bey al-Kabir|علي بك الكبير
+zaydan|nov|Fatat Ghassan|فتاة غسان
+zaydan|nov|Al-Mamluk al-Shared|المملوك الشارد
+zaydan|nov|Armanousa al-Misriyya|أرمانوسة المصرية
+zaydan|nov|Shajarat al-Durr|شجرة الدر
+zaydan|his|Tarikh al-Tamaddun al-Islami|تاريخ التمدن الإسلامي
+zaydan|his|Tarikh Adab al-Lugha al-Arabiyya|تاريخ آداب اللغة العربية
+manfaluti|nov|Al-Abarat|العبرات
+manfaluti|nov|Al-Nazarat|النظرات
+manfaluti|nov|Majdolin|ماجدولين
+manfaluti|nov|Fi Sabil al-Taj|في سبيل التاج
+amin|pol|Tahrir al-Mar'a|تحرير المرأة
+amin|pol|Al-Mar'a al-Jadida|المرأة الجديدة
+abduh|rel|Risalat al-Tawhid|رسالة التوحيد
+abduh|rel|Al-Islam wa al-Nasraniyya|الإسلام والنصرانية
+ibnmuqaffa|nov|Kalila wa Dimna|كليلة ودمنة
+ibnmuqaffa|phi|Al-Adab al-Kabir|الأدب الكبير
+farabi|phi|Ara Ahl al-Madina al-Fadila|آراء أهل المدينة الفاضلة
+farabi|phi|Ihsa al-Ulum|إحصاء العلوم
+ibntufail|nov|Hayy ibn Yaqzan|حي بن يقظان
+hazm|psy|Tawq al-Hamama (The Ring of the Dove)|طوق الحمامة
+hazm|rel|Al-Fisal fi al-Milal|الفصل في الملل والأهواء والنحل
+masudi|his|Muruj al-Dhahab|مروج الذهب
+tabari|his|Tarikh al-Rusul wa al-Muluk|تاريخ الرسل والملوك
+mawardi|pol|Al-Ahkam al-Sultaniyya|الأحكام السلطانية
+arabi|rel|Al-Futuhat al-Makkiyya|الفتوحات المكية
+arabi|rel|Fusus al-Hikam|فصوص الحكم
+razi|med|Al-Hawi fi al-Tibb|الحاوي في الطب
+razi|med|Al-Judari wa al-Hasba (Smallpox and Measles)|الجدري والحصبة
+zahrawi|med|Al-Tasrif li-man Ajiza an al-Ta'lif|التصريف لمن عجز عن التأليف
+jazari|eng|The Book of Knowledge of Ingenious Mechanical Devices|الجامع بين العلم والعمل النافع في صناعة الحيل
+idrisi|tra|Nuzhat al-Mushtaq|نزهة المشتاق في اختراق الآفاق
+jubayr|tra|Rihlat Ibn Jubayr|رحلة ابن جبير
+hariri|nov|Maqamat al-Hariri|مقامات الحريري
+hamadhani|nov|Maqamat al-Hamadhani|مقامات الهمذاني
+nuwas|poe|Diwan Abi Nuwas|ديوان أبي نواس
+imru|poe|Diwan Imru al-Qais|ديوان امرئ القيس
+tahtawi|tra|Takhlis al-Ibriz fi Talkhis Bariz|تخليص الإبريز في تلخيص باريز
+anon|nov|The Thousand and One Nights|ألف ليلة وليلة
+anon|poe|Beowulf|بيوولف
+anon|poe|The Epic of Gilgamesh|ملحمة جلجامش
+homerus|his|The Histories|التواريخ
+thucydides|his|History of the Peloponnesian War|تاريخ الحرب البيلوبونيزية
+plutarch|bio|Parallel Lives|الأعلام المتوازية
+gibbon|his|The Decline and Fall of the Roman Empire|اضمحلال الإمبراطورية الرومانية وسقوطها
+marcopolo|tra|The Travels of Marco Polo|رحلات ماركو بولو
+marcus|phi|Meditations|التأملات
+sunzi|pol|The Art of War|فن الحرب
+laozi|rel|Tao Te Ching|الداو دي جينغ
+confucius|phi|The Analects|الحوارات
+machiavelli|pol|The Prince|الأمير
+machiavelli|pol|Discourses on Livy|المطارحات
+machiavelli|pol|The Art of War|فن الحرب
+smith|pol|The Wealth of Nations|ثروة الأمم
+smith|phi|The Theory of Moral Sentiments|نظرية المشاعر الأخلاقية
+mill|pol|On Liberty|عن الحرية
+mill|phi|Utilitarianism|النفعية
+mill|pol|The Subjection of Women|استعباد النساء
+mill|pol|Principles of Political Economy|مبادئ الاقتصاد السياسي
+locke|pol|Two Treatises of Government|رسالتان في الحكم
+locke|phi|An Essay Concerning Human Understanding|مقال في الفهم البشري
+hobbes|pol|Leviathan|اللوياثان
+rousseau|pol|The Social Contract|العقد الاجتماعي
+rousseau|bio|Confessions|الاعترافات
+rousseau|phi|Emile|إميل
+descartes|phi|Discourse on the Method|مقال عن المنهج
+descartes|phi|Meditations on First Philosophy|تأملات في الفلسفة الأولى
+spinoza|phi|Ethics|الأخلاق
+hume|phi|An Enquiry Concerning Human Understanding|تحقيق في الفهم الإنساني
+hume|phi|A Treatise of Human Nature|رسالة في الطبيعة البشرية
+voltaire|nov|Candide|كانديد
+voltaire|nov|Zadig|زاديغ
+voltaire|phi|Letters on England|رسائل فلسفية
+schopenhauer|phi|The World as Will and Representation|العالم إرادة وتمثلاً
+schopenhauer|phi|The Art of Controversy|فن الجدل
+schopenhauer|phi|Essays|مقالات
+emerson|phi|Self-Reliance|الاعتماد على الذات
+emerson|phi|Essays: First Series|مقالات: السلسلة الأولى
+thoreau|phi|Walden|والدن
+thoreau|pol|Civil Disobedience|العصيان المدني
+whitman|poe|Leaves of Grass|أوراق العشب
+dickinson|poe|Poems|قصائد
+wordsworth|poe|Lyrical Ballads|قصائد غنائية
+wordsworth|poe|The Prelude|المقدمة
+keats|poe|Poems|قصائد
+keats|poe|Endymion|إندميون
+byron|poe|Don Juan|دون جوان
+byron|poe|Childe Harold's Pilgrimage|رحلة تشايلد هارولد
+milton|poe|Paradise Lost|الفردوس المفقود
+chaucer|poe|The Canterbury Tales|حكايات كانتربري
+wollstonecraft|pol|A Vindication of the Rights of Woman|إثبات حقوق المرأة
+defoe|nov|Robinson Crusoe|روبنسون كروزو
+defoe|nov|Moll Flanders|مول فلاندرز
+swift|nov|Gulliver's Travels|رحلات غوليفر
+swift|nov|A Modest Proposal|اقتراح متواضع
+cbronte|nov|Jane Eyre|جين إير
+ebronte|nov|Wuthering Heights|مرتفعات ويذرينغ
+hardy|nov|Tess of the d'Urbervilles|تيس من آل دوربرفيل
+hardy|nov|Far from the Madding Crowd|بعيداً عن الزحام
+hardy|nov|Jude the Obscure|جود المجهول
+london|nov|The Call of the Wild|نداء البرية
+london|nov|White Fang|الناب الأبيض
+london|nov|The Sea-Wolf|ذئب البحر
+london|nov|Martin Eden|مارتن إيدن
+alcott|nov|Little Women|نساء صغيرات
+baum|chi|The Wonderful Wizard of Oz|ساحر أوز العجيب
+burnett|chi|The Secret Garden|الحديقة السرية
+burnett|chi|A Little Princess|الأميرة الصغيرة
+grimm|chi|Grimms' Fairy Tales|حكايات الإخوة غريم
+aesop|chi|Aesop's Fables|حكايات إيسوب
+maupassant|nov|Bel-Ami|بيل آمي
+maupassant|nov|Boule de Suif|كرة الشحم
+maupassant|nov|A Life|حياة
+balzac|nov|Père Goriot|الأب غوريو
+balzac|nov|Eugénie Grandet|أوجيني غرانديه
+flaubert|nov|Madame Bovary|مدام بوفاري
+flaubert|nov|Sentimental Education|التربية العاطفية
+flaubert|nov|Salammbô|سالامبو
+zola|nov|Germinal|جرمينال
+zola|nov|Nana|نانا
+zola|nov|Thérèse Raquin|تيريز راكان
+proust|nov|Swann's Way|في طريق سوان
+gogol|nov|Dead Souls|النفوس الميتة
+gogol|nov|The Overcoat|المعطف
+gogol|dra|The Government Inspector|المفتش العام
+turgenev|nov|Fathers and Sons|الآباء والبنون
+turgenev|nov|A Sportsman's Sketches|مذكرات صياد
+pushkin|poe|Eugene Onegin|يوجين أونيغين
+pushkin|nov|The Captain's Daughter|ابنة الضابط
+ibsen|dra|A Doll's House|بيت الدمية
+ibsen|dra|Hedda Gabler|هيدا غابلر
+ibsen|dra|Ghosts|الأشباح
+ibsen|dra|Peer Gynt|بير غنت
+conrad|nov|Heart of Darkness|قلب الظلام
+conrad|nov|Lord Jim|اللورد جيم
+conrad|nov|Nostromo|نوسترومو
+joyce|nov|Dubliners|أهالي دبلن
+joyce|nov|A Portrait of the Artist as a Young Man|صورة الفنان في شبابه
+joyce|nov|Ulysses|عوليس
+woolf|nov|Mrs Dalloway|السيدة دالواي
+woolf|nov|To the Lighthouse|إلى المنارة
+woolf|nov|Orlando|أورلاندو
+fitzgerald|nov|The Great Gatsby|غاتسبي العظيم
+jamesh|nov|The Portrait of a Lady|صورة سيدة
+jamesh|nov|The Turn of the Screw|دورة البرغي
+lawrence|nov|Sons and Lovers|أبناء وعشاق
+kipling|chi|The Jungle Book|كتاب الأدغال
+kipling|nov|Kim|كيم
+kipling|chi|Just So Stories|قصص كذلك فقط
+tagore|poe|Gitanjali|جيتانجالي
+tagore|nov|The Home and the World|البيت والعالم
+tagore|dra|The Post Office|مكتب البريد
+tagore|rel|Sadhana|سادهانا
+hippocrates|med|On the Sacred Disease|عن المرض المقدس
+hippocrates|med|Aphorisms|الفصول (الأفوريزمات)
+hippocrates|med|On Airs, Waters, and Places|في الأهوية والمياه والأماكن
+harvey|med|On the Motion of the Heart and Blood in Animals|في حركة القلب والدم في الحيوان
+gray|med|Anatomy, Descriptive and Surgical (Gray's Anatomy)|تشريح غراي
+nightingale|med|Notes on Nursing|ملاحظات في التمريض
+euclid|mat|Elements|الأصول
+galileo|mat|Dialogue Concerning the Two Chief World Systems|حوار حول النظامين الرئيسيين للعالم
+galileo|eng|Dialogues Concerning Two New Sciences|حوارات حول علمين جديدين
+copernicus|mat|On the Revolutions of the Heavenly Spheres|في دوران الأجرام السماوية
+maxwell|eng|A Treatise on Electricity and Magnetism|رسالة في الكهرباء والمغناطيسية
+maxwell|sci|Matter and Motion|المادة والحركة
+faraday|sci|The Chemical History of a Candle|التاريخ الكيميائي للشمعة
+faraday|eng|Experimental Researches in Electricity|أبحاث تجريبية في الكهرباء
+tesla|bio|My Inventions|اختراعاتي
+babbage|bio|Passages from the Life of a Philosopher|مقتطفات من حياة فيلسوف
+babbage|eng|On the Economy of Machinery and Manufactures|في اقتصاد الآلات والتصنيع
+vitruvius|art|The Ten Books on Architecture|الكتب العشرة في العمارة
+agricola|eng|De Re Metallica|في أمور المعادن
+vinci|art|The Notebooks of Leonardo da Vinci|دفاتر ليوناردو دا فينشي
+abbott|mat|Flatland|أرض مسطحة
+james|psy|The Principles of Psychology|مبادئ علم النفس
+james|rel|The Varieties of Religious Experience|تنوع التجربة الدينية
+lebon|psy|The Crowd: A Study of the Popular Mind|سيكولوجية الجماهير
+veblen|pol|The Theory of the Leisure Class|نظرية الطبقة المترفة

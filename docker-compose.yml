@@ -1,0 +1,17 @@
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      AUTO_IMPORT: "1"        # import the Gutenberg catalog on first start
+      IMPORT_LIMIT: "0"       # 0 = every book in Gutenberg (about 75,000)
+      # IMPORT_LANGS: "en,ar,fr"   # optional language filter
+      # HATHI_FILE: "/hathi/hathi_full.txt.gz"   # 500k books: see README (HathiTrust)
+      # HATHI_LIMIT: "450000"
+    volumes:
+      - warraq-data:/data
+      # - ./hathi_full_20260101.txt.gz:/hathi/hathi_full.txt.gz:ro
+    restart: unless-stopped
+volumes:
+  warraq-data:
