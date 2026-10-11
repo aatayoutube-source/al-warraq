@@ -41,6 +41,32 @@ CREATE TABLE IF NOT EXISTS cover_cache(
   book_id INTEGER PRIMARY KEY,
   url     TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS site_stats(
+  key TEXT PRIMARY KEY,
+  n   INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE IF NOT EXISTS daily_visitors(
+  day     TEXT NOT NULL,
+  visitor TEXT NOT NULL,
+  PRIMARY KEY(day, visitor)
+) WITHOUT ROWID;
+CREATE TABLE IF NOT EXISTS book_stats(
+  book_id INTEGER PRIMARY KEY,
+  views   INTEGER NOT NULL DEFAULT 0,
+  likes   INTEGER NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS ix_book_views ON book_stats(views DESC);
+CREATE TABLE IF NOT EXISTS book_likes(
+  book_id INTEGER NOT NULL,
+  visitor TEXT NOT NULL,
+  PRIMARY KEY(book_id, visitor)
+) WITHOUT ROWID;
+CREATE TABLE IF NOT EXISTS searches(
+  q    TEXT PRIMARY KEY,
+  n    INTEGER NOT NULL DEFAULT 1,
+  last TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ix_searches_n ON searches(n DESC);
 CREATE INDEX IF NOT EXISTS ix_books_cat ON books(cat);
 CREATE INDEX IF NOT EXISTS ix_books_author ON books(author_key);
 CREATE INDEX IF NOT EXISTS ix_books_ord ON books(ord);

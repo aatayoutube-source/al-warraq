@@ -3,12 +3,14 @@ import os
 import time
 from contextlib import asynccontextmanager
 
-from fastapi import Depends, FastAPI, HTTPException, Query
-from fastapi.responses import JSONResponse
+from fastapi import Depends, FastAPI, HTTPException, Query, Request
+from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.gzip import GZipMiddleware
 
-from . import covers, db, research
+from urllib.parse import quote, unquote
+
+from . import covers, db, pages, research, stats
 from .catalog import CATEGORIES
 from .textnorm import norm
 
@@ -113,6 +115,35 @@ def create_app() -> FastAPI:
         ).fetchall()
         return {"total": total, "offset": offset, "items": [book_json(r) for r in rows]}
 
+    @app.post("/api/hit")
+    def hit(request: Request, conn=Depends(get_conn)):
+        """Called once per page load by the site; counts one visitor per day."""
+        return {"new": stats.track_visitor(conn, request)}
+
+    @app.get("/api/stats")
+    def site_stats(conn=Depends(get_conn)):
+        key = ("stats", db.db_path())
+        hit_ = _meta_cache.get(key)
+        if hit_ and hit_[0] > time.time():
+            return hit_[1]
+        payload = stats.summary(conn)
+        payload["top_books"] = [dict(book_json(r), views=r["_views"], likes=r["_likes"]) for r in stats.top_viewed(conn, 12)]
+        payload["top_searches"] = stats.top_searches(conn, 12)
+        _meta_cache[key] = (time.time() + 15, payload)
+        return payload
+
+    @app.post("/api/track/search")
+    def track_search(request: Request, q: str = Query("", max_length=120), conn=Depends(get_conn)):
+        return {"logged": stats.log_search(conn, request, q)}
+
+    @app.post("/api/like/{book_id}")
+    def like(book_id: int, request: Request, conn=Depends(get_conn)):
+        if stats.is_bot(request) or not conn.execute("SELECT 1 FROM books WHERE id=?", (book_id,)).fetchone():
+            raise HTTPException(404, "not found")
+        liked, total = stats.toggle_like(conn, request, book_id)
+        _meta_cache.pop(("stats", db.db_path()), None)
+        return {"liked": liked, "likes": total}
+
     @app.get("/api/shelf")
     def shelf(count: int = Query(12, ge=1, le=60), conn=Depends(get_conn)):
         """Well-known books for the home page. Prefers ones that already have a Gutenberg id (real cover)."""
@@ -138,6 +169,46 @@ def create_app() -> FastAPI:
         if domain not in research.TOPICS:
             raise HTTPException(400, "domain must be 'med' or 'eng'")
         return research.build(domain, q)
+
+    @app.get("/robots.txt", include_in_schema=False)
+    def robots(request: Request):
+        return PlainTextResponse("User-agent: *\nAllow: /\nDisallow: /api/\nSitemap: %s/sitemap.xml\n" % pages.site_base(request))
+
+    @app.get("/sitemap.xml", include_in_schema=False)
+    def sitemap(request: Request, conn=Depends(get_conn)):
+        return Response(pages.sitemap_index(conn, pages.site_base(request)), media_type="application/xml")
+
+    @app.get("/sitemap-main.xml", include_in_schema=False)
+    def sitemap_main(request: Request):
+        return Response(pages.sitemap_main(pages.site_base(request)), media_type="application/xml")
+
+    @app.get("/sitemap-books-{page}.xml", include_in_schema=False)
+    def sitemap_books(page: int, request: Request, conn=Depends(get_conn)):
+        body = pages.sitemap_books(conn, pages.site_base(request), page) if page >= 1 else None
+        if body is None:
+            return PlainTextResponse("not found", status_code=404)
+        return Response(body, media_type="application/xml")
+
+    def _book_page(book_id: int, slug: str, request: Request, lang: str, conn):
+        row = conn.execute("SELECT * FROM books WHERE id=?", (book_id,)).fetchone()
+        if not row:
+            return HTMLResponse(pages.not_found_html(lang if lang in ("ar", "en") else "en"), status_code=404)
+        canon = pages.canonical_path(row)
+        if "/book/%d/%s" % (book_id, quote(unquote(slug))) != canon if slug else True:
+            target = canon + (("?lang=" + lang) if lang in ("ar", "en") else "")
+            return RedirectResponse(target, status_code=301)
+        stats.track_visitor(conn, request)
+        stats.add_view(conn, request, book_id)
+        return HTMLResponse(pages.render_book(conn, row, pages.site_base(request), lang,
+                                              stats.book_numbers(conn, book_id), stats.has_liked(conn, request, book_id)))
+
+    @app.get("/book/{book_id}", include_in_schema=False)
+    def book_short(book_id: int, request: Request, lang: str = "", conn=Depends(get_conn)):
+        return _book_page(book_id, "", request, lang, conn)
+
+    @app.get("/book/{book_id}/{slug}", include_in_schema=False)
+    def book_full(book_id: int, slug: str, request: Request, lang: str = "", conn=Depends(get_conn)):
+        return _book_page(book_id, slug, request, lang, conn)
 
     @app.exception_handler(HTTPException)
     async def http_error(_req, exc):

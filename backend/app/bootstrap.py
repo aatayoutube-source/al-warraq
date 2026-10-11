@@ -26,7 +26,7 @@ def main() -> int:
         try:
             from . import hathi
             print("Importing HathiTrust file", hathi_file)
-            print(hathi.import_hathi(conn, hathi_file, int(os.environ.get("HATHI_LIMIT", "450000"))))
+            print(hathi.import_hathi(conn, hathi_file, int(os.environ.get("HATHI_LIMIT", "1000000"))))
         except Exception as e:
             print("HathiTrust import skipped (%s)." % e, file=sys.stderr)
     total = conn.execute("SELECT COUNT(*) FROM books").fetchone()[0]

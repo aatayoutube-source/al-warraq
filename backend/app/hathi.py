@@ -3,7 +3,7 @@
 Download one file from https://www.hathitrust.org/hathifiles (the monthly "full" file,
 named like hathi_full_YYYYMMDD.txt.gz, about 1 GB compressed), then run:
 
-    python -m app.importer --hathi hathi_full_20260101.txt.gz --hathi-limit 450000
+    python -m app.importer --hathi hathi_full_20260101.txt.gz --hathi-limit 1000000
 
 Only records that HathiTrust marks as full view anywhere in the world
 (access = allow, rights = pd) and as books are kept. The file is read twice in
@@ -49,9 +49,10 @@ def clean_ht_author(raw: str) -> str:
     return clean_author(re.sub(r"\.\s*$", "", (raw or "").strip()))
 
 
-def scan(path, langs=frozenset()):
+def scan(path, langs=frozenset(), index=None):
     """Yield (score, htid, bib_key, title, author, lang2) once per bib record, in file order."""
     seen = set()
+    famous = {}  # author string -> bool, so each distinct author is matched only once
     with open_text(path) as f:
         for line in f:
             p = line.rstrip("\n").split("\t")
@@ -69,15 +70,21 @@ def scan(path, langs=frozenset()):
                 continue
             seen.add(bib)
             author = clean_ht_author(p[25])
-            score = (6 if lang == "ar" else 0) + (2 if author else 0) + (1 if lang == "en" else 0) + (1 if len(title) >= 8 else 0)
+            fam = 0
+            if index is not None and author:
+                if author not in famous:
+                    famous[author] = bool(index.match(author))
+                fam = 8 if famous[author] else 0  # well-known authors are what people search for most
+            score = fam + (6 if lang == "ar" else 0) + (2 if author else 0) + (1 if lang == "en" else 0) + (1 if len(title) >= 8 else 0)
             yield score, p[0], bib, title, author, lang
 
 
-def import_hathi(conn, path, limit=450000, langs=frozenset(), log=print):
+def import_hathi(conn, path, limit=1000000, langs=frozenset(), log=print):
     from .importer import AuthorIndex  # local import: avoids a cycle with importer.py
+    index = AuthorIndex(conn)
 
     # pass 1: how many records per score, to find the cut-off score for `limit`
-    counts = Counter(r[0] for r in scan(path, langs))
+    counts = Counter(r[0] for r in scan(path, langs, index))
     total = sum(counts.values())
     log("HathiTrust: %d public-domain books found" % total)
     if limit and limit > 0 and total > limit:
@@ -93,14 +100,13 @@ def import_hathi(conn, path, limit=450000, langs=frozenset(), log=print):
 
     # titles already present (Gutenberg, hand-picked): skip duplicates
     existing = {norm(r["title"]) + "|" + norm(r["author_en"]) for r in conn.execute("SELECT title, author_en FROM books WHERE curated!=?", (HATHI_KIND,))}
-    index = AuthorIndex(conn)
     conn.execute("DELETE FROM books WHERE curated=?", (HATHI_KIND,))
     conn.execute("DELETE FROM cover_cache WHERE book_id NOT IN (SELECT id FROM books)")
 
     sql = ("INSERT INTO books(gid,htid,title,title_ar,author_key,author_en,author_ar,cat,origin,lang,curated,ord,search)"
            " VALUES(NULL,?,?,'',?,?,?,?,?,?,%d,?,?)" % HATHI_KIND)
     batch, added, skipped = [], 0, 0
-    for score, htid, _bib, title, author, lang in scan(path, langs):
+    for score, htid, _bib, title, author, lang in scan(path, langs, index):
         if score < cutoff or (score == cutoff and quota <= 0):
             continue
         dup = norm(title) + "|" + norm(author)

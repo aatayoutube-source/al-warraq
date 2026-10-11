@@ -147,7 +147,7 @@ def main() -> int:
     ap.add_argument("--lang", default="", help="comma list, e.g. en,ar,fr (default: all)")
     ap.add_argument("--csv", default="", help="path to a downloaded pg_catalog.csv")
     ap.add_argument("--hathi", default="", help="path to a HathiTrust hathi_full_*.txt(.gz) file (adds up to --hathi-limit more books)")
-    ap.add_argument("--hathi-limit", type=int, default=450000, help="max HathiTrust books, 0 = all (default 450000)")
+    ap.add_argument("--hathi-limit", type=int, default=1000000, help="max HathiTrust books, 0 = all (default 1000000)")
     ap.add_argument("--no-gutenberg", action="store_true", help="skip Gutenberg (only import the --hathi file)")
     args = ap.parse_args()
 
