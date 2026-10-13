@@ -276,12 +276,18 @@ def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool 
     desc = t["desc"].format(t=title, a=(("— %s " % author) if author else ""), l=lang, c=cat_name)
     page_title = ("%s — %s | %s" % (title, author, BRAND[ui])) if author else ("%s | %s" % (title, BRAND[ui]))
 
-    ld = {"@context": "https://schema.org", "@type": "Book", "name": title, "url": canon, "inLanguage": row["lang"] or "en",
-          "isAccessibleForFree": True, "genre": cat_name, "sameAs": main_url}
+    book = {"@type": "Book", "@id": canon + "#book", "name": title, "url": canon, "inLanguage": row["lang"] or "en",
+            "isAccessibleForFree": True, "genre": cat_name, "sameAs": main_url,
+            "potentialAction": {"@type": "ReadAction", "target": main_url}}
     if author:
-        ld["author"] = {"@type": "Person", "name": author}
+        book["author"] = {"@type": "Person", "name": author}
     if covers:
-        ld["image"] = covers[0]
+        book["image"] = covers[0]
+    crumbs = {"@type": "BreadcrumbList", "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": t["home"], "item": base + "/"},
+        {"@type": "ListItem", "position": 2, "name": cat_name, "item": base + "/category/" + row["cat"]},
+        {"@type": "ListItem", "position": 3, "name": title, "item": canon}]}
+    ld = {"@context": "https://schema.org", "@graph": [book, crumbs]}
     ld_json = json.dumps(ld, ensure_ascii=False).replace("</", "<\\/")
 
     og_img = '<meta property="og:image" content="%s">' % esc(covers[0]) if covers else ""
@@ -290,7 +296,7 @@ def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool 
     btns = '<a class="btn" href="%s" target="_blank" rel="noopener">%s</a>' % (esc(main_url), esc(t["read" if direct else "find"]))
     btns += "".join('<a class="btn alt" href="%s" target="_blank" rel="noopener">%s</a>' % (esc(u), esc(n)) for u, n in extra)
 
-    tags = '<a class="tag" href="/?cat=%s#browse">%s</a>' % (esc(row["cat"]), esc(cat_name))
+    tags = '<a class="tag" href="/category/%s">%s</a>' % (esc(row["cat"]), esc(cat_name))
     tags += '<span class="tag">%s</span>' % esc(lang)
     views, likes = numbers
     heart = '<svg width="18" height="18" viewBox="0 0 24 24" fill="%s" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-4.4-9.3-9A5.4 5.4 0 0 1 12 6.2 5.4 5.4 0 0 1 21.3 12C19 16.6 12 21 12 21z"/></svg>'
@@ -304,7 +310,7 @@ def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool 
 
     facts = ""
     if author:
-        link = ('<a href="/?ak=%s#browse">%s</a>' % (esc(row["author_key"]), esc(author))) if row["author_key"] else esc(author)
+        link = ('<a href="/author/%s">%s</a>' % (esc(quote(row["author_key"])), esc(author))) if row["author_key"] else esc(author)
         facts += "<dt>%s</dt><dd>%s</dd>" % (esc(t["by"]), link)
     facts += "<dt>%s</dt><dd>%s</dd><dt>%s</dt><dd>%s</dd><dt>%s</dt><dd>%s</dd>" % (
         esc(t["cat"]), esc(cat_name), esc(t["lang"]), esc(lang), esc(t["src"]), esc(source_name(row, ui)))
@@ -347,8 +353,15 @@ def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool 
 <meta property="og:url" content="{canon}">
 <meta property="og:site_name" content="{brand}">
 {og_img}
+<meta property="og:locale" content="{locale}">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="{page_title}">
+<meta name="twitter:description" content="{desc}">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" type="image/svg+xml" href="/logo.svg">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@500;700&family=Readex+Pro:wght@400;500;600;700&family=Reem+Kufi:wght@700&family=Source+Serif+4:wght@600;700&display=swap">
 <script type="application/ld+json">{ld}</script>
 <style>{css}</style>
@@ -358,7 +371,7 @@ def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool 
 <form class="sbox" action="/#browse" method="get" role="search">{search_icon}<input type="search" name="q" placeholder="{ph}" aria-label="{ph}"><button type="submit">{search}</button></form>
 <nav><a href="/#browse">{all}</a><a href="{toggle}" hreflang="{other_ui}" rel="nofollow">{other_lang}</a></nav></div></header>
 <main class="wrap">
-<p class="crumbs"><a href="/">{home}</a> / <a href="/?cat={catkey}#browse">{cat_name}</a></p>
+<p class="crumbs"><a href="/">{home}</a> / <a href="/category/{catkey}">{cat_name}</a></p>
 <article class="book">
 <div class="cover" style="--h:{hue}"><span class="cv-fb"><span class="cv-cat">{cat_name}</span><span class="cv-title">{title}</span><span class="cv-auth">{author}</span></span><img id="cvimg" alt="{alt}" decoding="async" referrerpolicy="no-referrer"></div>
 <div>
@@ -385,7 +398,8 @@ def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool 
            home=esc(t["home"]), catkey=esc(row["cat"]), cat_name=esc(cat_name), hue=int(cat["hue"]), title=esc(title), author=esc(author),
            alt=esc(title), by=('<p class="by">%s</p>' % esc(author)) if author else "", tags=tags, numbers_html=numbers_html, btns=btns, facts=facts, rel=rel_html, about=about_html,
            note=esc(t["note"]), cv_script=cv_script, like_js=LIKE_JS, wiki_js=WIKI_JS,
-           logo=LOGO_SVG, search_icon=SEARCH_ICON, ph=esc(t["ph"]), search=esc(t["search"]))
+           logo=LOGO_SVG, search_icon=SEARCH_ICON, ph=esc(t["ph"]), search=esc(t["search"]),
+           locale="ar_AR" if ui == "ar" else "en_US")
     # the Content-Security-Policy of this response only lets scripts carrying its nonce run
     return page.replace("<script", '<script nonce="%s"' % esc(nonce)) if nonce else page
 

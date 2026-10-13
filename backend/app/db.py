@@ -84,13 +84,11 @@ CREATE TABLE IF NOT EXISTS searches(
   last TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS ix_searches_n ON searches(n DESC);
-CREATE INDEX IF NOT EXISTS ix_books_cat ON books(cat);
 CREATE INDEX IF NOT EXISTS ix_books_cat_ord ON books(cat, ord);   -- a category page comes out already in order
 CREATE INDEX IF NOT EXISTS ix_books_lang_ord ON books(lang, ord);
 CREATE INDEX IF NOT EXISTS ix_books_author ON books(author_key);
 CREATE INDEX IF NOT EXISTS ix_books_ord ON books(ord);
 CREATE INDEX IF NOT EXISTS ix_books_curated ON books(curated);
-CREATE INDEX IF NOT EXISTS ix_books_lang ON books(lang);
 """
 
 
@@ -115,6 +113,9 @@ def init_db(conn: sqlite3.Connection) -> None:
         conn.execute("ALTER TABLE books ADD COLUMN htid TEXT")
     if "ws" not in cols:  # Arabic Wikisource page name (added with the Wikisource import)
         conn.execute("ALTER TABLE books ADD COLUMN ws TEXT")
+    # (cat) and (lang) alone are covered by the (cat, ord) and (lang, ord) indexes: about 30 MB saved
+    conn.execute("DROP INDEX IF EXISTS ix_books_cat")
+    conn.execute("DROP INDEX IF EXISTS ix_books_lang")
     conn.commit()
     fix_author_names(conn)
     seed_period_visitors(conn)
@@ -137,10 +138,12 @@ def seed_period_visitors(conn: sqlite3.Connection) -> None:
     conn.commit()
 
 
-# Full-text index over books.search. The trigram tokenizer matches any part of a word, exactly like the
-# old `search LIKE '%word%'`, but answers from an index instead of reading a million rows.
+# Full-text index over books.search. The trigram tokenizer answers `search LIKE '%word%'` from an index
+# instead of reading a million rows. detail=none keeps no word positions: a third of the size (about 100 MB
+# instead of 310 for a million books) with exactly the same LIKE results.
+FTS_VERSION = "2"  # 1 = first index with positions (detail=full), 2 = the light one
 FTS_SCHEMA = """
-CREATE VIRTUAL TABLE IF NOT EXISTS books_fts USING fts5(search, content='books', content_rowid='id', tokenize='trigram');
+CREATE VIRTUAL TABLE IF NOT EXISTS books_fts USING fts5(search, content='books', content_rowid='id', tokenize='trigram', detail=none);
 CREATE TRIGGER IF NOT EXISTS books_fts_ai AFTER INSERT ON books BEGIN
   INSERT INTO books_fts(rowid, search) VALUES (new.id, new.search);
 END;
@@ -155,22 +158,28 @@ END;
 
 
 def ensure_fts(conn: sqlite3.Connection) -> bool:
-    """Create the index once (about a minute for a million books); False if this SQLite lacks FTS5/trigram."""
+    """Create the index once (about a minute for a million books); False if this SQLite lacks FTS5/trigram.
+    A database with the older, larger index is converted and compacted (VACUUM) once."""
     if fts_ready(conn):
         return True
+    old = conn.execute("SELECT 1 FROM meta WHERE key='fts'").fetchone()
     try:
-        conn.executescript(FTS_SCHEMA)
+        conn.executescript("""
+            DROP TRIGGER IF EXISTS books_fts_ai; DROP TRIGGER IF EXISTS books_fts_ad; DROP TRIGGER IF EXISTS books_fts_au;
+            DROP TABLE IF EXISTS books_fts;""" + FTS_SCHEMA)
         conn.execute("INSERT INTO books_fts(books_fts) VALUES('rebuild')")
-        conn.execute("INSERT OR REPLACE INTO meta(key,value) VALUES('fts','1')")
+        conn.execute("INSERT OR REPLACE INTO meta(key,value) VALUES('fts',?)", (FTS_VERSION,))
         conn.commit()
-        return True
     except sqlite3.OperationalError:  # very old SQLite: search keeps using LIKE
         conn.rollback()
         return False
+    if old:
+        conn.execute("VACUUM")  # give the space of the old index back to the disk
+    return True
 
 
 def fts_ready(conn: sqlite3.Connection) -> bool:
-    return bool(conn.execute("SELECT 1 FROM meta WHERE key='fts' AND value='1'").fetchone())
+    return bool(conn.execute("SELECT 1 FROM meta WHERE key='fts' AND value=?", (FTS_VERSION,)).fetchone())
 
 
 def fix_author_names(conn: sqlite3.Connection) -> None:

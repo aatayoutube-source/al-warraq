@@ -135,7 +135,8 @@ def test_import_all(client, tmp_path):
     deep = client.get("/api/books", params={"offset": 70000, "limit": 3}).json()
     assert len(deep["items"]) == 3
     assert client.get("/api/books", params={"q": "synthetic", "offset": 60}).json()["total"] is None  # count only on first page
-    assert client.get("/api/books", params={"q": "synthetic"}).json()["total"] > 70000
+    common = client.get("/api/books", params={"q": "synthetic"}).json()  # 75,000 matches: shown as "more than 10,000"
+    assert common["total"] == 10000 and common["capped"] and len(common["items"]) == 60
 
     # search stays fast on 75k rows
     t0 = time.time()
@@ -448,3 +449,48 @@ def test_counters_cannot_be_pumped(client):
 def test_rate_limit(client):
     codes = [client.post("/api/hit").status_code for _ in range(25)]
     assert codes[:20] == [200] * 20 and codes[-1] == 429
+
+
+def test_seo_pages(client, monkeypatch):
+    import json
+    import re
+    from app import main as m
+    from fastapi.testclient import TestClient
+
+    robots = client.get("/robots.txt").text
+    assert "Disallow: /api/\n" not in robots and "Disallow: /api/like/" in robots and "Sitemap:" in robots  # the API stays readable
+    assert client.get("/api/meta").headers["x-robots-tag"] == "noindex"
+
+    def ld(html):  # every JSON-LD block must be valid JSON
+        return [json.loads(x) for x in re.findall(r'<script[^>]*type="application/ld\+json"[^>]*>(.*?)</script>', html, re.S)]
+
+    home = client.get("/").text
+    assert '<link rel="canonical" href="http://testserver/">' in home and 'hreflang="en"' in home and "og-image.png" in home
+    assert ld(home)[0]["@graph"][0]["potentialAction"]["@type"] == "SearchAction"
+    assert 'href="/category/his"' in home and "<!--SEO" not in home  # crawlable category links, markers replaced
+    assert '<link rel="canonical" href="http://testserver/?lang=en">' in client.get("/", params={"lang": "en"}).text
+
+    cat = client.get("/category/dra")
+    assert cat.status_code == 200 and "<h1>كتب مسرح مجانية</h1>" in cat.text and 'href="/book/' in cat.text
+    assert ld(cat.text)[0]["@graph"][1]["@type"] == "BreadcrumbList"
+    assert "<h1>Free Drama books</h1>" in client.get("/category/dra", params={"lang": "en"}).text
+    assert client.get("/category/nope").status_code == 404 and client.get("/category/dra", params={"page": 99}).status_code == 404
+    auth = client.get("/author/shakespeare")
+    assert auth.status_code == 200 and "شكسبير" in auth.text and "هاملت" in auth.text  # Arabic page: Arabic titles
+    assert client.get("/author/nobody").status_code == 404
+
+    sm = client.get("/sitemap-main.xml").text
+    assert "/category/his</loc>" in sm and "/author/shakespeare</loc>" in sm and "?lang=en</loc>" in sm
+    book = client.get("/book/1", follow_redirects=True).text
+    assert 'href="/category/dra"' in book and 'href="/author/shakespeare"' in book
+    assert [g["@type"] for g in ld(book)[0]["@graph"]] == ["Book", "BreadcrumbList"]
+    assert client.get("/manifest.webmanifest").headers["content-type"].startswith("application/manifest+json")
+    for f in ("/favicon.ico", "/icon-192.png", "/icon-512.png", "/apple-touch-icon.png", "/og-image.png"):
+        assert client.get(f).status_code == 200, f
+
+    # site verification tags and the IndexNow key file come from settings
+    monkeypatch.setenv("GOOGLE_SITE_VERIFICATION", "g-123")
+    monkeypatch.setenv("INDEXNOW_KEY", "0123456789abcdef")
+    with TestClient(m.create_app()) as c2:
+        assert '<meta name="google-site-verification" content="g-123">' in c2.get("/").text
+        assert c2.get("/0123456789abcdef.txt").text == "0123456789abcdef"

@@ -106,7 +106,10 @@ cd backend && python -m app.wikisource
 
 ## البحث السريع
 البحث يستخدم فهرس نصوص كاملة (SQLite FTS5 بمقطّع trigram) فيجد أي جزء من الكلمة كما في السابق، لكن في أجزاء من الثانية.
-يُبنى الفهرس تلقائياً مرة واحدة عند التشغيل (نحو دقيقة لمليون كتاب) ويبقى محدَّثاً مع كل استيراد.
+الفهرس بنسخته الخفيفة (`detail=none`): نحو 100 ميغابايت لمليون كتاب بدل 310، وبالنتائج نفسها.
+يُبنى الفهرس تلقائياً مرة واحدة عند التشغيل (نحو دقيقة لمليون كتاب) ويبقى محدَّثاً مع كل استيراد،
+وقاعدة بيانات فيها الفهرس القديم الأكبر تُحوَّل وتُضغط (VACUUM) تلقائياً عند أول تشغيل.
+الكلمات الشائعة جداً (أكثر من 10,000 نتيجة) يظهر عددها «أكثر من 10,000».
 
 ## الأمان
 الحمايات الموجودة في الخادم ([backend/app/security.py](backend/app/security.py)):
@@ -130,3 +133,28 @@ cd backend && python -m app.wikisource
 
 > ترقية من نسخة Docker سابقة كانت تعمل بـ root: نفّذ مرة واحدة
 > `docker compose run --rm -u root web chown -R 10001 /data`.
+
+## الظهور في محركات البحث (SEO)
+ما يقدّمه الموقع للزواحف ([backend/app/seo.py](backend/app/seo.py)):
+- **صفحات ثابتة يقرؤها أي زاحف:** لكل تصنيف `/category/his` ولكل مؤلف `/author/shakespeare`، بالعربية والإنجليزية (`?lang=en`)،
+  مع روابط لكل كتاب وترقيم صفحات. وكل كتاب له صفحته `/book/<id>/<slug>`.
+- **خريطة الموقع** `/sitemap.xml`: الصفحة الرئيسية والتصنيفات والمؤلفون، وكل الكتب (أكثر من مليون رابط في ملفات من 40,000).
+- **`robots.txt`** يسمح بقراءة الموقع والـ API (الصفحة الرئيسية تُملأ منه)، ويمنع العدادات فقط.
+  ونتائج الـ API تحمل `X-Robots-Tag: noindex` فلا تظهر في نتائج البحث.
+- **بيانات منظَّمة (JSON-LD):** WebSite مع مربع بحث، وOrganization مع الشعار، وBook وBreadcrumbList لكل كتاب،
+  وCollectionPage لكل تصنيف، وProfilePage لكل مؤلف.
+- **روابط أساسية (canonical) وhreflang** للعربية والإنجليزية، ووسوم Open Graph وTwitter مع صورة مشاركة `og-image.png`.
+- **أيقونات** favicon.ico وأيقونات الجوال وملف `manifest.webmanifest`.
+
+### بعد نشر الموقع على نطاقك
+1. اضبط `SITE_URL=https://نطاقك` حتى تكون كل الروابط في الخرائط والصفحات بنطاقك الحقيقي.
+2. **Google:** أضف الموقع في [Google Search Console](https://search.google.com/search-console)، واختر التحقق بوسم HTML،
+   وضع الرمز في `GOOGLE_SITE_VERIFICATION`، ثم أرسل الخريطة `https://نطاقك/sitemap.xml`.
+3. **Bing:** أضفه في [Bing Webmaster Tools](https://www.bing.com/webmasters) (يمكن استيراده من Google مباشرة)،
+   أو ضع رمز التحقق في `BING_SITE_VERIFICATION`. وYandex عبر `YANDEX_VERIFICATION`.
+4. **IndexNow (فهرسة فورية في Bing وYandex وغيرهما):** ضع في `INDEXNOW_KEY` نصاً عشوائياً من 32 حرفاً (أرقام وa-f)،
+   فيقدّم الموقع ملف المفتاح تلقائياً، ثم نفّذ:
+   ```bash
+   cd backend && python -m app.seo indexnow          # الرئيسية والتصنيفات والمؤلفون
+   python -m app.seo indexnow --books                # وكل صفحات الكتب
+   ```

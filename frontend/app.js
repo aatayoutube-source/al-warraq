@@ -35,6 +35,7 @@
             browse_p: 'ابحث وصفِّ حسب التصنيف واللغة، ثم افتح الكتاب من مصدره مباشرة.',
             foot_about: 'فهرس عربي مفتوح للكتب والقصائد التي سقط عنها حق النشر. لا نستضيف الملفات، بل نوصلك إلى مصادرها الأصلية.',
             foot_src: 'المصادر',
+            foot_cats: 'تصفّح التصنيفات',
             ws_name: 'ويكي مصدر',
             pop_h: 'الأكثر مشاهدة',
             pop_s: 'الأكثر بحثاً',
@@ -125,6 +126,7 @@
             browse_p: 'Search, filter by category and language, then open the book at its source.',
             foot_about: 'An open Arabic index of public-domain books and poems. We host no files; every link leads to the original source.',
             foot_src: 'Sources',
+            foot_cats: 'Browse categories',
             ws_name: 'Wikisource (Arabic)',
             pop_h: 'Most viewed',
             pop_s: 'Popular searches',
@@ -536,7 +538,14 @@
         const el = $('#catGrid');
         if (!el || !S.meta) return;
         el.innerHTML = S.meta.categories.filter((c) => c.count > 0).map((c, i) =>
-            '<button class="cc" type="button" data-cat="' + esc(c.key) + '" style="--h:' + num(c.hue) + ';--i:' + i + '"><span class="cci">' + ico(c.key, 26) + '</span><b>' + esc(c[S.ui]) + '</b><small>' + esc(tr('n_books', { n: fmt(c.count) })) + '</small></button>').join('');
+            '<a class="cc" href="/category/' + esc(c.key) + (S.ui === 'en' ? '?lang=en' : '') + '" data-cat="' + esc(c.key) + '" style="--h:' + num(c.hue) + ';--i:' + i + '"><span class="cci">' + ico(c.key, 26) + '</span><b>' + esc(c[S.ui]) + '</b><small>' + esc(tr('n_books', { n: fmt(c.count) })) + '</small></a>').join('');
+        renderFootCats();
+    }
+
+    function renderFootCats() {
+        const el = $('#footCats');
+        if (!el || !S.meta) return;
+        el.innerHTML = S.meta.categories.map((c) => '<a href="/category/' + esc(c.key) + (S.ui === 'en' ? '?lang=en' : '') + '">' + esc(c[S.ui]) + '</a>').join('');
     }
 
     function renderPopular() {
@@ -667,7 +676,7 @@
         av.innerHTML = list.map((a) => {
             const nm = S.ui === 'ar' ? a.ar : a.en,
                 ini = Array.from(nm.replace(/[^\p{L}]/gu, '') || '?')[0];
-            return '<button class="av" type="button" data-ak="' + esc(a.key) + '"><span class="mono" style="--h:' + num(hue(a.cat)) + '" aria-hidden="true">' + esc(ini) + '</span><b>' + esc(nm) + '</b><small>' + esc(tr('books_n', { n: fmt(a.count) })) + '</small></button>';
+            return '<a class="av" href="/author/' + enc(a.key) + (S.ui === 'en' ? '?lang=en' : '') + '" data-ak="' + esc(a.key) + '"><span class="mono" style="--h:' + num(hue(a.cat)) + '" aria-hidden="true">' + esc(ini) + '</span><b>' + esc(nm) + '</b><small>' + esc(tr('books_n', { n: fmt(a.count) })) + '</small></a>';
         }).join('');
         const m = $('#authMore');
         m.hidden = keys.length <= 16;
@@ -769,7 +778,8 @@
     });
     const _t = lsGet('warraq.theme');
     if (_t === 'dark' || _t === 'light') document.documentElement.setAttribute('data-theme', _t);
-    const _l = lsGet('warraq.lang');
+    let _l = lsGet('warraq.lang');
+    try { const ql = new URLSearchParams(location.search).get('lang'); if (ql === 'en' || ql === 'ar') _l = ql; } catch (e) {}
     if (_l === 'en' || _l === 'ar') S.ui = _l;
     else {
         // first visit: follow the browser language (Arabic -> Arabic, anything else -> English)
@@ -803,7 +813,10 @@
         applyFilters();
         toBrowse(); });
     $('#quick').addEventListener('click', (e) => { const b = e.target.closest('.qchip'); if (b) setQuery(b.dataset.q); });
-    $('#catGrid').addEventListener('click', (e) => { const b = e.target.closest('.cc'); if (!b) return;
+    // a plain click filters in place; ctrl/cmd/middle click still opens the category's own page
+    const inPage = (e) => !(e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || e.button > 0);
+    $('#catGrid').addEventListener('click', (e) => { const b = e.target.closest('.cc'); if (!b || !inPage(e)) return;
+        e.preventDefault();
         freshStart(false);
         S.cat = b.dataset.cat;
         applyFilters();
@@ -859,7 +872,8 @@
     });
     $('#avs').addEventListener('click', (e) => {
         const b = e.target.closest('.av');
-        if (!b) return;
+        if (!b || !inPage(e)) return;
+        e.preventDefault();
         S.au = '';
         S.ak = b.dataset.ak;
         S.cat = '';

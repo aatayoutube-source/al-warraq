@@ -1228,6 +1228,12 @@ h2 {
     }
 }
 
+a.cc,
+a.av {
+    text-decoration: none;
+    color: inherit
+}
+
 .cc {
     position: relative;
     overflow: hidden;
@@ -2515,6 +2521,33 @@ h2 {
 
 [dir="ltr"] .foot-src a:hover {
     transform: translateX(3px)
+}
+
+.foot-cats {
+    grid-column: 1 / -1
+}
+
+.foot-cats h3 {
+    font-size: .8rem;
+    letter-spacing: .06em;
+    color: var(--ink);
+    margin-bottom: 8px
+}
+
+#footCats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px
+}
+
+#footCats a {
+    text-decoration: none;
+    font-size: .88rem;
+    transition: color .2s
+}
+
+#footCats a:hover {
+    color: var(--brand)
 }
 
 .foot-legal p {

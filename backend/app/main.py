@@ -1,5 +1,6 @@
 """Al-Warraq API (FastAPI + SQLite) that also serves the frontend."""
 import math
+import mimetypes
 import os
 import secrets
 import time
@@ -13,15 +14,16 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from urllib.parse import quote, unquote
 
-from . import covers, db, pages, research, security, stats, wikisource
+from . import covers, db, pages, research, security, seo, stats, wikisource
 from .catalog import CATEGORIES
 from .textnorm import norm
 
+mimetypes.add_type("application/manifest+json", ".webmanifest")  # not known to every OS
 SORTS = {"def", "t", "a"}
 _meta_cache = {}  # db path -> (expires, payload)
 _fts = {}  # db path -> full-text index available
-DENSE = 20000  # a search matching more books than this is answered by an ordered scan, not the index
-COUNT_CAP = 10000  # counts read from the table stop here; the site shows "more than 10,000"
+COUNT_CAP = 10000  # counts stop here; the site shows "more than 10,000"
+DENSE = COUNT_CAP  # a search matching more books than this is answered by an ordered scan, not the index
 MAX_OFFSET = 100_000  # deeper pages cost a long scan and no reader scrolls that far
 MAX_WORDS = 8  # words of a search that are used
 
@@ -66,6 +68,8 @@ def create_app() -> FastAPI:
         response = await call_next(request)
         if not request.url.path.startswith("/api/"):
             response.headers.setdefault("Cache-Control", "no-cache")
+        else:  # crawlers may read the API (the home page needs it) but must not list it in results
+            response.headers.setdefault("X-Robots-Tag", "noindex")
         return response
 
     security.install(app)  # rate limits, same-origin POSTs, security headers
@@ -140,15 +144,20 @@ def create_app() -> FastAPI:
         filtered = bool(where)
         words = norm(q).split()[:MAX_WORDS]
         long_words = [w for w in words if len(w) >= 3]  # the trigram index needs 3+ characters per word
-        fts = None
+        only_text = not filtered and len(long_words) == len(words)  # a plain search, every word 3+ letters
+        hits = None  # how many books match, when the index could tell
+        dense = False
         if long_words and _fts_on(conn):
-            fts = " AND ".join('"%s"' % w.replace('"', '""') for w in long_words)
-            hits = conn.execute("SELECT COUNT(*) FROM (SELECT 1 FROM books_fts WHERE books_fts MATCH ? LIMIT ?)",
-                                (fts, DENSE + 1)).fetchone()[0]
-            if hits <= DENSE:  # rare words: fetch exactly the matching rows through the index
-                where.append("id IN (SELECT rowid FROM books_fts WHERE books_fts MATCH ?)"); args.append(fts)
+            like = " AND ".join("search LIKE ?" for _ in long_words)
+            largs = ["%" + w + "%" for w in long_words]
+            n = conn.execute("SELECT COUNT(*) FROM (SELECT 1 FROM books_fts WHERE " + like + " LIMIT ?)",
+                             largs + [DENSE + 1]).fetchone()[0]
+            if n <= DENSE:  # rare words: fetch exactly the matching rows through the index
+                hits = n
+                where.append("id IN (SELECT rowid FROM books_fts WHERE " + like + ")"); args += largs
                 words = [w for w in words if len(w) < 3]
-            # very common words ("the"): matches are everywhere, so walking the list in order finds a page at once
+            else:  # very common words ("the"): matches are everywhere, so walking the list in order finds a page at once
+                dense = True
         for w in words:
             where.append("search LIKE ?"); args.append("%" + w + "%")
         clause = (" WHERE " + " AND ".join(where)) if where else ""
@@ -164,9 +173,10 @@ def create_app() -> FastAPI:
         capped = False
         if offset:
             total = None
-        elif fts and not filtered and len(long_words) == len(norm(q).split()[:MAX_WORDS]):
-            # only a text search (every word 3+ letters): the index alone knows how many books match
-            total = conn.execute("SELECT COUNT(*) FROM books_fts WHERE books_fts MATCH ?", (fts,)).fetchone()[0]
+        elif only_text and hits is not None:  # the index already counted them
+            total = hits
+        elif only_text and dense:  # more than DENSE books: "more than 10,000"
+            total, capped = COUNT_CAP, True
         elif words:  # LIKE has to read the table: stop counting once the answer is "a lot"
             total = conn.execute("SELECT COUNT(*) FROM (SELECT 1 FROM books" + clause + " LIMIT ?)", args + [COUNT_CAP + 1]).fetchone()[0]
             capped = total > COUNT_CAP
@@ -253,15 +263,42 @@ def create_app() -> FastAPI:
 
     @app.get("/robots.txt", include_in_schema=False)
     def robots(request: Request):
-        return PlainTextResponse("User-agent: *\nAllow: /\nDisallow: /api/\nSitemap: %s/sitemap.xml\n" % pages.site_base(request))
+        return PlainTextResponse(seo.robots_txt(pages.site_base(request)))
+
+    frontend = os.environ.get("FRONTEND_DIR") or os.path.join(os.path.dirname(__file__), "..", "..", "frontend")
+
+    @app.get("/", include_in_schema=False)
+    def home(request: Request, lang: str = Query("", max_length=5)):
+        """index.html plus what only the server knows: canonical links, structured data, verification tags."""
+        if not os.path.isfile(os.path.join(frontend, "index.html")):
+            raise HTTPException(404, "not found")
+        return HTMLResponse(seo.home_html(frontend, pages.site_base(request), "en" if lang == "en" else "ar"))
+
+    @app.get("/category/{key}", include_in_schema=False)
+    def category(key: str, request: Request, lang: str = Query("", max_length=5), page: int = Query(1, ge=1, le=seo.MAX_PAGES),
+                 conn=Depends(get_conn)):
+        body = seo.category_page(conn, key, pages.site_base(request), "en" if lang == "en" else "ar", page)
+        return HTMLResponse(body) if body else HTMLResponse(pages.not_found_html("ar"), status_code=404)
+
+    @app.get("/author/{key}", include_in_schema=False)
+    def author(key: str, request: Request, lang: str = Query("", max_length=5), page: int = Query(1, ge=1, le=seo.MAX_PAGES),
+               conn=Depends(get_conn)):
+        body = seo.author_page(conn, key, pages.site_base(request), "en" if lang == "en" else "ar", page)
+        return HTMLResponse(body) if body else HTMLResponse(pages.not_found_html("ar"), status_code=404)
+
+    indexnow_key = os.environ.get("INDEXNOW_KEY", "").strip()
+    if indexnow_key:  # IndexNow checks that the key file is served by the site itself
+        @app.get("/%s.txt" % indexnow_key, include_in_schema=False)
+        def indexnow_key_file():
+            return PlainTextResponse(indexnow_key)
 
     @app.get("/sitemap.xml", include_in_schema=False)
     def sitemap(request: Request, conn=Depends(get_conn)):
         return Response(pages.sitemap_index(conn, pages.site_base(request)), media_type="application/xml")
 
     @app.get("/sitemap-main.xml", include_in_schema=False)
-    def sitemap_main(request: Request):
-        return Response(pages.sitemap_main(pages.site_base(request)), media_type="application/xml")
+    def sitemap_main(request: Request, conn=Depends(get_conn)):
+        return Response(seo.sitemap_main(conn, pages.site_base(request)), media_type="application/xml")
 
     @app.get("/sitemap-books-{page}.xml", include_in_schema=False)
     def sitemap_books(page: int, request: Request, conn=Depends(get_conn)):
@@ -298,7 +335,6 @@ def create_app() -> FastAPI:
     async def http_error(_req, exc):
         return JSONResponse({"error": exc.detail}, status_code=exc.status_code)
 
-    frontend = os.environ.get("FRONTEND_DIR") or os.path.join(os.path.dirname(__file__), "..", "..", "frontend")
     if os.path.isdir(frontend):
         app.mount("/", StaticFiles(directory=frontend, html=True), name="site")
     return app
