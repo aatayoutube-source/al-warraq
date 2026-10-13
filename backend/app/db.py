@@ -34,6 +34,7 @@ CREATE TABLE IF NOT EXISTS books(
   lang       TEXT NOT NULL DEFAULT '',
   curated    INTEGER NOT NULL DEFAULT 0,
   htid       TEXT,
+  ws         TEXT,
   ord        INTEGER NOT NULL,
   search     TEXT NOT NULL
 );
@@ -49,6 +50,22 @@ CREATE TABLE IF NOT EXISTS daily_visitors(
   day     TEXT NOT NULL,
   visitor TEXT NOT NULL,
   PRIMARY KEY(day, visitor)
+) WITHOUT ROWID;
+CREATE TABLE IF NOT EXISTS daily_views(
+  day     TEXT NOT NULL,
+  visitor TEXT NOT NULL,
+  book_id INTEGER NOT NULL,
+  PRIMARY KEY(day, visitor, book_id)
+) WITHOUT ROWID;
+CREATE TABLE IF NOT EXISTS search_votes(
+  q       TEXT NOT NULL,
+  visitor TEXT NOT NULL,
+  PRIMARY KEY(q, visitor)
+) WITHOUT ROWID;
+CREATE TABLE IF NOT EXISTS period_visitors(
+  period  TEXT NOT NULL,
+  visitor TEXT NOT NULL,
+  PRIMARY KEY(period, visitor)
 ) WITHOUT ROWID;
 CREATE TABLE IF NOT EXISTS book_stats(
   book_id INTEGER PRIMARY KEY,
@@ -68,6 +85,8 @@ CREATE TABLE IF NOT EXISTS searches(
 );
 CREATE INDEX IF NOT EXISTS ix_searches_n ON searches(n DESC);
 CREATE INDEX IF NOT EXISTS ix_books_cat ON books(cat);
+CREATE INDEX IF NOT EXISTS ix_books_cat_ord ON books(cat, ord);   -- a category page comes out already in order
+CREATE INDEX IF NOT EXISTS ix_books_lang_ord ON books(lang, ord);
 CREATE INDEX IF NOT EXISTS ix_books_author ON books(author_key);
 CREATE INDEX IF NOT EXISTS ix_books_ord ON books(ord);
 CREATE INDEX IF NOT EXISTS ix_books_curated ON books(curated);
@@ -94,7 +113,97 @@ def init_db(conn: sqlite3.Connection) -> None:
     cols = {r[1] for r in conn.execute("PRAGMA table_info(books)")}
     if "htid" not in cols:  # database created by an older version
         conn.execute("ALTER TABLE books ADD COLUMN htid TEXT")
+    if "ws" not in cols:  # Arabic Wikisource page name (added with the Wikisource import)
+        conn.execute("ALTER TABLE books ADD COLUMN ws TEXT")
     conn.commit()
+    fix_author_names(conn)
+    seed_period_visitors(conn)
+    ensure_fts(conn)
+
+
+def seed_period_visitors(conn: sqlite3.Connection) -> None:
+    """Once: visitors already counted in the last days also count for this month and this year."""
+    if conn.execute("SELECT 1 FROM meta WHERE key='periods_seeded'").fetchone():
+        return
+    from .stats import _today
+    day = _today()
+    for period in (day[:7], day[:4]):
+        conn.execute("INSERT OR IGNORE INTO period_visitors(period,visitor) SELECT ?, visitor FROM daily_visitors WHERE day LIKE ?",
+                     (period, period + "%"))
+        n = conn.execute("SELECT COUNT(*) FROM period_visitors WHERE period=?", (period,)).fetchone()[0]
+        conn.execute("INSERT INTO site_stats(key,n) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET n=MAX(n, excluded.n)",
+                     ("visitors:" + period, n))
+    conn.execute("INSERT OR REPLACE INTO meta(key,value) VALUES('periods_seeded','1')")
+    conn.commit()
+
+
+# Full-text index over books.search. The trigram tokenizer matches any part of a word, exactly like the
+# old `search LIKE '%word%'`, but answers from an index instead of reading a million rows.
+FTS_SCHEMA = """
+CREATE VIRTUAL TABLE IF NOT EXISTS books_fts USING fts5(search, content='books', content_rowid='id', tokenize='trigram');
+CREATE TRIGGER IF NOT EXISTS books_fts_ai AFTER INSERT ON books BEGIN
+  INSERT INTO books_fts(rowid, search) VALUES (new.id, new.search);
+END;
+CREATE TRIGGER IF NOT EXISTS books_fts_ad AFTER DELETE ON books BEGIN
+  INSERT INTO books_fts(books_fts, rowid, search) VALUES ('delete', old.id, old.search);
+END;
+CREATE TRIGGER IF NOT EXISTS books_fts_au AFTER UPDATE OF search ON books BEGIN
+  INSERT INTO books_fts(books_fts, rowid, search) VALUES ('delete', old.id, old.search);
+  INSERT INTO books_fts(rowid, search) VALUES (new.id, new.search);
+END;
+"""
+
+
+def ensure_fts(conn: sqlite3.Connection) -> bool:
+    """Create the index once (about a minute for a million books); False if this SQLite lacks FTS5/trigram."""
+    if fts_ready(conn):
+        return True
+    try:
+        conn.executescript(FTS_SCHEMA)
+        conn.execute("INSERT INTO books_fts(books_fts) VALUES('rebuild')")
+        conn.execute("INSERT OR REPLACE INTO meta(key,value) VALUES('fts','1')")
+        conn.commit()
+        return True
+    except sqlite3.OperationalError:  # very old SQLite: search keeps using LIKE
+        conn.rollback()
+        return False
+
+
+def fts_ready(conn: sqlite3.Connection) -> bool:
+    return bool(conn.execute("SELECT 1 FROM meta WHERE key='fts' AND value='1'").fetchone())
+
+
+def fix_author_names(conn: sqlite3.Connection) -> None:
+    """One-off repair of names imported before catalog.fix_name_order existed ('H. M. Sir Elliot')."""
+    if conn.execute("SELECT 1 FROM meta WHERE key='names_fixed'").fetchone():
+        return
+    from .catalog import fix_name_order
+    rows = conn.execute("SELECT id, author_en FROM books WHERE author_en LIKE '% Sir %' OR author_en LIKE '% Mrs %'"
+                        " OR author_en LIKE '% Mrs. %' OR author_en LIKE '% Jr. %' OR author_en LIKE '% Jr %'"
+                        " OR author_en LIKE '% Sr. %'").fetchall()
+    conn.executemany("UPDATE books SET author_en=? WHERE id=?",
+                     [(fix_name_order(r["author_en"]), r["id"]) for r in rows if fix_name_order(r["author_en"]) != r["author_en"]])
+    conn.execute("INSERT OR REPLACE INTO meta(key,value) VALUES('names_fixed','1')")
+    conn.commit()
+
+
+NOT_AUTHORS = ("various", "anonymous", "unknown", "unknown author", "anonymous & folk tradition")
+
+
+def author_total(conn: sqlite3.Connection, books: int) -> int:
+    """Distinct author names in the whole catalogue (not only the curated ones).
+    Takes seconds on a million books, so it is kept in `meta` with the book count it was made for
+    and only recounted when that count changes (after an import)."""
+    row = conn.execute("SELECT value FROM meta WHERE key='author_total'").fetchone()
+    if row and row["value"].split(":")[0] == str(books):
+        return int(row["value"].split(":")[1])
+    n = conn.execute(
+        "SELECT COUNT(DISTINCT rtrim(lower(trim(author_en)), '.,; ')) FROM books"
+        " WHERE trim(author_en)!='' AND lower(trim(author_en)) NOT IN (%s)" % ",".join("?" * len(NOT_AUTHORS)),
+        NOT_AUTHORS).fetchone()[0]
+    conn.execute("INSERT OR REPLACE INTO meta(key,value) VALUES('author_total',?)", ("%d:%d" % (books, n),))
+    conn.commit()
+    return n
 
 
 def seed_curated(conn: sqlite3.Connection) -> int:

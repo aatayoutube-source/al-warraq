@@ -48,6 +48,8 @@ def test_seed_and_meta(client):
     assert m["total"] == 386
     assert len(m["categories"]) == 17
     assert any(a["key"] == "gibran" and a["count"] == 6 for a in m["authors"])
+    assert len(m["authors"]) == 146
+    assert m["author_total"] == 145  # "Anonymous & Folk Tradition" is not counted as an author
     assert {l["code"] for l in m["languages"]} == {"ar", "en"}
 
 
@@ -83,7 +85,7 @@ def test_shelf_and_research(client):
     items = client.get("/api/shelf").json()["items"]
     assert len(items) == 12 and len({i["id"] for i in items}) == 12
     r = client.get("/api/research", params={"domain": "med", "q": "heart failure"}).json()
-    assert r["query"] == "heart failure" and len(r["sources"]) == 8
+    assert r["query"] == "heart failure" and len(r["sources"]) == 7  # BMC left: its search now redirects to a brand page
     assert any("pmc.ncbi.nlm.nih.gov" in s["url"] and "heart%20failure" in s["url"] for s in r["sources"])
     assert client.get("/api/research", params={"domain": "x"}).status_code == 400
 
@@ -103,6 +105,7 @@ def test_import_all(client, tmp_path):
     from app import main as _m; _m._meta_cache.clear()
     m = client.get("/api/meta").json()
     assert m["total"] > 75000
+    assert m["author_total"] >= 75000 + 145  # recounted after the import: every imported writer, not only famous ones
     assert {l["code"] for l in m["languages"]} >= {"en", "fr", "de", "ar"}
 
     # editions link to the curated book (same author + title prefix) and give it a Gutenberg id
@@ -255,7 +258,7 @@ def test_hathi_import_500k(client, tmp_path):
     r = client.get("/api/books", params={"q": "treatise number 4242"}).json()
     q1 = time.time() - t0
     t0 = time.time()
-    client.get("/api/books", params={"q": "treatise", "offset": 300000, "limit": 60})
+    client.get("/api/books", params={"q": "treatise", "offset": 90000, "limit": 60})  # the deepest page allowed is 100,000
     q2 = time.time() - t0
     t0 = time.time()
     client.get("/api/books", params={"cat": "his", "bl": "fr", "sort": "t"})
@@ -283,3 +286,165 @@ def test_old_database_gets_htid_column(tmp_path):
     conn = db.connect(path)
     db.init_db(conn)
     assert "htid" in {r[1] for r in conn.execute("PRAGMA table_info(books)")}
+    assert "ws" in {r[1] for r in conn.execute("PRAGMA table_info(books)")}
+
+
+def test_wikisource_import_offline(client):
+    from app import db, wikisource
+    from app import main as m
+    poem = "http://www.wikidata.org/entity/Q5185279"
+    lit = "http://www.wikidata.org/entity/Q7725634"
+    rows = [
+        {"item": "Q1", "page": "الخيل والليل والبيداء تعرفني", "label": "الخيلُ والليلُ والبيداءُ تعرفني", "type": lit, "form": poem, "aar": "المتنبي", "aen": "Al-Mutanabbi"},
+        {"item": "Q2", "page": "رسالة الغفران", "label": "رسالة الغفران", "type": lit, "aar": "أبو العلاء المعري", "aen": "Abu al-Ala al-Ma'arri"},
+        {"item": "Q3", "page": "تاريخ الرسل والملوك", "label": "", "type": lit, "aar": "", "aen": ""},
+        {"item": "Q3", "page": "تاريخ الرسل والملوك", "label": "", "type": lit, "aar": "", "aen": ""},  # same item twice
+        {"item": "Q4", "page": "كتاب/الفصل الأول", "label": "", "type": lit, "aar": "", "aen": ""},  # chapter page
+        {"item": "Q5", "page": "دستور الكويت", "label": "دستور الكويت", "type": "http://www.wikidata.org/entity/Q7755", "aar": "", "aen": ""},
+    ]
+    recs = wikisource.parse(rows)
+    assert {r["page"] for r in recs} == {"الخيل والليل والبيداء تعرفني", "رسالة الغفران", "تاريخ الرسل والملوك", "دستور الكويت"}
+    cats = {r["page"]: r["cat"] for r in recs}
+    assert cats["الخيل والليل والبيداء تعرفني"] == "poe" and cats["تاريخ الرسل والملوك"] == "his" and cats["دستور الكويت"] == "pol"
+    assert wikisource.parse_tsv('?item\t?page\n<http://www.wikidata.org/entity/Q9>\t"قفا نبك"@ar\n') == [
+        {"item": "http://www.wikidata.org/entity/Q9", "page": "قفا نبك"}]
+
+    conn = db.connect()
+    res = wikisource.import_records(conn, recs)
+    again = wikisource.import_records(conn, recs)  # idempotent
+    conn.close()
+    assert res == again and res["poems"] == 1 and res["linked"] == 1  # Risalat al-Ghufran is a hand-picked book
+    m._meta_cache.clear()
+
+    hit = client.get("/api/books", params={"q": "البيداء"}).json()["items"]
+    assert len(hit) == 1 and hit[0]["ws"] and hit[0]["ak"] == "mutanabbi" and hit[0]["c"] == "poe"
+    meta = client.get("/api/meta").json()
+    assert meta["poem_total"] == 1 and meta["poets"][0]["ar"] == "المتنبي"
+    poets = client.get("/api/books", params={"au": meta["poets"][0]["ar"], "cat": "poe"}).json()
+    assert hit[0]["id"] in [b["id"] for b in poets["items"]] and all(b["aa"] == "المتنبي" for b in poets["items"])
+    page = client.get("/book/%d" % hit[0]["id"], follow_redirects=True).text
+    assert "ar.wikisource.org/wiki/" in page
+    ghufran = [b for b in client.get("/api/books", params={"q": "الغفران"}).json()["items"] if b["ws"]]
+    assert ghufran and ghufran[0]["ak"] == "maarri"  # linked, not duplicated
+    assert client.get("/api/cover/%d" % hit[0]["id"]).json()["url"] is None  # no Open Library lookup for poems
+
+
+def test_names_categories_and_languages(client):
+    from app.catalog import categorize_title, clean_author, fix_name_order
+    assert clean_author("Elliot, H. M. Sir (Henry Miers), 1808-1853") == "Sir H. M. Elliot"
+    assert clean_author("Little, Elbert L., Jr., 1907-2004") == "Elbert L. Little Jr."
+    assert fix_name_order("John Lord") == "John Lord" and fix_name_order("Don Marquis") == "Don Marquis"
+    assert categorize_title("Hearing before the Subcommittee on Forests") == "sci"
+    assert categorize_title("Hearing before the Committee on Finance") == "pol"
+    assert categorize_title("Histoire de la Révolution française") == "his"
+    assert categorize_title("Installation housing management study guide") == "gen"
+    meta = client.get("/api/meta").json()
+    assert meta["lang_total"] == len(meta["languages"]) == 2
+
+
+def test_fulltext_search_matches_like(client):
+    from app import db
+    conn = db.connect()
+    assert db.fts_ready(conn)
+    for q in ["hamlet", "اوليفر", "الجريمه والعقاب", "dostoevsky crime", "ab"]:
+        from app.textnorm import norm
+        words = norm(q).split()
+        sql = "SELECT COUNT(*) FROM books WHERE " + " AND ".join("search LIKE ?" for _ in words)
+        expected = conn.execute(sql, ["%" + w + "%" for w in words]).fetchone()[0]
+        assert client.get("/api/books", params={"q": q}).json()["total"] == expected, q
+    conn.close()
+
+
+def test_visitors_per_day_month_year(client):
+    from app import main as m
+    a, b = {"user-agent": "Mozilla/5.0 reader A"}, {"user-agent": "Mozilla/5.0 reader B"}
+    client.post("/api/hit", headers=a)
+    client.post("/api/hit", headers=a)  # same person again: counted once
+    client.post("/api/hit", headers=b)
+    client.post("/api/hit", headers={"user-agent": "Googlebot/2.1"})  # bots are not visitors
+    m._meta_cache.clear()
+    s = client.get("/api/stats").json()
+    assert (s["visitors_today"], s["visitors_month"], s["visitors_year"]) == (2, 2, 2)
+
+
+def test_research_papers(client, monkeypatch):
+    from app import research
+    research._papers_cache.clear()
+    seen = []
+
+    def fake(url):
+        seen.append(url)
+        return {"meta": {"count": 1234}, "results": [
+            {"id": "https://openalex.org/W1", "display_name": "Heart <i>failure</i> today", "publication_year": 2020,
+             "authorships": [{"author": {"display_name": n}} for n in ("A One", "B Two", "C Three", "D Four")],
+             "primary_location": {"source": {"display_name": "Open Heart"}},
+             "best_oa_location": {"pdf_url": "https://example.org/paper.pdf"}, "cited_by_count": 42},
+            {"id": "https://openalex.org/W2", "display_name": "", "publication_year": 2019},  # no title: dropped
+        ]}
+
+    monkeypatch.setattr(research, "fetch_json", fake)
+    r = client.get("/api/papers", params={"domain": "med", "q": "أمراض القلب"}).json()
+    assert r["query"] == "Cardiology" and r["translated"] and r["total"] == 1234
+    assert r["items"] == [{"title": "Heart failure today", "year": 2020, "authors": "A One, B Two, C Three …", "venue": "Open Heart",
+                           "url": "https://example.org/paper.pdf", "pdf": True, "cited": 42}]
+    assert "is_oa:true" in seen[0] and "search=Cardiology" in seen[0]
+    client.get("/api/papers", params={"domain": "med", "q": "Cardiology"})
+    assert len(seen) == 1  # cached
+
+    def down(url):
+        raise OSError("offline")
+
+    monkeypatch.setattr(research, "fetch_json", down)
+    assert client.get("/api/papers", params={"domain": "eng", "q": "robots"}).json()["error"] is True
+    assert client.get("/api/papers", params={"domain": "x"}).status_code == 400
+    links = client.get("/api/research", params={"domain": "eng", "q": "الروبوتات"}).json()
+    assert links["query"] == "Robotics" and not any("osti.gov" in s["url"] for s in links["sources"])
+
+
+def test_security_guards(client, monkeypatch):
+    from app import research
+    research._papers_cache.clear()
+    # links from another service never reach the page unless they are plain web links
+    monkeypatch.setattr(research, "fetch_json", lambda url: {"meta": {"count": 2}, "results": [
+        {"id": "https://openalex.org/W1", "display_name": "Evil", "best_oa_location": {"pdf_url": "javascript:alert(1)"},
+         "primary_location": {"landing_page_url": "javascript:alert(2)"}, "ids": {"doi": "javascript:alert(3)"}},
+        {"id": "https://openalex.org/W2", "display_name": "Good", "best_oa_location": {"pdf_url": "https://example.org/a.pdf"}}]})
+    items = client.get("/api/papers", params={"domain": "eng", "q": "xss"}).json()["items"]
+    assert [i["url"] for i in items] == ["https://openalex.org/W1", "https://example.org/a.pdf"]
+
+    # POSTs sent by another website are refused; the site's own are fine
+    assert client.post("/api/hit", headers={"origin": "https://evil.example"}).status_code == 403
+    assert client.post("/api/hit", headers={"sec-fetch-site": "cross-site"}).status_code == 403
+    assert client.post("/api/hit", headers={"origin": "http://testserver"}).status_code == 200
+
+    # headers: CSP everywhere, and book pages only run scripts carrying this response's nonce
+    home = client.get("/")
+    assert "frame-ancestors 'none'" in home.headers["content-security-policy"] and home.headers["x-content-type-options"] == "nosniff"
+    page = client.get("/book/1", follow_redirects=True)
+    csp = page.headers["content-security-policy"]
+    nonce = csp.split("'nonce-")[1].split("'")[0]
+    assert page.text.count("<script") == page.text.count('<script nonce="%s"' % nonce) > 0
+
+    # oversized or abusive inputs
+    assert client.get("/api/books", params={"offset": 200000}).status_code == 422
+    assert client.get("/api/books", params={"q": "x" * 500}).status_code == 422
+    assert client.get("/sitemap-books-999999999.xml").status_code == 404
+
+
+def test_counters_cannot_be_pumped(client):
+    from app import main as m
+    for _ in range(5):  # one person repeating a search or reloading a book page counts once
+        client.post("/api/track/search", params={"q": "spam phrase"}, headers={"user-agent": "Mozilla/5.0 one"})
+        client.get("/book/1", follow_redirects=True, headers={"user-agent": "Mozilla/5.0 one"})
+    m._meta_cache.clear()
+    s = client.get("/api/stats").json()
+    assert "spam phrase" not in s["top_searches"] and s["views"] == 1
+    for ua in ("Mozilla/5.0 two", "Mozilla/5.0 three"):  # three different people: now it is a real popular search
+        client.post("/api/track/search", params={"q": "spam phrase"}, headers={"user-agent": ua})
+    m._meta_cache.clear()
+    assert "spam phrase" in client.get("/api/stats").json()["top_searches"]
+
+
+def test_rate_limit(client):
+    codes = [client.post("/api/hit").status_code for _ in range(25)]
+    assert codes[:20] == [200] * 20 and codes[-1] == 429

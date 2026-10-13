@@ -15,7 +15,7 @@ import re
 import sys
 from collections import Counter
 
-from .catalog import CATEGORIES, categorize, clean_author
+from .catalog import CATEGORIES, categorize_title, clean_author
 from .textnorm import norm
 
 IMPORTED_ORD_BASE = 1_000_000
@@ -123,7 +123,7 @@ def import_hathi(conn, path, limit=1000000, langs=frozenset(), log=print):
             a_en, a_ar, origin = author, "", "w"
         if lang == "ar":
             origin = "a"
-        cat = categorize(title, "", default="gen")
+        cat = categorize_title(title)
         batch.append((htid, title, key or "", a_en, a_ar, cat if cat in CATEGORIES else "gen", origin, lang,
                       IMPORTED_ORD_BASE + added, norm(title + " " + a_en + " " + a_ar)))
         added += 1
@@ -133,5 +133,23 @@ def import_hathi(conn, path, limit=1000000, langs=frozenset(), log=print):
             log("  ... %d books" % added)
     if batch:
         conn.executemany(sql, batch)
+    conn.execute("INSERT OR REPLACE INTO meta(key,value) VALUES('title_cats',?)", (TITLE_CATS_VERSION,))  # already classified by title
     conn.commit()
     return {"hathi_added": added, "hathi_duplicates_skipped": skipped}
+
+
+TITLE_CATS_VERSION = "1"
+
+
+def recategorize(conn, log=print) -> int:
+    """Re-file HathiTrust books still in "General" with catalog.categorize_title. Runs once per TITLE_CATS_VERSION."""
+    ver = conn.execute("SELECT value FROM meta WHERE key='title_cats'").fetchone()
+    if ver and ver["value"] == TITLE_CATS_VERSION:
+        return 0
+    rows = conn.execute("SELECT id, title FROM books WHERE curated=? AND cat='gen'", (HATHI_KIND,)).fetchall()
+    log("Classifying %d HathiTrust titles..." % len(rows))
+    moved = [(cat, r["id"]) for r in rows for cat in (categorize_title(r["title"]),) if cat != "gen"]
+    conn.executemany("UPDATE books SET cat=? WHERE id=?", moved)
+    conn.execute("INSERT OR REPLACE INTO meta(key,value) VALUES('title_cats',?)", (TITLE_CATS_VERSION,))
+    conn.commit()
+    return len(moved)

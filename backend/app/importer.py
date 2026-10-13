@@ -149,6 +149,7 @@ def main() -> int:
     ap.add_argument("--hathi", default="", help="path to a HathiTrust hathi_full_*.txt(.gz) file (adds up to --hathi-limit more books)")
     ap.add_argument("--hathi-limit", type=int, default=1000000, help="max HathiTrust books, 0 = all (default 1000000)")
     ap.add_argument("--no-gutenberg", action="store_true", help="skip Gutenberg (only import the --hathi file)")
+    ap.add_argument("--wikisource", action="store_true", help="also import Arabic Wikisource (about 43,000 works, needs internet)")
     args = ap.parse_args()
 
     conn = db.connect()
@@ -169,6 +170,13 @@ def main() -> int:
             print("HathiTrust:", hathi.import_hathi(conn, args.hathi, args.hathi_limit, set(langs)))
         except Exception as e:
             print("HathiTrust import failed: %s" % e, file=sys.stderr)
+            return 1
+    if args.wikisource:
+        from . import wikisource
+        try:
+            print("Wikisource:", wikisource.run(conn))
+        except Exception as e:
+            print("Wikisource import failed: %s" % e, file=sys.stderr)
             return 1
     total = conn.execute("SELECT COUNT(*) FROM books").fetchone()[0]
     print("Total books in database: %d" % total)

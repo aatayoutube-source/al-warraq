@@ -33,6 +33,7 @@ T = {
     "ar": {
         "by": "المؤلف", "cat": "التصنيف", "lang": "اللغة", "src": "المصدر", "read": "اقرأ الكتاب",
         "find": "ابحث عن الكتاب", "more_author": "المزيد من كتب هذا المؤلف", "more_cat": "كتب أخرى من التصنيف نفسه",
+        "ph": "ابحث بعنوان كتاب أو اسم مؤلف", "search": "بحث",
         "home": "الرئيسية", "all": "كل الكتب", "views": "مشاهدة", "likes": "إعجاب", "like": "أعجبني", "liked": "أعجبك", "similar": "كتب تشبه هذا الكتاب", "free": "كتاب مجاني ومسقط عنه حق النشر",
         "note": "الموقع فهرس يدلّك على المصادر المفتوحة ولا يستضيف الكتب. الكتب هنا في الملكية العامة في الولايات المتحدة، وقد يختلف وضعها في بلدك.",
         "page_gut": "صفحة الكتاب في Gutenberg", "page_ht": "HathiTrust", "arch": "Internet Archive", "ol": "Open Library",
@@ -46,6 +47,7 @@ T = {
     "en": {
         "by": "Author", "cat": "Category", "lang": "Language", "src": "Source", "read": "Read the book",
         "find": "Find the book", "more_author": "More books by this author", "more_cat": "More in this category",
+        "ph": "Search a title or an author", "search": "Search",
         "home": "Home", "all": "All books", "views": "views", "likes": "likes", "like": "Like", "liked": "Liked", "similar": "Similar books", "free": "Free public-domain book",
         "note": "This site is an index that points to open sources; it does not host the books. Books listed here are in the public domain in the United States and may be protected in your country.",
         "page_gut": "Gutenberg book page", "page_ht": "HathiTrust", "arch": "Internet Archive", "ol": "Open Library",
@@ -59,20 +61,25 @@ T = {
 }
 
 CSS = """
-:root{--bg:#F3F6FB;--card:#fff;--ink:#14213D;--muted:#5B6B86;--line:#DCE4F1;--brand:#2B6BE9;--brand-ink:#fff;--soft:#E8F0FE}
-@media (prefers-color-scheme:dark){:root{--bg:#0E1522;--card:#151F30;--ink:#E8EEF7;--muted:#93A3BA;--line:#243148;--brand:#7AA5FF;--brand-ink:#0B1220;--soft:#1B2A47}}
+:root{--bg:#F5F9FF;--card:#fff;--ink:#0E1B33;--muted:#5B6B86;--line:#E1EAF6;--brand:#1A6FDF;--brand-2:#5BC0FF;--brand-ink:#fff;--soft:#E3F0FF;--rose:#F0487E;--rose-soft:#FFE9F1;--btn:linear-gradient(135deg,#3E9BFF,#1A6FDF);--grad:linear-gradient(135deg,#5BC0FF,#1A6FDF 52%,#FF6B9A);--shadow:0 1px 2px rgba(14,27,51,.05),0 12px 32px -16px rgba(26,72,140,.3)}
 *{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 "Readex Pro",system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif}
 a{color:var(--brand)}
 .wrap{max-width:980px;margin:0 auto;padding:0 16px}
-.bar{background:var(--card);border-bottom:1px solid var(--line)}
-.bar .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:56px}
-.brand{font-weight:700;color:var(--ink);text-decoration:none;font-size:1.1rem}
-.bar nav{display:flex;gap:14px;align-items:center;font-size:.92rem}
+.bar{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 80%,transparent);backdrop-filter:saturate(1.6) blur(14px);-webkit-backdrop-filter:saturate(1.6) blur(14px);border-bottom:1px solid var(--line)}
+.bar .wrap{display:flex;align-items:center;gap:12px;min-height:62px}
+.brand{display:flex;align-items:center;gap:9px;font:700 1.15rem/1 "Reem Kufi","Readex Pro",sans-serif;color:var(--ink);text-decoration:none;flex:none}
+.brand svg{filter:drop-shadow(0 5px 12px rgba(26,111,223,.35));transition:transform .4s cubic-bezier(.34,1.56,.64,1)}.brand:hover svg{transform:rotate(-6deg) scale(1.06)}
+.brand .lg-q{transform-box:view-box;transform-origin:25px 19px;animation:qw 3.2s ease-in-out infinite}@keyframes qw{30%{transform:rotate(-9deg)}60%{transform:rotate(5deg)}}
+.sbox{flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:6px;height:42px;padding-inline:14px 4px;background:var(--card);border:1.5px solid var(--line);border-radius:99px}
+.sbox:focus-within{border-color:var(--brand-2);box-shadow:0 0 0 4px color-mix(in srgb,var(--brand-2) 22%,transparent)}
+.sbox svg{flex:none;color:var(--muted)}.sbox input{flex:1 1 auto;min-width:0;border:0;background:transparent;outline:0;font:inherit;color:inherit;height:100%}
+.sbox button{flex:none;height:34px;padding-inline:16px;border:0;border-radius:99px;background:var(--btn);color:var(--brand-ink);font:600 .92rem "Readex Pro",sans-serif;cursor:pointer}
+.bar nav{display:flex;gap:14px;align-items:center;font-size:.92rem;flex:none}
+@media (max-width:640px){.brand span{display:none}.sbox button{display:none}.bar nav a:first-child{display:none}}
 .crumbs{font-size:.88rem;color:var(--muted);margin:18px 0 6px}.crumbs a{color:var(--muted)}
 .book{display:grid;grid-template-columns:240px 1fr;gap:28px;margin:12px 0 28px;align-items:start}
-.cover{position:relative;aspect-ratio:2/3;border-radius:10px;overflow:hidden;box-shadow:0 10px 28px -14px rgba(20,33,61,.5);background:hsl(var(--h) 70% 91%);color:hsl(var(--h) 45% 22%)}
-@media (prefers-color-scheme:dark){.cover{background:hsl(var(--h) 35% 26%);color:hsl(var(--h) 40% 92%)}}
+.cover{position:relative;aspect-ratio:2/3;border-radius:14px;overflow:hidden;box-shadow:0 22px 44px -22px rgba(26,72,140,.55);background:linear-gradient(165deg,hsl(var(--h) 85% 92%),hsl(var(--h) 75% 84%));color:hsl(var(--h) 50% 22%)}
 .cv-fb{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;padding:18px 16px;text-align:center}
 .cv-cat{font-size:.72rem;letter-spacing:.04em;opacity:.75}
 .cv-title{font:700 1.2rem/1.35 "Noto Naskh Arabic","Source Serif 4",Georgia,serif;overflow:hidden;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical}
@@ -81,25 +88,26 @@ a{color:var(--brand)}
 h1{margin:0 0 6px;font-size:clamp(1.5rem,4vw,2.1rem);line-height:1.3}
 .by{margin:0 0 14px;color:var(--muted);font-size:1.05rem}
 .tags{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px}
-.tag{background:var(--soft);color:var(--brand);border-radius:999px;padding:3px 12px;font-size:.84rem;text-decoration:none}
+.tag{background:var(--soft);color:var(--brand);border-radius:999px;padding:3px 12px;font-size:.84rem;text-decoration:none}.tag:nth-child(2){background:var(--rose-soft);color:var(--rose)}
 .nums{display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin:0 0 18px;color:var(--muted)}
 .num{display:inline-flex;align-items:center;gap:6px}
 .like{display:inline-flex;align-items:center;gap:6px;background:var(--card);color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font:inherit;cursor:pointer}
 .like.on{color:#E5484D;border-color:#E5484D}
 .like:hover{border-color:var(--brand)}
 .btns{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 20px}
-.btn{display:inline-block;background:var(--brand);color:var(--brand-ink);padding:10px 20px;border-radius:10px;font-weight:600;text-decoration:none}
-.btn.alt{background:var(--card);color:var(--brand);border:1px solid var(--line);font-weight:500}
-dl{display:grid;grid-template-columns:max-content 1fr;gap:6px 18px;margin:0 0 8px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 18px}
+.btn{display:inline-block;background:var(--btn);color:var(--brand-ink);padding:10px 22px;border-radius:99px;font-weight:600;text-decoration:none;box-shadow:0 8px 18px -10px rgba(26,111,223,.8);transition:transform .25s cubic-bezier(.34,1.56,.64,1)}
+.btn:hover{transform:translateY(-2px)}
+.btn.alt{background:var(--card);color:var(--brand);border:1.5px solid var(--line);font-weight:500;box-shadow:none}.btn.alt:hover{border-color:var(--brand-2)}
+dl{display:grid;grid-template-columns:max-content 1fr;gap:6px 18px;margin:0 0 8px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px 18px;box-shadow:var(--shadow)}
 dt{color:var(--muted)}dd{margin:0}
 .desc{color:var(--muted);margin:0 0 16px}
-.about{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:18px 0}.about h2{margin:0 0 6px;font-size:1.1rem}.about p{margin:0 0 6px}.about small{color:var(--muted)}
+.about{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px 20px;margin:18px 0;box-shadow:var(--shadow)}.about h2{margin:0 0 6px;font-size:1.1rem}.about p{margin:0 0 6px}.about small{color:var(--muted)}
 h2{font-size:1.15rem;margin:26px 0 10px}
 ul.rel{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px}
-ul.rel li{background:var(--card);border:1px solid var(--line);border-radius:10px}
+ul.rel li{background:var(--card);border:1px solid var(--line);border-radius:14px;transition:transform .25s cubic-bezier(.34,1.56,.64,1),border-color .2s}ul.rel li:hover{transform:translateY(-2px);border-color:var(--brand-2)}
 ul.rel a{display:block;padding:10px 14px;text-decoration:none;color:var(--ink)}
 ul.rel small{display:block;color:var(--muted)}
-footer{margin:34px 0 28px;color:var(--muted);font-size:.84rem;border-top:1px solid var(--line);padding-top:16px}
+footer{position:relative;margin:34px 0 28px;color:var(--muted);font-size:.84rem;padding-top:18px}footer::before{content:"";position:absolute;inset-inline:0;top:0;height:3px;border-radius:3px;background:var(--grad)}
 @media (max-width:640px){.book{grid-template-columns:1fr;justify-items:center}.cover{width:200px}.book>div{width:100%}dl{grid-template-columns:1fr}}
 """
 
@@ -176,11 +184,18 @@ def read_links(row, ui: str):
         h = quote(row["htid"])
         return ("https://babel.hathitrust.org/cgi/pt?id=" + h, True,
                 [("https://babel.hathitrust.org/cgi/ls?q1=%s&lmt=ft" % quote(row["title"]), t["page_ht"]), arch])
+    if row["ws"]:
+        return (ws_url(row["ws"]), True,
+                [] if row["cat"] == "poe" else [("https://archive.org/search?query=" + quote(row["title_ar"] or row["title"]), t["arch"]), ol])
     if row["origin"] == "a":
         name = quote(row["title_ar"] or row["title"])
         return ("https://ar.wikisource.org/w/index.php?search=" + name, False,
                 [("https://archive.org/search?query=" + name, t["arch"]), ol])
     return ("https://www.gutenberg.org/ebooks/search/?query=" + q, False, [arch, ol])
+
+
+def ws_url(page: str) -> str:
+    return "https://ar.wikisource.org/wiki/" + quote(page.replace(" ", "_"))
 
 
 def source_name(row, ui: str) -> str:
@@ -189,16 +204,14 @@ def source_name(row, ui: str) -> str:
         return t["src_gut"]
     if row["htid"]:
         return t["src_ht"]
-    return t["src_ws"] if row["origin"] == "a" else t["src_idx"]
+    return t["src_ws"] if row["ws"] or row["origin"] == "a" else t["src_idx"]
 
 
 def cover_candidates(row):
     c = []
     if row["gid"]:
         c.append("https://www.gutenberg.org/cache/epub/%d/pg%d.cover.medium.jpg" % (row["gid"], row["gid"]))
-    elif row["htid"]:
-        c.append("https://babel.hathitrust.org/cgi/imgsrv/cover?id=" + quote(row["htid"]))
-    return c
+    return c  # HathiTrust blocks its covers on other sites: the page asks /api/cover (Open Library) instead
 
 
 def _authors(conn) -> dict:
@@ -220,6 +233,16 @@ def related(conn, row):
     return "similar", out
 
 
+LOGO_SVG = ('<svg viewBox="0 0 48 48" width="36" height="36" aria-hidden="true"><defs><linearGradient id="gL" x1="0" y1="0" x2="1" y2="1">'
+            '<stop offset="0" stop-color="#5BC0FF"/><stop offset=".55" stop-color="#1A6FDF"/><stop offset="1" stop-color="#FF6B9A"/></linearGradient></defs>'
+            '<rect x="1" y="1" width="46" height="46" rx="15" fill="url(#gL)"/>'
+            '<path d="M24 35c-4.6-3-9.4-3.6-14-2.2V16.6c4.6-1.4 9.4-.8 14 2.4z" fill="#fff"/>'
+            '<path d="M24 35c4.6-3 9.4-3.6 14-2.2V16.6c-4.6-1.4-9.4-.8-14 2.4z" fill="#fff" fill-opacity=".82"/>'
+            '<path class="lg-q" d="M36.5 6.5c-6.2 1.4-10.6 6.4-11.6 13.6 2.6-4.8 6.4-9 11.6-13.6z" fill="#fff"/></svg>')
+SEARCH_ICON = ('<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">'
+               '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>')
+
+
 def not_found_html(ui="en") -> str:
     t = T[ui]
     return ("<!doctype html><html lang=\"%s\" dir=\"%s\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
@@ -233,11 +256,11 @@ function next(){if(i>=cand.length)return;var c=cand[i++];if(!c[1])return next();
 fetch('https://'+c[0]+'.wikipedia.org/api/rest_v1/page/summary/'+encodeURIComponent(c[1].replace(/ /g,'_'))+'?redirect=true').then(function(r){return r.ok?r.json():null}).then(function(j){
 if(!j||j.type!=='standard'||!j.extract||j.extract.length<60)return next();
 document.getElementById('aaT').textContent=j.extract.length>600?j.extract.slice(0,600).replace(/\\s+\\S*$/,'')+'\u2026':j.extract;
-var a=document.getElementById('aaL');a.href=(j.content_urls&&j.content_urls.desktop&&j.content_urls.desktop.page)||'#';s.hidden=false;}).catch(next);}
+var a=document.getElementById('aaL'),u=(j.content_urls&&j.content_urls.desktop&&j.content_urls.desktop.page)||'';a.href=/^https:\\/\\/[a-z-]+\\.wikipedia\\.org\\//.test(u)?u:'#';s.hidden=false;}).catch(next);}
 next();})();</script>"""
 
 
-def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool = False) -> str:
+def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool = False, nonce: str = "") -> str:
     d_ui = default_ui(row)
     ui = ui if ui in T else d_ui
     t = T[ui]
@@ -310,7 +333,7 @@ def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool 
             "im.addEventListener('error',function(){next();});next();})();</script>"
             % (json.dumps(covers), row["id"]))
 
-    return """<!doctype html>
+    page = """<!doctype html>
 <html lang="{ui}" dir="{dir}">
 <head>
 <meta charset="utf-8">
@@ -325,12 +348,14 @@ def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool 
 <meta property="og:site_name" content="{brand}">
 {og_img}
 <meta name="twitter:card" content="summary">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@500;700&family=Readex+Pro:wght@400;500;600;700&family=Source+Serif+4:wght@600;700&display=swap">
+<link rel="icon" type="image/svg+xml" href="/logo.svg">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@500;700&family=Readex+Pro:wght@400;500;600;700&family=Reem+Kufi:wght@700&family=Source+Serif+4:wght@600;700&display=swap">
 <script type="application/ld+json">{ld}</script>
 <style>{css}</style>
 </head>
 <body>
-<header class="bar"><div class="wrap"><a class="brand" href="/">{brand}</a>
+<header class="bar"><div class="wrap"><a class="brand" href="/">{logo}<span>{brand}</span></a>
+<form class="sbox" action="/#browse" method="get" role="search">{search_icon}<input type="search" name="q" placeholder="{ph}" aria-label="{ph}"><button type="submit">{search}</button></form>
 <nav><a href="/#browse">{all}</a><a href="{toggle}" hreflang="{other_ui}" rel="nofollow">{other_lang}</a></nav></div></header>
 <main class="wrap">
 <p class="crumbs"><a href="/">{home}</a> / <a href="/?cat={catkey}#browse">{cat_name}</a></p>
@@ -359,7 +384,10 @@ def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool 
            ld=ld_json, css=CSS, all=esc(t["all"]), toggle=toggle, other_ui=other_ui, other_lang=esc(t["other_lang"]),
            home=esc(t["home"]), catkey=esc(row["cat"]), cat_name=esc(cat_name), hue=int(cat["hue"]), title=esc(title), author=esc(author),
            alt=esc(title), by=('<p class="by">%s</p>' % esc(author)) if author else "", tags=tags, numbers_html=numbers_html, btns=btns, facts=facts, rel=rel_html, about=about_html,
-           note=esc(t["note"]), cv_script=cv_script, like_js=LIKE_JS, wiki_js=WIKI_JS)
+           note=esc(t["note"]), cv_script=cv_script, like_js=LIKE_JS, wiki_js=WIKI_JS,
+           logo=LOGO_SVG, search_icon=SEARCH_ICON, ph=esc(t["ph"]), search=esc(t["search"]))
+    # the Content-Security-Policy of this response only lets scripts carrying its nonce run
+    return page.replace("<script", '<script nonce="%s"' % esc(nonce)) if nonce else page
 
 
 # ---------- sitemaps ----------

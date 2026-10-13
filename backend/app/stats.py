@@ -1,7 +1,7 @@
 """Anonymous site statistics: visitors, searches, book views and likes.
 
 Privacy: no IP address or user agent is stored. A visitor is a salted hash (kept only to avoid
-counting the same person twice per day / liking twice) and old daily hashes are deleted.
+counting the same person twice per day, month or year / liking twice); hashes of past periods are deleted.
 """
 import hashlib
 import os
@@ -13,10 +13,13 @@ from .textnorm import norm
 
 BOT = re.compile(r"bot|crawl|spider|slurp|bing|facebookexternalhit|preview|monitor|uptime|curl|wget|python-requests|headless", re.I)
 KEEP_DAYS = 3
+MIN_SEARCHERS = 3  # a search is shown on the home page only once this many different people made it
+# Days, months and years start at midnight of this time zone (hours from UTC; 3 = Baghdad, Riyadh, Kuwait)
+UTC_OFFSET = float(os.environ.get("STATS_UTC_OFFSET", "3"))
 
 
 def _today() -> str:
-    return time.strftime("%Y-%m-%d", time.gmtime())
+    return time.strftime("%Y-%m-%d", time.gmtime(time.time() + UTC_OFFSET * 3600))
 
 
 def _salt(conn) -> str:
@@ -44,37 +47,54 @@ def _bump(conn, key: str, by: int = 1) -> None:
 
 
 def track_visitor(conn, request) -> bool:
-    """Counts one visit per visitor per day. Returns True when it was a new visitor today."""
+    """Counts each visitor once per day, once per month and once per year.
+    Returns True when it was a new visitor today."""
     if is_bot(request):
         return False
     day = _today()
-    cur = conn.execute("INSERT OR IGNORE INTO daily_visitors(day,visitor) VALUES(?,?)", (day, visitor_id(conn, request)))
+    vid = visitor_id(conn, request)
+    cur = conn.execute("INSERT OR IGNORE INTO daily_visitors(day,visitor) VALUES(?,?)", (day, vid))
     new = cur.rowcount > 0
     if new:
         _bump(conn, "visitors")
         conn.execute("DELETE FROM daily_visitors WHERE day < date(?, ?)", (day, "-%d day" % KEEP_DAYS))
+    month, year = day[:7], day[:4]
+    for period in (month, year):
+        if conn.execute("INSERT OR IGNORE INTO period_visitors(period,visitor) VALUES(?,?)", (period, vid)).rowcount:
+            _bump(conn, "visitors:" + period)
+            conn.execute("DELETE FROM period_visitors WHERE period NOT IN (?,?)", (month, year))
     conn.commit()
     return new
 
 
 def add_view(conn, request, book_id: int) -> None:
+    """One view per visitor per book per day: reloading a page cannot push a book into "most viewed"."""
     if is_bot(request):
         return
+    day = _today()
+    if not conn.execute("INSERT OR IGNORE INTO daily_views(day,visitor,book_id) VALUES(?,?,?)",
+                        (day, visitor_id(conn, request), book_id)).rowcount:
+        return
+    conn.execute("DELETE FROM daily_views WHERE day < date(?, ?)", (day, "-%d day" % KEEP_DAYS))
     conn.execute("INSERT INTO book_stats(book_id,views) VALUES(?,1) ON CONFLICT(book_id) DO UPDATE SET views=views+1", (book_id,))
     _bump(conn, "views")
     conn.commit()
 
 
 def log_search(conn, request, q: str) -> bool:
+    """searches.n counts different people, not requests: repeating a phrase cannot put it on the home page."""
     q = " ".join(norm(q).split())[:80]
     if len(q) < 2 or is_bot(request):
         return False
+    if not conn.execute("INSERT OR IGNORE INTO search_votes(q,visitor) VALUES(?,?)", (q, visitor_id(conn, request))).rowcount:
+        return False
     conn.execute("INSERT INTO searches(q,n,last) VALUES(?,1,?) ON CONFLICT(q) DO UPDATE SET n=n+1, last=excluded.last",
-                 (q, time.strftime("%Y-%m-%d", time.gmtime())))
+                 (q, _today()))
     _bump(conn, "searches")
-    # keep the table small: drop rarely used queries when it grows
+    # keep the tables small: drop rarely used queries when they grow
     if conn.execute("SELECT COUNT(*) FROM searches").fetchone()[0] > 20000:
         conn.execute("DELETE FROM searches WHERE n=1 AND q IN (SELECT q FROM searches WHERE n=1 ORDER BY last LIMIT 5000)")
+        conn.execute("DELETE FROM search_votes WHERE q NOT IN (SELECT q FROM searches)")
     conn.commit()
     return True
 
@@ -107,10 +127,12 @@ def toggle_like(conn, request, book_id: int):
 
 def summary(conn) -> dict:
     n = {r["key"]: r["n"] for r in conn.execute("SELECT key, n FROM site_stats")}
-    today = conn.execute("SELECT COUNT(*) FROM daily_visitors WHERE day=?", (_today(),)).fetchone()[0]
+    day = _today()
+    today = conn.execute("SELECT COUNT(*) FROM daily_visitors WHERE day=?", (day,)).fetchone()[0]
     return {
         "books": conn.execute("SELECT COUNT(*) FROM books").fetchone()[0],
         "visitors": n.get("visitors", 0), "visitors_today": today,
+        "visitors_month": n.get("visitors:" + day[:7], 0), "visitors_year": n.get("visitors:" + day[:4], 0),
         "searches": n.get("searches", 0), "views": n.get("views", 0), "likes": max(n.get("likes", 0), 0),
     }
 
@@ -122,4 +144,4 @@ def top_viewed(conn, limit: int = 12):
 
 
 def top_searches(conn, limit: int = 12):
-    return [r["q"] for r in conn.execute("SELECT q FROM searches ORDER BY n DESC, last DESC LIMIT ?", (limit,))]
+    return [r["q"] for r in conn.execute("SELECT q FROM searches WHERE n>=? ORDER BY n DESC, last DESC LIMIT ?", (MIN_SEARCHERS, limit))]

@@ -16,6 +16,7 @@ import urllib.request
 OL_SEARCH = "https://openlibrary.org/search.json"
 UA = "AlWarraqLibrary/1.0 (public-domain book index)"
 MIN_GAP = 0.9  # seconds between Open Library requests
+LOCK_WAIT = 2.0  # longest a request waits for its turn
 
 _lock = threading.Lock()
 _last = [0.0]
@@ -55,10 +56,16 @@ def resolve(conn, book_id: int):
     row = conn.execute("SELECT url FROM cover_cache WHERE book_id=?", (book_id,)).fetchone()
     if row:
         return row["url"]
-    book = conn.execute("SELECT title, author_en FROM books WHERE id=?", (book_id,)).fetchone()
+    book = conn.execute("SELECT title, author_en, ws, gid, htid FROM books WHERE id=?", (book_id,)).fetchone()
     if not book or not enabled():
         return None
-    with _lock:  # one lookup at a time, politely spaced
+    if book["ws"] and not book["gid"] and not book["htid"]:
+        return ""  # Wikisource texts (mostly single poems) have no printed cover: keep the designed one
+    # one lookup at a time, politely spaced; a request that cannot get its turn soon gives up instead of
+    # holding a server worker (many such requests at once would otherwise freeze the whole site)
+    if not _lock.acquire(timeout=LOCK_WAIT):
+        return None
+    try:
         row = conn.execute("SELECT url FROM cover_cache WHERE book_id=?", (book_id,)).fetchone()
         if row:
             return row["url"]
@@ -71,6 +78,8 @@ def resolve(conn, book_id: int):
             _last[0] = time.time()
             return None
         _last[0] = time.time()
+    finally:
+        _lock.release()
     conn.execute("INSERT OR REPLACE INTO cover_cache(book_id,url) VALUES(?,?)", (book_id, url))
     conn.commit()
     return url

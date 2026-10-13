@@ -2,10 +2,15 @@ services:
   web:
     build: .
     ports:
-      - "8000:8000"
+      # only this machine can reach the app; the public goes through the HTTPS proxy (Caddy, see README)
+      - "127.0.0.1:8000:8000"
     environment:
       AUTO_IMPORT: "1"        # import the Gutenberg catalog on first start
       IMPORT_LIMIT: "0"       # 0 = every book in Gutenberg (about 75,000)
+      # the proxy on this machine reaches the container from the Docker network: trust the visitor IP it forwards
+      FORWARDED_ALLOW_IPS: "*"
+      # SITE_URL: "https://library.example.com"   # canonical links and sitemaps
+      # ALLOWED_HOSTS: "library.example.com"      # refuse requests for any other host name
       # IMPORT_LANGS: "en,ar,fr"   # optional language filter
       # HATHI_FILE: "/hathi/hathi_full.txt.gz"   # 500k books: see README (HathiTrust)
       # HATHI_LIMIT: "450000"

@@ -29,8 +29,22 @@ def main() -> int:
             print(hathi.import_hathi(conn, hathi_file, int(os.environ.get("HATHI_LIMIT", "1000000"))))
         except Exception as e:
             print("HathiTrust import skipped (%s)." % e, file=sys.stderr)
+    if has_hathi:
+        from . import hathi
+        moved = hathi.recategorize(conn)  # once: databases imported before the title classifier existed
+        if moved:
+            print("HathiTrust books given a category: %d" % moved)
+    has_ws = conn.execute("SELECT 1 FROM books WHERE curated=3 LIMIT 1").fetchone()
+    if os.environ.get("AUTO_WIKISOURCE", "1") == "1" and not has_ws:
+        try:
+            from . import wikisource
+            print("Importing Arabic Wikisource...")
+            print(wikisource.run(conn))
+        except Exception as e:  # needs internet; the site works without it
+            print("Wikisource import skipped (%s). Run `python -m app.wikisource` later." % e, file=sys.stderr)
     total = conn.execute("SELECT COUNT(*) FROM books").fetchone()[0]
     print("Books in database: %d" % total)
+    print("Authors in database: %d" % db.author_total(conn, total))  # counted now so the first page load is fast
     conn.close()
     return 0
 
