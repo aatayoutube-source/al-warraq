@@ -7,6 +7,7 @@ services:
     environment:
       AUTO_IMPORT: "1"        # import the Gutenberg catalog on first start
       IMPORT_LIMIT: "0"       # 0 = every book in Gutenberg (about 75,000)
+      AUTO_HATHI: "1"         # download HathiTrust's catalogue on first start: about a million more books
       # the proxy on this machine reaches the container from the Docker network: trust the visitor IP it forwards
       FORWARDED_ALLOW_IPS: "*"
       # SITE_URL: "https://library.example.com"   # canonical links and sitemaps

@@ -23,13 +23,13 @@ def _today() -> str:
 
 
 def _salt(conn) -> str:
-    r = conn.execute("SELECT value FROM meta WHERE key='salt'").fetchone()
+    r = conn.execute("SELECT value FROM stats_meta WHERE key='salt'").fetchone()
     if r:
         return r["value"]
-    s = secrets.token_hex(16)
-    conn.execute("INSERT OR IGNORE INTO meta(key,value) VALUES('salt',?)", (s,))
+    old = conn.execute("SELECT value FROM meta WHERE key='salt'").fetchone()  # kept there by older versions
+    conn.execute("INSERT OR IGNORE INTO stats_meta(key,value) VALUES('salt',?)", (old["value"] if old else secrets.token_hex(16),))
     conn.commit()
-    return conn.execute("SELECT value FROM meta WHERE key='salt'").fetchone()["value"]
+    return conn.execute("SELECT value FROM stats_meta WHERE key='salt'").fetchone()["value"]
 
 
 def is_bot(request) -> bool:

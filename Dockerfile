@@ -10,8 +10,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY backend/app ./app
 COPY frontend ./frontend
 # run as an ordinary user, not root: a bug in the app cannot take over the container
-RUN useradd --system --uid 10001 --no-create-home warraq && mkdir -p /data && chown warraq /data
+RUN useradd --system --uid 10001 --no-create-home warraq && mkdir -p /data /app/cache && chown warraq /data /app/cache
 USER warraq
+# no VOLUME line: Railway refuses it; attach a volume at /data in the platform (docker-compose declares its own)
 EXPOSE 8000
 # 1) create tables + seed + one-time imports  2) start the server
 # --proxy-headers: the real visitor IP comes from the reverse proxy (set FORWARDED_ALLOW_IPS to trust it)

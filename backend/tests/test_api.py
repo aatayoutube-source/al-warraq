@@ -494,3 +494,71 @@ def test_seo_pages(client, monkeypatch):
     with TestClient(m.create_app()) as c2:
         assert '<meta name="google-site-verification" content="g-123">' in c2.get("/").text
         assert c2.get("/0123456789abcdef.txt").text == "0123456789abcdef"
+
+
+def test_hathi_auto_download(client, tmp_path):
+    """A fresh server fetches the newest full hathifile by itself, imports it, and removes the download."""
+    import gzip, json, pathlib, shutil
+    from app import db, hathi
+    raw, gz = tmp_path / "src.txt", tmp_path / "hathi_full_20260101.txt.gz"
+    make_hathifile(raw, bulk=300)
+    with open(raw, "rb") as a, gzip.open(gz, "wb") as b:
+        shutil.copyfileobj(a, b)
+    listing = tmp_path / "list.json"
+    listing.write_text(json.dumps([
+        {"filename": "hathi_upd_20260102.txt.gz", "full": False, "url": "file:///nope"},
+        {"filename": "hathi_full_20251201.txt.gz", "full": True, "url": "file:///old"},
+        {"filename": gz.name, "full": True, "size": gz.stat().st_size, "url": pathlib.Path(gz).as_uri()},
+    ]), encoding="utf-8")
+    work = tmp_path / "work"
+    work.mkdir()
+    conn = db.connect()
+    res = hathi.auto_import(conn, str(work), list_url=pathlib.Path(listing).as_uri(), log=lambda *a: None)
+    n = conn.execute("SELECT COUNT(*) FROM books WHERE curated=2").fetchone()[0]
+    conn.close()
+    assert res["hathi_added"] == n >= 300 and list(work.iterdir()) == []  # imported, and the 1 GB file is not left behind
+
+
+def test_stats_in_their_own_file(tmp_path, monkeypatch):
+    """With STATS_DB the counters live in a small file of their own; the catalogue file has none of them."""
+    import sqlite3
+    from app.main import create_app
+    from fastapi.testclient import TestClient
+    monkeypatch.setenv("WARRAQ_DB", str(tmp_path / "books.db"))
+    monkeypatch.setenv("STATS_DB", str(tmp_path / "keep" / "stats.db"))
+    with TestClient(create_app()) as c:
+        c.post("/api/hit", headers={"user-agent": "Mozilla/5.0 reader"})
+        c.get("/book/1", follow_redirects=True, headers={"user-agent": "Mozilla/5.0 reader"})
+        assert c.get("/api/stats").json()["visitors_today"] == 1
+    books = sqlite3.connect(str(tmp_path / "books.db"))
+    stats = sqlite3.connect(str(tmp_path / "keep" / "stats.db"))
+    assert not books.execute("SELECT 1 FROM sqlite_master WHERE name='site_stats'").fetchone()
+    assert stats.execute("SELECT n FROM site_stats WHERE key='visitors'").fetchone() == (1,)
+    assert stats.execute("SELECT views FROM book_stats").fetchone() == (1,)
+
+
+def test_download_ready_catalogue(tmp_path, monkeypatch):
+    """DB_URL: the whole library arrives as one file instead of a long import."""
+    import gzip, pathlib, shutil
+    from app import db
+    src = str(tmp_path / "src.db")
+    conn = db.connect(src)
+    db.init_db(conn)
+    db.seed_curated(conn)
+    conn.close()
+    gz = tmp_path / "books.db.gz"
+    with open(src, "rb") as a, gzip.open(gz, "wb") as b:
+        shutil.copyfileobj(a, b)
+    url, dest = pathlib.Path(gz).as_uri(), str(tmp_path / "live" / "warraq.db")
+    assert db.needs_download(dest, url) and not db.needs_download(dest, "")
+    db.download_books(url, dest, log=lambda *a: None)
+    c = db.connect(dest)
+    assert c.execute("SELECT COUNT(*) FROM books").fetchone()[0] == 386
+    c.close()
+    assert not db.needs_download(dest, url) and db.needs_download(dest, url.replace("books.db", "books-v2.db"))  # a new release is fetched again
+    bad = tmp_path / "bad.gz"
+    with gzip.open(bad, "wb") as b:
+        b.write(b"not a database")
+    import pytest
+    with pytest.raises(IOError):
+        db.download_books(pathlib.Path(bad).as_uri(), str(tmp_path / "x" / "w.db"), log=lambda *a: None)

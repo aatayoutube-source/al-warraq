@@ -1,6 +1,15 @@
-"""SQLite storage: schema, connection helper and the curated seed."""
+"""SQLite storage: schema, connection helper and the curated seed.
+
+Two kinds of data: the catalogue (books, authors; big and the same for everyone) and the site's own
+numbers (visitors, views, likes, searches; small and precious). By default both live in one file.
+With STATS_DB set, the numbers go to their own small file, attached as "st": the catalogue can then be
+re-downloaded on every start (DB_URL) while the counters stay on a small persistent disk.
+"""
+import gzip
 import os
+import shutil
 import sqlite3
+import urllib.request
 
 from .textnorm import norm
 
@@ -41,6 +50,18 @@ CREATE TABLE IF NOT EXISTS books(
 CREATE TABLE IF NOT EXISTS cover_cache(
   book_id INTEGER PRIMARY KEY,
   url     TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ix_books_cat_ord ON books(cat, ord);   -- a category page comes out already in order
+CREATE INDEX IF NOT EXISTS ix_books_lang_ord ON books(lang, ord);
+CREATE INDEX IF NOT EXISTS ix_books_author ON books(author_key);
+CREATE INDEX IF NOT EXISTS ix_books_ord ON books(ord);
+CREATE INDEX IF NOT EXISTS ix_books_curated ON books(curated);
+"""
+
+STATS_SCHEMA = """
+CREATE TABLE IF NOT EXISTS stats_meta(
+  key   TEXT PRIMARY KEY,
+  value TEXT NOT NULL
 );
 CREATE TABLE IF NOT EXISTS site_stats(
   key TEXT PRIMARY KEY,
@@ -84,12 +105,9 @@ CREATE TABLE IF NOT EXISTS searches(
   last TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS ix_searches_n ON searches(n DESC);
-CREATE INDEX IF NOT EXISTS ix_books_cat_ord ON books(cat, ord);   -- a category page comes out already in order
-CREATE INDEX IF NOT EXISTS ix_books_lang_ord ON books(lang, ord);
-CREATE INDEX IF NOT EXISTS ix_books_author ON books(author_key);
-CREATE INDEX IF NOT EXISTS ix_books_ord ON books(ord);
-CREATE INDEX IF NOT EXISTS ix_books_curated ON books(curated);
 """
+STATS_TABLES = ("stats_meta", "site_stats", "daily_visitors", "daily_views", "search_votes", "period_visitors",
+                "book_stats", "book_likes", "searches")
 
 
 def db_path() -> str:
@@ -103,11 +121,35 @@ def connect(path: str = "") -> sqlite3.Connection:
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA synchronous=NORMAL")
+    stats = os.environ.get("STATS_DB", "").strip()
+    if stats:  # the site's counters in their own file (see the module doc)
+        os.makedirs(os.path.dirname(os.path.abspath(stats)), exist_ok=True)
+        conn.execute("ATTACH DATABASE ? AS st", (stats,))
+        conn.execute("PRAGMA st.journal_mode=WAL")
     return conn
+
+
+def _stats_attached(conn) -> bool:
+    return any(r[1] == "st" for r in conn.execute("PRAGMA database_list"))
+
+
+def init_stats(conn: sqlite3.Connection) -> None:
+    if not _stats_attached(conn):
+        conn.executescript(STATS_SCHEMA)
+        return
+    conn.executescript(STATS_SCHEMA.replace("CREATE TABLE IF NOT EXISTS ", "CREATE TABLE IF NOT EXISTS st.")
+                       .replace("CREATE INDEX IF NOT EXISTS ", "CREATE INDEX IF NOT EXISTS st."))
+    # numbers kept in the catalogue file by an older setup move to the stats file (unqualified names would find them first)
+    for t in STATS_TABLES:
+        if conn.execute("SELECT 1 FROM main.sqlite_master WHERE type='table' AND name=?", (t,)).fetchone():
+            conn.execute("INSERT OR IGNORE INTO st.%s SELECT * FROM main.%s" % (t, t))
+            conn.execute("DROP TABLE main.%s" % t)
+    conn.commit()
 
 
 def init_db(conn: sqlite3.Connection) -> None:
     conn.executescript(SCHEMA)
+    init_stats(conn)
     cols = {r[1] for r in conn.execute("PRAGMA table_info(books)")}
     if "htid" not in cols:  # database created by an older version
         conn.execute("ALTER TABLE books ADD COLUMN htid TEXT")
@@ -124,7 +166,7 @@ def init_db(conn: sqlite3.Connection) -> None:
 
 def seed_period_visitors(conn: sqlite3.Connection) -> None:
     """Once: visitors already counted in the last days also count for this month and this year."""
-    if conn.execute("SELECT 1 FROM meta WHERE key='periods_seeded'").fetchone():
+    if conn.execute("SELECT 1 FROM stats_meta WHERE key='periods_seeded'").fetchone():
         return
     from .stats import _today
     day = _today()
@@ -134,7 +176,7 @@ def seed_period_visitors(conn: sqlite3.Connection) -> None:
         n = conn.execute("SELECT COUNT(*) FROM period_visitors WHERE period=?", (period,)).fetchone()[0]
         conn.execute("INSERT INTO site_stats(key,n) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET n=MAX(n, excluded.n)",
                      ("visitors:" + period, n))
-    conn.execute("INSERT OR REPLACE INTO meta(key,value) VALUES('periods_seeded','1')")
+    conn.execute("INSERT OR REPLACE INTO stats_meta(key,value) VALUES('periods_seeded','1')")
     conn.commit()
 
 
@@ -253,3 +295,55 @@ def seed_curated(conn: sqlite3.Connection) -> int:
     conn.execute("INSERT OR REPLACE INTO meta(key,value) VALUES('seed_version',?)", (SEED_VERSION,))
     conn.commit()
     return n
+
+
+# ---------- a ready-made catalogue (DB_URL): the whole library in a minute instead of a long import ----------
+
+def needs_download(path: str, url: str) -> bool:
+    """True when the file is missing or was not made from this URL."""
+    if not url:
+        return False
+    if not os.path.exists(path):
+        return True
+    try:
+        c = sqlite3.connect("file:%s?mode=ro" % path, uri=True)
+        row = c.execute("SELECT value FROM meta WHERE key='books_url'").fetchone()
+        c.close()
+        return not row or row[0] != url
+    except sqlite3.Error:
+        return True
+
+
+def download_books(url: str, path: str, log=print) -> None:
+    """Stream the catalogue (plain or .gz) to disk 4 MB at a time and put it in place of the old one."""
+    part = path + ".part"
+    os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
+    for suffix in ("", "-wal", "-shm"):  # free the space first: small disks cannot hold the old and the new file
+        if os.path.exists(path + suffix):
+            os.remove(path + suffix)
+    req = urllib.request.Request(url, headers={"User-Agent": "AlWarraqLibrary/1.0"})
+    try:
+        with urllib.request.urlopen(req, timeout=120) as r, open(part, "wb") as f:
+            src = gzip.GzipFile(fileobj=r) if url.split("?")[0].endswith(".gz") else r
+            done, step = 0, 100 * 2 ** 20
+            while True:
+                chunk = src.read(4 * 2 ** 20)
+                if not chunk:
+                    break
+                f.write(chunk)
+                done += len(chunk)
+                if done >= step:
+                    log("  %d MB" % (done // 2 ** 20))
+                    step += 100 * 2 ** 20
+        with open(part, "rb") as f:
+            if f.read(16) != b"SQLite format 3\x00":
+                raise IOError("the downloaded file is not an SQLite database")
+        os.replace(part, path)
+    finally:
+        if os.path.exists(part):
+            os.remove(part)
+    c = sqlite3.connect(path)
+    c.execute("CREATE TABLE IF NOT EXISTS meta(key TEXT PRIMARY KEY, value TEXT NOT NULL)")
+    c.execute("INSERT OR REPLACE INTO meta(key,value) VALUES('books_url',?)", (url,))
+    c.commit()
+    c.close()

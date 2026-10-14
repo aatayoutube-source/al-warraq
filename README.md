@@ -40,10 +40,45 @@ docker compose up -d --build
 - **Railway / Render / Fly.io:** انشر المستودع كخدمة Docker، وأضف قرصاً دائماً (volume) مُركَّباً على `/data`.
   المنصة تضبط `PORT` تلقائياً والـ Dockerfile يقرأه.
 
+## النشر على Railway (حتى على الخطة المجانية)
+الخطة المجانية فيها قرص دائم 0.5 جيجابايت فقط، وقاعدة الكتب نحو 480 ميغابايت، فتُفصل البيانات إلى ملفين:
+قاعدة الكتب تُنزَّل جاهزة عند كل تشغيل في التخزين المؤقت (1 جيجابايت)، وعدادات الزوار في ملف صغير على القرص الدائم.
+
+1. **ارفع قاعدة الكتب مرة واحدة:** في GitHub افتح المستودع ← Releases ← Draft a new release، اكتب الوسم `data-v1`،
+   واسحب الملف `warraq-books.db.gz` إلى خانة المرفقات، ثم Publish.
+   (لإنشاء الملف من قاعدتك المحلية انظر «ملف الكتب الجاهز» أدناه.)
+2. **في Railway ← الخدمة ← Settings ← Volumes:** أضف قرصاً على المسار `/data`.
+3. **في Variables** أضف:
+   ```
+   DB_URL=https://github.com/<user>/<repo>/releases/download/data-v1/warraq-books.db.gz
+   WARRAQ_DB=/app/cache/warraq.db
+   STATS_DB=/data/stats.db
+   RAILWAY_RUN_UID=0
+   FORWARDED_ALLOW_IPS=*
+   SITE_URL=https://<اسم-خدمتك>.up.railway.app
+   ```
+4. أعد النشر (Redeploy). أول تشغيل ينزّل نحو 180 ميغابايت ويفكّها (دقيقة تقريباً)، ثم يعمل الموقع بأكثر من مليون كتاب.
+   لتحديث الكتب لاحقاً: ارفع ملفاً جديداً في Release جديد وغيّر `DB_URL`.
+
+> ملاحظة: رصيد الخطة التجريبية ($5) يُصرف مرة واحدة، والموقع يستهلك نحو $2–3 شهرياً.
+> بعد نفاده يتوقف الموقع إلى أن تنتقل إلى خطة Hobby ($5 شهرياً).
+
+### ملف الكتب الجاهز
+```bash
+cd backend && python -c "
+import sqlite3, gzip, shutil
+s = sqlite3.connect('data/warraq.db'); d = sqlite3.connect('warraq-books.db'); s.backup(d)
+for t in ('stats_meta','site_stats','daily_visitors','daily_views','search_votes','period_visitors','book_stats','book_likes','searches'):
+    d.execute('DROP TABLE IF EXISTS ' + t)
+d.execute(\"DELETE FROM meta WHERE key IN ('salt','periods_seeded','books_url')\"); d.commit(); d.execute('VACUUM'); d.close()
+shutil.copyfileobj(open('warraq-books.db','rb'), gzip.open('warraq-books.db.gz','wb'))"
+```
+
 ## إعدادات (متغيرات بيئة)
 | المتغير | الافتراضي | الوصف |
 |---|---|---|
 | `AUTO_IMPORT` | `1` | استيراد غوتنبرغ عند أول تشغيل |
+| `AUTO_HATHI` | `0` (و`1` في docker-compose) | تنزيل أحدث ملف من HathiTrust (نحو 1.2 جيجابايت) واستيراد نحو مليون كتاب عند أول تشغيل، ثم حذف الملف. يحتاج نحو 2.5 جيجابايت مساحة فارغة و10–20 دقيقة |
 | `AUTO_WIKISOURCE` | `1` | استيراد ويكي مصدر العربية (نحو 43 ألف قصيدة وكتاب) عند أول تشغيل |
 | `IMPORT_LIMIT` | `0` | عدد الكتب (0 = الكل) |
 | `IMPORT_LANGS` | (الكل) | تقييد اللغات، مثل `en,ar,fr` |
@@ -85,6 +120,10 @@ cd backend && pip install -r requirements-dev.txt && python -m pytest -q tests
 احذف الملف `backend/data/warraq.db` ثم شغّل `python -m app.bootstrap` من جديد، فيعاد بناء القاعدة بالفهرس الكامل.
 
 ## الوصول إلى 500 ألف كتاب (HathiTrust)
+> **تلقائياً:** مع `AUTO_HATHI=1` (مفعّل في docker-compose) يجلب الخادم عند أول تشغيل أحدث ملف كامل من قائمة HathiTrust الرسمية ويستورده وحده.
+> يدوياً: `cd backend && python -m app.importer --no-gutenberg --hathi auto`.
+> بدون HathiTrust يحتوي الموقع نحو 121 ألف كتاب فقط (غوتنبرغ + ويكي مصدر).
+
 غوتنبرغ وحده نحو 75,000 كتاب. لإضافة مئات الآلاف:
 1. من صفحة https://www.hathitrust.org/hathifiles نزّل ملف الفهرس الكامل `hathi_full_YYYYMMDD.txt.gz` (نحو 1 جيجابايت، لا تفكّه).
 2. ضعه في مجلد المشروع، ثم من داخل `backend`:

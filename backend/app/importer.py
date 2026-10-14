@@ -146,7 +146,8 @@ def main() -> int:
     ap.add_argument("--limit", type=int, default=0, help="max books, 0 = all (default)")
     ap.add_argument("--lang", default="", help="comma list, e.g. en,ar,fr (default: all)")
     ap.add_argument("--csv", default="", help="path to a downloaded pg_catalog.csv")
-    ap.add_argument("--hathi", default="", help="path to a HathiTrust hathi_full_*.txt(.gz) file (adds up to --hathi-limit more books)")
+    ap.add_argument("--hathi", default="", help="path to a HathiTrust hathi_full_*.txt(.gz) file (adds up to --hathi-limit more books),"
+                    " or 'auto' to download the newest one")
     ap.add_argument("--hathi-limit", type=int, default=1000000, help="max HathiTrust books, 0 = all (default 1000000)")
     ap.add_argument("--no-gutenberg", action="store_true", help="skip Gutenberg (only import the --hathi file)")
     ap.add_argument("--wikisource", action="store_true", help="also import Arabic Wikisource (about 43,000 works, needs internet)")
@@ -167,7 +168,11 @@ def main() -> int:
     if args.hathi:
         from . import hathi
         try:
-            print("HathiTrust:", hathi.import_hathi(conn, args.hathi, args.hathi_limit, set(langs)))
+            if args.hathi == "auto":
+                import os
+                print("HathiTrust:", hathi.auto_import(conn, os.path.dirname(os.path.abspath(db.db_path())), args.hathi_limit))
+            else:
+                print("HathiTrust:", hathi.import_hathi(conn, args.hathi, args.hathi_limit, set(langs)))
         except Exception as e:
             print("HathiTrust import failed: %s" % e, file=sys.stderr)
             return 1

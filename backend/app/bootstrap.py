@@ -6,6 +6,14 @@ from . import db, importer
 
 
 def main() -> int:
+    url = os.environ.get("DB_URL", "").strip()
+    if db.needs_download(db.db_path(), url):  # a ready-made catalogue: the whole library without importing
+        try:
+            print("Downloading the books database from", url)
+            db.download_books(url, db.db_path())
+            print("Books database ready.")
+        except Exception as e:  # fall back to building a smaller catalogue below
+            print("Books database download failed (%s); building one instead." % e, file=sys.stderr)
     conn = db.connect()
     db.init_db(conn)
     seeded = db.seed_curated(conn)
@@ -29,6 +37,15 @@ def main() -> int:
             print(hathi.import_hathi(conn, hathi_file, int(os.environ.get("HATHI_LIMIT", "1000000"))))
         except Exception as e:
             print("HathiTrust import skipped (%s)." % e, file=sys.stderr)
+    elif os.environ.get("AUTO_HATHI", "0") == "1" and not has_hathi:  # opt-in: 1.2 GB download, needs a big disk
+        # most of the library (nearly a million books) comes from HathiTrust: fetch its newest catalogue file
+        try:
+            from . import hathi
+            work_dir = os.path.dirname(os.path.abspath(db.db_path()))
+            print(hathi.auto_import(conn, work_dir, int(os.environ.get("HATHI_LIMIT", "1000000"))))
+        except Exception as e:  # needs internet and about 2.5 GB free; the site works without it
+            print("HathiTrust download skipped (%s). Set HATHI_FILE or run `python -m app.importer --hathi FILE` later." % e,
+                  file=sys.stderr)
     if has_hathi:
         from . import hathi
         moved = hathi.recategorize(conn)  # once: databases imported before the title classifier existed

@@ -11,8 +11,12 @@ a streaming fashion, so memory stays low. HathiTrust holds the scans; this
 library only stores titles, authors and the link to read each book there.
 """
 import gzip
+import json
+import os
 import re
+import shutil
 import sys
+import urllib.request
 from collections import Counter
 
 from .catalog import CATEGORIES, categorize_title, clean_author
@@ -20,6 +24,9 @@ from .textnorm import norm
 
 IMPORTED_ORD_BASE = 1_000_000
 HATHI_KIND = 2  # books.curated value used for HathiTrust rows (0 = Gutenberg, 1 = hand-picked)
+FILE_LIST = "https://www.hathitrust.org/files/hathifiles/hathi_file_list.json"  # every hathifile, newest monthly "full" one included
+UA = "AlWarraqLibrary/1.0 (public-domain book index; importer)"
+MB = 2 ** 20
 
 LANG2 = {
     "eng": "en", "ara": "ar", "fre": "fr", "ger": "de", "spa": "es", "ita": "it", "por": "pt", "dut": "nl",
@@ -153,3 +160,58 @@ def recategorize(conn, log=print) -> int:
     conn.execute("INSERT OR REPLACE INTO meta(key,value) VALUES('title_cats',?)", (TITLE_CATS_VERSION,))
     conn.commit()
     return len(moved)
+
+
+# ---------- automatic download: a fresh server gets the whole library without manual steps ----------
+
+def latest_full_file(list_url: str = "") -> dict:
+    """The newest monthly "full" hathifile as listed by HathiTrust: {filename, url, size, ...}."""
+    req = urllib.request.Request(list_url or FILE_LIST, headers={"User-Agent": UA})
+    with urllib.request.urlopen(req, timeout=60) as r:
+        files = json.loads(r.read().decode("utf-8"))
+    full = [f for f in files if f.get("full") and str(f.get("filename", "")).endswith(".txt.gz") and f.get("url")]
+    if not full:
+        raise RuntimeError("HathiTrust lists no full hathifile")
+    return max(full, key=lambda f: f["filename"])  # names carry the date: hathi_full_YYYYMMDD.txt.gz
+
+
+def download(url: str, dest: str, log=print) -> str:
+    """Stream the file to disk 1 MB at a time: over a gigabyte, it never sits in memory."""
+    part = dest + ".part"
+    req = urllib.request.Request(url, headers={"User-Agent": UA})
+    done, next_log = 0, 100 * MB
+    with urllib.request.urlopen(req, timeout=120) as r, open(part, "wb") as f:
+        total = int(r.headers.get("Content-Length") or 0)
+        while True:
+            chunk = r.read(MB)
+            if not chunk:
+                break
+            f.write(chunk)
+            done += len(chunk)
+            if done >= next_log:
+                log("  downloaded %d MB%s" % (done // MB, (" of %d" % (total // MB)) if total else ""))
+                next_log += 100 * MB
+    if total and done != total:
+        os.remove(part)
+        raise IOError("download stopped at %d of %d bytes" % (done, total))
+    os.replace(part, dest)
+    return dest
+
+
+def auto_import(conn, work_dir: str, limit: int = 1000000, list_url: str = "", log=print) -> dict:
+    """Download the newest full hathifile, import it, and delete it again."""
+    info = latest_full_file(list_url)
+    size = int(info.get("size") or 0)
+    free = shutil.disk_usage(work_dir).free
+    if size and free < size + 1024 * MB:  # the file plus room for the database to grow
+        raise RuntimeError("not enough disk space: %d MB free, about %d MB needed" % (free // MB, (size + 1024 * MB) // MB))
+    dest = os.path.join(work_dir, os.path.basename(info["filename"]))
+    log("Downloading %s (%d MB) from HathiTrust..." % (info["filename"], size // MB))
+    try:
+        download(info["url"], dest, log)
+        log("Importing HathiTrust books (several minutes)...")
+        return import_hathi(conn, dest, limit, log=log)
+    finally:
+        for p in (dest, dest + ".part"):
+            if os.path.exists(p):
+                os.remove(p)
