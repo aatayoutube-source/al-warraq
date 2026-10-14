@@ -581,3 +581,16 @@ def test_unwritable_database_path_does_not_crash(tmp_path, monkeypatch, capsys):
     assert conn.execute("SELECT COUNT(*) FROM books").fetchone()[0] == 386
     conn.close()
     db._usable.clear()
+
+
+def test_links_use_the_public_https_address(client, monkeypatch):
+    """Behind Railway's proxy the request looks like plain http: sitemaps and canonical links must still say https."""
+    monkeypatch.setenv("RAILWAY_PUBLIC_DOMAIN", "warraq.up.railway.app")
+    base = "https://warraq.up.railway.app"
+    assert "Sitemap: %s/sitemap.xml" % base in client.get("/robots.txt").text
+    assert "<loc>%s/sitemap-main.xml</loc>" % base in client.get("/sitemap.xml").text
+    assert "<loc>%s/category/his</loc>" % base in client.get("/sitemap-main.xml").text
+    assert "<loc>%s/book/" % base in client.get("/sitemap-books-1.xml").text
+    assert '<link rel="canonical" href="%s/">' % base in client.get("/").text
+    monkeypatch.setenv("SITE_URL", "https://library.example.com/")  # an explicit address wins
+    assert "Sitemap: https://library.example.com/sitemap.xml" in client.get("/robots.txt").text

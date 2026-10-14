@@ -9,7 +9,10 @@ ENV PYTHONUNBUFFERED=1 \
     STATS_DB=/data/stats.db \
     FRONTEND_DIR=/app/frontend \
     AUTO_IMPORT=1 \
-    IMPORT_LIMIT=0
+    IMPORT_LIMIT=0 \
+    FORWARDED_ALLOW_IPS=*
+# FORWARDED_ALLOW_IPS: the platform's proxy is the only way in, so trust the visitor IP and https it reports
+# (without it every visitor looks like the proxy: one IP for the counters and the rate limits)
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY backend/app ./app

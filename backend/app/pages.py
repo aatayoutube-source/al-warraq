@@ -160,8 +160,15 @@ def canonical_path(row) -> str:
 
 
 def site_base(request) -> str:
+    """The public address used in canonical links, sitemaps and robots.txt: SITE_URL, else the domain
+    Railway gives the service (always https), else what the request says."""
     env = os.environ.get("SITE_URL", "").strip().rstrip("/")
-    return env or str(request.base_url).rstrip("/")
+    if env:
+        return env
+    railway = os.environ.get("RAILWAY_PUBLIC_DOMAIN", "").strip().strip("/")
+    if railway:
+        return "https://" + railway
+    return str(request.base_url).rstrip("/")
 
 
 def lang_name(code: str, ui: str) -> str:
