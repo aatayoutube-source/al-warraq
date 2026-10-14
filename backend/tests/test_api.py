@@ -562,3 +562,22 @@ def test_download_ready_catalogue(tmp_path, monkeypatch):
     import pytest
     with pytest.raises(IOError):
         db.download_books(pathlib.Path(bad).as_uri(), str(tmp_path / "x" / "w.db"), log=lambda *a: None)
+
+
+def test_unwritable_database_path_does_not_crash(tmp_path, monkeypatch, capsys):
+    """A wrong WARRAQ_DB (a folder that cannot be created) falls back to the temp folder with a warning."""
+    import os
+    from app import db
+    blocker = tmp_path / "not-a-folder"
+    blocker.write_text("x")  # a file where a folder is expected: makedirs fails, like a read-only /app on a server
+    monkeypatch.setenv("WARRAQ_DB", str(blocker / "data" / "warraq.db"))
+    db._usable.clear()
+    path = db.db_path()
+    assert path != str(blocker / "data" / "warraq.db") and os.path.basename(path) == "warraq.db"
+    assert "WARNING: cannot write the books database" in capsys.readouterr().err
+    conn = db.connect()
+    db.init_db(conn)
+    db.seed_curated(conn)
+    assert conn.execute("SELECT COUNT(*) FROM books").fetchone()[0] == 386
+    conn.close()
+    db._usable.clear()

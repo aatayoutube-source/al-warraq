@@ -9,6 +9,8 @@ import gzip
 import os
 import shutil
 import sqlite3
+import sys
+import tempfile
 import urllib.request
 
 from .textnorm import norm
@@ -110,8 +112,33 @@ STATS_TABLES = ("stats_meta", "site_stats", "daily_visitors", "daily_views", "se
                 "book_stats", "book_likes", "searches")
 
 
+_usable = {}  # configured path -> path actually used
+
+
+def usable_path(path: str, what: str = "database") -> str:
+    """The configured file if its folder can be created and written, otherwise a file of the same name in the
+    system's temporary folder, with a warning: a mistyped path must not keep the whole site from starting."""
+    if path in _usable:
+        return _usable[path]
+    folder = os.path.dirname(os.path.abspath(path))
+    try:
+        os.makedirs(folder, exist_ok=True)
+        ok = os.access(folder, os.W_OK)
+    except OSError:
+        ok = False
+    use = path
+    if not ok:
+        use = os.path.join(tempfile.gettempdir(), "warraq", os.path.basename(path) or "warraq.db")
+        os.makedirs(os.path.dirname(use), exist_ok=True)
+        print("WARNING: cannot write the %s at %s (check WARRAQ_DB / STATS_DB); using %s instead"
+              % (what, os.path.abspath(path), use), file=sys.stderr)
+    _usable[path] = use
+    return use
+
+
 def db_path() -> str:
-    return os.environ.get("WARRAQ_DB") or os.path.join(os.path.dirname(__file__), "..", "data", "warraq.db")
+    configured = os.environ.get("WARRAQ_DB", "").strip() or os.path.join(os.path.dirname(__file__), "..", "data", "warraq.db")
+    return usable_path(configured, "books database")
 
 
 def connect(path: str = "") -> sqlite3.Connection:
@@ -123,8 +150,7 @@ def connect(path: str = "") -> sqlite3.Connection:
     conn.execute("PRAGMA synchronous=NORMAL")
     stats = os.environ.get("STATS_DB", "").strip()
     if stats:  # the site's counters in their own file (see the module doc)
-        os.makedirs(os.path.dirname(os.path.abspath(stats)), exist_ok=True)
-        conn.execute("ATTACH DATABASE ? AS st", (stats,))
+        conn.execute("ATTACH DATABASE ? AS st", (usable_path(stats, "statistics database"),))
         conn.execute("PRAGMA st.journal_mode=WAL")
     return conn
 
