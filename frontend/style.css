@@ -1452,13 +1452,26 @@ a.av {
     min-width: 0
 }
 
+/* a long name goes on to a second line: cutting an Arabic word with "…" breaks its joined letters */
 .poet b {
     font-weight: 600;
     font-size: .92rem;
-    line-height: 1.3;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis
+    line-height: 1.35
+}
+
+@media (max-width:420px) {
+    .poet {
+        gap: 8px;
+        padding: 8px
+    }
+    .poet .pm {
+        width: 34px;
+        height: 34px;
+        font-size: 1rem
+    }
+    .poet b {
+        font-size: .88rem
+    }
 }
 
 .poet small {
