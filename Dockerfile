@@ -1,7 +1,12 @@
 FROM python:3.12-slim
 WORKDIR /app
+# The whole library (1.1 million books) arrives ready-made from the project's GitHub release on start-up,
+# into temporary storage (fits Railway's free plan); visitor numbers go to /data, the place for a volume.
+# docker-compose keeps the catalogue on its volume too, so it is downloaded only once there.
 ENV PYTHONUNBUFFERED=1 \
-    WARRAQ_DB=/data/warraq.db \
+    DB_URL=https://github.com/aliabbas1111/warraq-fullstack/releases/download/data-v1/warraq-books.db.gz \
+    WARRAQ_DB=/app/cache/warraq.db \
+    STATS_DB=/data/stats.db \
     FRONTEND_DIR=/app/frontend \
     AUTO_IMPORT=1 \
     IMPORT_LIMIT=0

@@ -780,13 +780,9 @@
     if (_t === 'dark' || _t === 'light') document.documentElement.setAttribute('data-theme', _t);
     let _l = lsGet('warraq.lang');
     try { const ql = new URLSearchParams(location.search).get('lang'); if (ql === 'en' || ql === 'ar') _l = ql; } catch (e) {}
-    if (_l === 'en' || _l === 'ar') S.ui = _l;
-    else {
-        // first visit: follow the browser language (Arabic -> Arabic, anything else -> English)
-        let _b = '';
-        try { _b = ((navigator.languages && navigator.languages[0]) || navigator.language || '').toLowerCase(); } catch (e) {}
-        S.ui = (!_b || _b.indexOf('ar') === 0) ? 'ar' : 'en';
-    }
+    // Arabic unless the visitor chose English (the EN button or ?lang=en): it is an Arabic library, and
+    // search engines are told that "/" is the Arabic page
+    S.ui = _l === 'en' ? 'en' : 'ar';
 
     // a fresh choice (category card, quick search, new search) starts from the whole library
     function freshStart(keepQuery) {

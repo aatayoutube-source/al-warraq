@@ -5,6 +5,8 @@ services:
       # only this machine can reach the app; the public goes through the HTTPS proxy (Caddy, see README)
       - "127.0.0.1:8000:8000"
     environment:
+      WARRAQ_DB: "/data/warraq.db"   # keep the catalogue on the volume: downloaded once, not on every start
+      STATS_DB: "/data/stats.db"
       AUTO_IMPORT: "1"        # import the Gutenberg catalog on first start
       IMPORT_LIMIT: "0"       # 0 = every book in Gutenberg (about 75,000)
       AUTO_HATHI: "1"         # download HathiTrust's catalogue on first start: about a million more books
