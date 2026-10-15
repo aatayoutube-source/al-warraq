@@ -107,7 +107,9 @@ ul.rel{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:rep
 ul.rel li{background:var(--card);border:1px solid var(--line);border-radius:14px;transition:transform .25s cubic-bezier(.34,1.56,.64,1),border-color .2s}ul.rel li:hover{transform:translateY(-2px);border-color:var(--brand-2)}
 ul.rel a{display:block;padding:10px 14px;text-decoration:none;color:var(--ink)}
 ul.rel small{display:block;color:var(--muted)}
-footer{position:relative;margin:34px 0 28px;color:var(--muted);font-size:.84rem;padding-top:18px}footer::before{content:"";position:absolute;inset-inline:0;top:0;height:3px;border-radius:3px;background:var(--grad)}
+footer{position:relative;margin:34px 0 28px;color:var(--muted);font-size:.84rem;padding-top:22px}footer::before{content:"";position:absolute;inset-inline:0;top:0;height:14px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='14' viewBox='0 0 28 14'%3E%3Cpath d='M14 1.5l1.7 3.8 3.8 1.7-3.8 1.7L14 12.5l-1.7-3.8L8.5 7l3.8-1.7z' fill='%23FF8FB3' fill-opacity='.75'/%3E%3Ccircle cx='1' cy='7' r='1' fill='%235BC0FF'/%3E%3Ccircle cx='27' cy='7' r='1' fill='%235BC0FF'/%3E%3C/svg%3E") center/28px 14px repeat-x}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.05;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .1 0 0 0 0 .12 0 0 0 0 .2 0 0 0 .6 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+html[lang="ar"] h1{font-family:"Reem Kufi","Readex Pro",sans-serif;letter-spacing:0}
 @media (max-width:640px){.book{grid-template-columns:1fr;justify-items:center}.cover{width:200px}.book>div{width:100%}dl{grid-template-columns:1fr}}
 """
 
