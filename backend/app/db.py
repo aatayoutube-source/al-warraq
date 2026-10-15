@@ -107,9 +107,20 @@ CREATE TABLE IF NOT EXISTS searches(
   last TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS ix_searches_n ON searches(n DESC);
+CREATE TABLE IF NOT EXISTS contact_messages(
+  id      INTEGER PRIMARY KEY AUTOINCREMENT,
+  ts      INTEGER NOT NULL,
+  name    TEXT NOT NULL,
+  email   TEXT NOT NULL,
+  topic   TEXT NOT NULL,
+  message TEXT NOT NULL,
+  lang    TEXT NOT NULL DEFAULT 'ar',
+  visitor TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ix_contact_visitor ON contact_messages(visitor, ts);
 """
 STATS_TABLES = ("stats_meta", "site_stats", "daily_visitors", "daily_views", "search_votes", "period_visitors",
-                "book_stats", "book_likes", "searches")
+                "book_stats", "book_likes", "searches", "contact_messages")
 
 
 _usable = {}  # configured path -> path actually used

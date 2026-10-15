@@ -19,6 +19,8 @@ RULES = [
     ("POST", re.compile(r"^/api/hit$"), 20),
     ("POST", re.compile(r"^/api/track/search$"), 30),
     ("POST", re.compile(r"^/api/like/"), 30),
+    ("POST", re.compile(r"^/contact$"), 6),
+    ("GET", re.compile(r"^/admin/"), 20),  # password guessing
     ("GET", re.compile(r"^/api/papers$"), 20),   # each new topic asks OpenAlex
     ("GET", re.compile(r"^/api/cover/"), 300),   # covers of a long results page
     ("GET", re.compile(r"^/api/"), 300),
@@ -75,7 +77,7 @@ def install(app) -> None:
     @app.middleware("http")
     async def protect(request, call_next):
         path, method = request.url.path, request.method
-        if method == "POST" and path.startswith("/api/") and cross_site(request):
+        if method == "POST" and (path.startswith("/api/") or path == "/contact") and cross_site(request):
             return JSONResponse({"error": "cross-site request refused"}, status_code=403)
         ip = request.client.host if request.client else "?"
         if not limiter.allow(ip, method, path):

@@ -13,8 +13,12 @@ from urllib.parse import quote
 
 from .catalog import CATEGORIES
 from .textnorm import norm
+from .wikisource import WS_KIND
 
 BRAND = {"ar": "مكتبة الوراق", "en": "Al-Warraq Library"}
+# the about / privacy / terms / contact pages (legal.py), linked from every footer
+LEGAL = {"ar": (("about", "عن المكتبة"), ("privacy", "سياسة الخصوصية"), ("terms", "شروط الاستخدام"), ("contact", "اتصل بنا")),
+         "en": (("about", "About us"), ("privacy", "Privacy policy"), ("terms", "Terms of use"), ("contact", "Contact us"))}
 SITEMAP_PAGE = 40000  # URLs per sitemap file (Google allows 50,000)
 
 LANG_NAMES = {
@@ -37,7 +41,11 @@ T = {
         "home": "الرئيسية", "all": "كل الكتب", "views": "مشاهدة", "likes": "إعجاب", "like": "أعجبني", "liked": "أعجبك", "similar": "كتب تشبه هذا الكتاب", "free": "كتاب مجاني ومسقط عنه حق النشر",
         "note": "الموقع فهرس يدلّك على المصادر المفتوحة ولا يستضيف الكتب. الكتب هنا في الملكية العامة في الولايات المتحدة، وقد يختلف وضعها في بلدك.",
         "page_gut": "صفحة الكتاب في Gutenberg", "page_ht": "HathiTrust", "arch": "Internet Archive", "ol": "Open Library",
-        "other_lang": "English", "other_code": "en", "notfound": "لم نجد هذا الكتاب", "dir": "rtl",
+        "other_lang": "English", "other_code": "en", "notfound": "الصفحة غير موجودة", "dir": "rtl",
+        "nf_p": "ربما نُقلت الصفحة التي تبحث عنها أو كُتب الرابط بشكل خاطئ. ابحث في المكتبة أو عد إلى الصفحة الرئيسية.",
+        "nf_home": "العودة إلى الرئيسية", "nf_try": "أو تصفّح أحد التصنيفات:",
+        "share": "شارك:", "wa": "واتساب", "tg": "تيليجرام", "fb": "فيسبوك", "copy": "نسخ الرابط", "copied": "تم النسخ ✓",
+        "share_txt": "اقرأ «{t}» مجاناً في مكتبة الوراق",
         "src_gut": "مشروع غوتنبرغ", "src_ht": "مكتبة HathiTrust", "src_ws": "ويكي مصدر", "src_idx": "فهرس الوراق",
         "about": "نبذة عن الكتاب", "about_author": "نبذة عن المؤلف", "wiki": "المصدر: ويكيبيديا",
         "about_txt": "«{t}» كتاب {a}ضمن تصنيف «{c}»، مكتوب باللغة {l}. هو من الكتب الموجودة في الملكية العامة، فيمكنك قراءته مجاناً من المصدر المفتوح عبر الأزرار أعلاه، وإن أعجبك فاضغط «أعجبني» لتساعد غيرك على اكتشافه. وفي الأسفل كتب مشابهة قد تعجبك.",
@@ -51,7 +59,11 @@ T = {
         "home": "Home", "all": "All books", "views": "views", "likes": "likes", "like": "Like", "liked": "Liked", "similar": "Similar books", "free": "Free public-domain book",
         "note": "This site is an index that points to open sources; it does not host the books. Books listed here are in the public domain in the United States and may be protected in your country.",
         "page_gut": "Gutenberg book page", "page_ht": "HathiTrust", "arch": "Internet Archive", "ol": "Open Library",
-        "other_lang": "العربية", "other_code": "ar", "notfound": "Book not found", "dir": "ltr",
+        "other_lang": "العربية", "other_code": "ar", "notfound": "Page not found", "dir": "ltr",
+        "nf_p": "The page you are looking for may have moved, or the link is mistyped. Search the library or go back home.",
+        "nf_home": "Back to home", "nf_try": "Or browse a category:",
+        "share": "Share:", "wa": "WhatsApp", "tg": "Telegram", "fb": "Facebook", "copy": "Copy link", "copied": "Copied ✓",
+        "share_txt": "Read \u201c{t}\u201d free at Al-Warraq Library",
         "src_gut": "Project Gutenberg", "src_ht": "HathiTrust", "src_ws": "Wikisource", "src_idx": "Al-Warraq index",
         "about": "About this book", "about_author": "About the author", "wiki": "Source: Wikipedia",
         "about_txt": "\u201c{t}\u201d is a book {a}in the \u201c{c}\u201d category, written in {l}. It is in the public domain, so you can read it for free from the open source using the buttons above. If you enjoyed it, press Like to help others find it. Similar books are listed below.",
@@ -61,55 +73,68 @@ T = {
 }
 
 CSS = """
-:root{--bg:#F5F9FF;--card:#fff;--ink:#0E1B33;--muted:#5B6B86;--line:#E1EAF6;--brand:#1A6FDF;--brand-2:#5BC0FF;--brand-ink:#fff;--soft:#E3F0FF;--rose:#F0487E;--rose-soft:#FFE9F1;--btn:linear-gradient(135deg,#3E9BFF,#1A6FDF);--grad:linear-gradient(135deg,#5BC0FF,#1A6FDF 52%,#FF6B9A);--shadow:0 1px 2px rgba(14,27,51,.05),0 12px 32px -16px rgba(26,72,140,.3)}
+:root{--bg:#F2F0EA;--card:#fff;--ink:#13201C;--muted:#5A6762;--line:#E1DCD0;--brand:#0E6B5A;--brand-2:#18A086;--brand-ink:#fff;--soft:#DDEEE8;--rose:#A35F08;--rose-soft:#FBEFD5;--btn:linear-gradient(140deg,#139477,#0B5546);--grad:linear-gradient(140deg,#18A086,#0E6B5A 58%,#0A4A3E);--shadow:0 1px 2px rgba(19,32,28,.05),0 14px 32px -18px rgba(10,74,62,.32)}
 *{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 "Readex Pro",system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.7 "IBM Plex Sans Arabic",system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif}
 a{color:var(--brand)}
 .wrap{max-width:980px;margin:0 auto;padding:0 16px}
 .bar{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 80%,transparent);backdrop-filter:saturate(1.6) blur(14px);-webkit-backdrop-filter:saturate(1.6) blur(14px);border-bottom:1px solid var(--line)}
 .bar .wrap{display:flex;align-items:center;gap:12px;min-height:62px}
-.brand{display:flex;align-items:center;gap:9px;font:700 1.15rem/1 "Reem Kufi","Readex Pro",sans-serif;color:var(--ink);text-decoration:none;flex:none}
-.brand svg{filter:drop-shadow(0 5px 12px rgba(26,111,223,.35));transition:transform .4s cubic-bezier(.34,1.56,.64,1)}.brand:hover svg{transform:rotate(-6deg) scale(1.06)}
-.brand .lg-q{transform-box:view-box;transform-origin:25px 19px;animation:qw 3.2s ease-in-out infinite}@keyframes qw{30%{transform:rotate(-9deg)}60%{transform:rotate(5deg)}}
-.sbox{flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:6px;height:42px;padding-inline:14px 4px;background:var(--card);border:1.5px solid var(--line);border-radius:99px}
+.brand{display:flex;align-items:center;gap:9px;font:800 1.15rem/1.4 "Alexandria","IBM Plex Sans Arabic",sans-serif;color:var(--ink);text-decoration:none;flex:none}
+.brand svg{filter:drop-shadow(0 6px 10px rgba(14,107,90,.28));transition:transform .4s cubic-bezier(.34,1.56,.64,1)}.brand:hover svg{transform:translateY(-2px)}
+.brand .lg-sun{transform-box:fill-box;transform-origin:center;animation:sun 5s ease-in-out infinite}@keyframes sun{50%{transform:scale(1.16)}}
+.sbox{flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:6px;height:42px;padding-inline:14px 4px;background:var(--card);border:1.5px solid var(--line);border-radius:14px}
 .sbox:focus-within{border-color:var(--brand-2);box-shadow:0 0 0 4px color-mix(in srgb,var(--brand-2) 22%,transparent)}
 .sbox svg{flex:none;color:var(--muted)}.sbox input{flex:1 1 auto;min-width:0;border:0;background:transparent;outline:0;font:inherit;color:inherit;height:100%}
-.sbox button{flex:none;height:34px;padding-inline:16px;border:0;border-radius:99px;background:var(--btn);color:var(--brand-ink);font:600 .92rem "Readex Pro",sans-serif;cursor:pointer}
+.sbox button{flex:none;height:34px;padding-inline:16px;border:0;border-radius:11px;background:var(--btn);color:var(--brand-ink);font:600 .92rem "IBM Plex Sans Arabic",sans-serif;cursor:pointer}
 .bar nav{display:flex;gap:14px;align-items:center;font-size:.92rem;flex:none}
 @media (max-width:640px){.brand span{display:none}.sbox button{display:none}.bar nav a:first-child{display:none}}
 .crumbs{font-size:.88rem;color:var(--muted);margin:18px 0 6px}.crumbs a{color:var(--muted)}
 .book{display:grid;grid-template-columns:240px 1fr;gap:28px;margin:12px 0 28px;align-items:start}
-.cover{position:relative;aspect-ratio:2/3;border-radius:14px;overflow:hidden;box-shadow:0 22px 44px -22px rgba(26,72,140,.55);background:linear-gradient(165deg,hsl(var(--h) 85% 92%),hsl(var(--h) 75% 84%));color:hsl(var(--h) 50% 22%)}
+.cover{position:relative;aspect-ratio:2/3;border-radius:14px;overflow:hidden;box-shadow:0 22px 44px -22px rgba(10,74,62,.5);background:linear-gradient(165deg,hsl(var(--h) 85% 92%),hsl(var(--h) 75% 84%));color:hsl(var(--h) 50% 22%)}
 .cv-fb{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;padding:18px 16px;text-align:center}
 .cv-cat{font-size:.72rem;letter-spacing:.04em;opacity:.75}
-.cv-title{font:700 1.2rem/1.35 "Noto Naskh Arabic","Source Serif 4",Georgia,serif;overflow:hidden;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical}
+.cv-title{font:700 1.2rem/1.45 "Amiri","Fraunces",Georgia,serif;overflow:hidden;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical}
 .cv-auth{font-size:.82rem;opacity:.85}
 .cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .2s}.cover img.ok{opacity:1}
-h1{margin:0 0 6px;font-size:clamp(1.5rem,4vw,2.1rem);line-height:1.3}
+h1{margin:0 0 6px;font:800 clamp(1.6rem,4vw,2.3rem)/1.35 "Alexandria","IBM Plex Sans Arabic",sans-serif;letter-spacing:-.01em}
 .by{margin:0 0 14px;color:var(--muted);font-size:1.05rem}
 .tags{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px}
-.tag{background:var(--soft);color:var(--brand);border-radius:999px;padding:3px 12px;font-size:.84rem;text-decoration:none}.tag:nth-child(2){background:var(--rose-soft);color:var(--rose)}
+.tag{background:var(--soft);color:var(--brand);border-radius:10px;padding:3px 12px;font-size:.84rem;text-decoration:none}.tag:nth-child(2){background:var(--rose-soft);color:var(--rose)}
 .nums{display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin:0 0 18px;color:var(--muted)}
 .num{display:inline-flex;align-items:center;gap:6px}
 .like{display:inline-flex;align-items:center;gap:6px;background:var(--card);color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font:inherit;cursor:pointer}
 .like.on{color:#E5484D;border-color:#E5484D}
 .like:hover{border-color:var(--brand)}
 .btns{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 20px}
-.btn{display:inline-block;background:var(--btn);color:var(--brand-ink);padding:10px 22px;border-radius:99px;font-weight:600;text-decoration:none;box-shadow:0 8px 18px -10px rgba(26,111,223,.8);transition:transform .25s cubic-bezier(.34,1.56,.64,1)}
+.btn{display:inline-block;background:var(--btn);color:var(--brand-ink);padding:10px 22px;border-radius:14px;font-weight:600;text-decoration:none;box-shadow:0 8px 18px -10px rgba(14,107,90,.7);transition:transform .25s cubic-bezier(.34,1.56,.64,1)}
 .btn:hover{transform:translateY(-2px)}
 .btn.alt{background:var(--card);color:var(--brand);border:1.5px solid var(--line);font-weight:500;box-shadow:none}.btn.alt:hover{border-color:var(--brand-2)}
 dl{display:grid;grid-template-columns:max-content 1fr;gap:6px 18px;margin:0 0 8px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px 18px;box-shadow:var(--shadow)}
 dt{color:var(--muted)}dd{margin:0}
 .desc{color:var(--muted);margin:0 0 16px}
 .about{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px 20px;margin:18px 0;box-shadow:var(--shadow)}.about h2{margin:0 0 6px;font-size:1.1rem}.about p{margin:0 0 6px}.about small{color:var(--muted)}
-h2{font-size:1.15rem;margin:26px 0 10px}
+h2{font:700 1.2rem/1.4 "Alexandria","IBM Plex Sans Arabic",sans-serif;margin:26px 0 10px}
 ul.rel{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px}
 ul.rel li{background:var(--card);border:1px solid var(--line);border-radius:14px;transition:transform .25s cubic-bezier(.34,1.56,.64,1),border-color .2s}ul.rel li:hover{transform:translateY(-2px);border-color:var(--brand-2)}
 ul.rel a{display:block;padding:10px 14px;text-decoration:none;color:var(--ink)}
 ul.rel small{display:block;color:var(--muted)}
-footer{position:relative;margin:34px 0 28px;color:var(--muted);font-size:.84rem;padding-top:22px}footer::before{content:"";position:absolute;inset-inline:0;top:0;height:14px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='14' viewBox='0 0 28 14'%3E%3Cpath d='M14 1.5l1.7 3.8 3.8 1.7-3.8 1.7L14 12.5l-1.7-3.8L8.5 7l3.8-1.7z' fill='%23FF8FB3' fill-opacity='.75'/%3E%3Ccircle cx='1' cy='7' r='1' fill='%235BC0FF'/%3E%3Ccircle cx='27' cy='7' r='1' fill='%235BC0FF'/%3E%3C/svg%3E") center/28px 14px repeat-x}
-body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.05;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .1 0 0 0 0 .12 0 0 0 0 .2 0 0 0 .6 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
-html[lang="ar"] h1{font-family:"Reem Kufi","Readex Pro",sans-serif;letter-spacing:0}
+footer{position:relative;margin:34px 0 28px;color:var(--muted);font-size:.84rem;padding-top:22px}footer::before{content:"";position:absolute;inset-inline:0;top:0;height:14px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='14' viewBox='0 0 16 14'%3E%3Cpath d='M3 14V8.5C3 5.5 5 3.5 8 1.5c3 2 5 4 5 7V14' fill='none' stroke='%230E6B5A' stroke-opacity='.35' stroke-width='1.2'/%3E%3C/svg%3E") center/16px 14px repeat-x}
+html[lang="ar"] h1{letter-spacing:0}
+.legal{display:flex;flex-wrap:wrap;gap:6px 18px;margin:0 0 10px}.legal a{color:var(--ink);font-weight:600;text-decoration:none}.legal a:hover{color:var(--brand)}
+footer p{margin:0}
+.share{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:-6px 0 20px}.share>span{color:var(--muted);font-size:.9rem;margin-inline-end:2px}
+.sh{display:inline-flex;align-items:center;gap:7px;padding:7px 14px;border-radius:12px;border:0;color:#fff;font:600 .9rem "IBM Plex Sans Arabic",sans-serif;text-decoration:none;cursor:pointer;transition:transform .25s cubic-bezier(.34,1.56,.64,1),box-shadow .25s}
+.sh:hover{transform:translateY(-2px);box-shadow:0 8px 16px -10px rgba(0,0,0,.45)}.sh.wa{background:#168F4A}.sh.tg{background:#1F87C0}.sh.fb{background:#1877F2}
+.sh.cp{background:var(--card);color:var(--ink);border:1.5px solid var(--line)}.sh.cp:hover{border-color:var(--brand-2)}
+.nf{text-align:center;padding-top:36px;padding-bottom:10px}.nf .legal{justify-content:center}.bar .wrap>nav{margin-inline-start:auto}.nf h1{margin:6px 0 8px}.nf .desc{max-width:52ch;margin:0 auto 20px}
+.nf-door{position:relative;width:170px;margin:0 auto 14px;isolation:isolate}
+.nf-door::before{content:"";position:absolute;z-index:-1;width:64px;height:64px;border-radius:50%;top:-8px;inset-inline-end:-26px;background:radial-gradient(circle at 34% 32%,#FFD98A,#F2B544 58%,#E2951C);box-shadow:0 0 0 10px rgba(242,181,68,.16)}
+.nf-arch{display:grid;place-items:center;aspect-ratio:40/46;padding-top:34px;background:var(--grad);color:#fff;font:800 3.1rem/1 "Alexandria",sans-serif;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 46' preserveAspectRatio='none'%3E%3Cpath d='M0 46V24C0 11.5 9 5 20 0c11 5 20 11.5 20 24v22z'/%3E%3C/svg%3E") center/100% 100% no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 46' preserveAspectRatio='none'%3E%3Cpath d='M0 46V24C0 11.5 9 5 20 0c11 5 20 11.5 20 24v22z'/%3E%3C/svg%3E") center/100% 100% no-repeat}
+.nf .sbox{max-width:520px;margin:0 auto 18px;height:50px}.nf .sbox button{display:block}
+.nf-try{color:var(--muted);margin:22px 0 10px}.nf-cats{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:0 auto 10px;max-width:720px}
+.nf-cats a{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:5px 14px;text-decoration:none;color:var(--ink);font-size:.9rem}
+.nf-cats a:hover{border-color:var(--brand-2);color:var(--brand)}
 @media (max-width:640px){.book{grid-template-columns:1fr;justify-items:center}.cover{width:200px}.book>div{width:100%}dl{grid-template-columns:1fr}}
 """
 
@@ -159,6 +184,11 @@ def book_author(row, ui: str, authors: dict) -> str:
 def canonical_path(row) -> str:
     ui = default_ui(row)
     return "/book/%d/%s" % (row["id"], quote(slugify(book_title(row, ui))))
+
+
+def legal_links(ui: str) -> str:
+    return '<nav class="legal" aria-label="%s">%s</nav>' % (
+        esc(BRAND[ui]), "".join('<a href="/%s%s">%s</a>' % (k, "?lang=en" if ui == "en" else "", esc(n)) for k, n in LEGAL[ui]))
 
 
 def site_base(request) -> str:
@@ -242,22 +272,62 @@ def related(conn, row):
     return "similar", out
 
 
-LOGO_SVG = ('<svg viewBox="0 0 48 48" width="36" height="36" aria-hidden="true"><defs><linearGradient id="gL" x1="0" y1="0" x2="1" y2="1">'
-            '<stop offset="0" stop-color="#5BC0FF"/><stop offset=".55" stop-color="#1A6FDF"/><stop offset="1" stop-color="#FF6B9A"/></linearGradient></defs>'
-            '<rect x="1" y="1" width="46" height="46" rx="15" fill="url(#gL)"/>'
-            '<path d="M24 35c-4.6-3-9.4-3.6-14-2.2V16.6c4.6-1.4 9.4-.8 14 2.4z" fill="#fff"/>'
-            '<path d="M24 35c4.6-3 9.4-3.6 14-2.2V16.6c-4.6-1.4-9.4-.8-14 2.4z" fill="#fff" fill-opacity=".82"/>'
-            '<path class="lg-q" d="M36.5 6.5c-6.2 1.4-10.6 6.4-11.6 13.6 2.6-4.8 6.4-9 11.6-13.6z" fill="#fff"/></svg>')
+LOGO_SVG = ('<svg viewBox="4 0 40 48" width="32" height="38" aria-hidden="true"><defs><linearGradient id="gL" x1="0" y1="0" x2="1" y2="1">'
+            '<stop offset="0" stop-color="#18A086"/><stop offset=".6" stop-color="#0E6B5A"/><stop offset="1" stop-color="#0A4A3E"/></linearGradient></defs>'
+            '<path d="M5 47V25C5 13 14 6.5 24 1c10 5.5 19 12 19 24v22z" fill="url(#gL)"/><circle class="lg-sun" cx="24" cy="14" r="4" fill="#F2B544"/>'
+            '<path d="M25.08 25.17Q26.8 20.46 28.87 20.5Q30.42 20.54 31.65 22.53Q32.8 24.43 33.02 26.89Q33.24 29.32 32.23 33.38Q31.26 37.39 28.39 40.83Q25.52 44.27 23.58 44.44Q22 44.67 18.91 44Q17.41 43.7 16.24 43.36Q15.07 43.03 14.32 42.73Q13.84 42.5 13.97 41.98Q14.1 41.4 14.81 41.53Q17.45 41.93 21.11 41.09Q22.92 40.7 26.4 37.65Q28.17 36.11 29.25 34.9Q30.33 33.69 30.64 32.72Q30.59 32.49 30.48 32.16Q30.37 31.83 30.24 31.44Q28.39 33.82 25.79 32.63Q22.83 31.3 25.08 25.17ZM29.27 27.25Q27.99 25.17 26.54 27.07Q27.64 28.31 29.27 27.25Z" fill="#FBF8F1"/></svg>')
 SEARCH_ICON = ('<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">'
                '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>')
 
 
-def not_found_html(ui="en") -> str:
+def not_found_html(ui="ar") -> str:
+    """The 404 page: the site's header, a search box, a way home and the categories (never indexed)."""
+    ui = ui if ui in T else "ar"
     t = T[ui]
-    return ("<!doctype html><html lang=\"%s\" dir=\"%s\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
-            "<meta name=\"robots\" content=\"noindex\"><title>%s</title><style>%s</style></head><body><div class=\"wrap\"><p style=\"margin:60px 0\">%s — <a href=\"/\">%s</a></p></div></body></html>"
-            % (ui, t["dir"], esc(t["notfound"]), CSS, esc(t["notfound"]), esc(t["home"])))
+    q = "?lang=en" if ui == "en" else ""
+    other = "en" if ui == "ar" else "ar"
+    cats = "".join('<a href="/category/%s%s">%s</a>' % (k, q, esc(v[ui])) for k, v in CATEGORIES.items())
+    return """<!doctype html>
+<html lang="{ui}" dir="{dir}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>{h} | {brand}</title>
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/svg+xml" href="/logo.svg">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alexandria:wght@700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
+<style>{css}</style>
+</head>
+<body>
+<header class="bar"><div class="wrap"><a class="brand" href="/{q}">{logo}<span>{brand}</span></a>
+<nav><a href="/{q}#browse">{all}</a><a href="/{oq}" hreflang="{other}">{other_lang}</a></nav></div></header>
+<main class="wrap nf">
+<div class="nf-door" aria-hidden="true"><div class="nf-arch">404</div></div>
+<h1>{h}</h1>
+<p class="desc">{p}</p>
+<form class="sbox" action="/#browse" method="get" role="search">{icon}<input type="search" name="q" placeholder="{ph}" aria-label="{ph}"><button type="submit">{search}</button></form>
+<a class="btn" href="/{q}">{home}</a>
+<p class="nf-try">{try_}</p>
+<nav class="nf-cats" aria-label="{try_}">{cats}</nav>
+<footer>{legal}<p>{note}</p></footer>
+</main>
+</body>
+</html>
+""".format(ui=ui, dir=t["dir"], h=esc(t["notfound"]), brand=esc(BRAND[ui]), css=CSS, q=q, oq="?lang=en" if other == "en" else "",
+           logo=LOGO_SVG, all=esc(t["all"]), other=other, other_lang=esc(t["other_lang"]), p=esc(t["nf_p"]), icon=SEARCH_ICON,
+           ph=esc(t["ph"]), search=esc(t["search"]), home=esc(t["nf_home"]), try_=esc(t["nf_try"]), cats=cats,
+           legal=legal_links(ui), note=esc(t["note"]))
 
+
+SHARE_ICONS = {"wa": '<svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" d="M12 3a9 9 0 0 0-7.7 13.6L3 21l4.5-1.2A9 9 0 1 0 12 3z"/><path fill="currentColor" d="M9.1 7.6c.3 0 .5 0 .7.5l.8 1.9c.1.3 0 .5-.1.7l-.6.7c-.1.2-.2.4 0 .6.9 1.5 2 2.6 3.5 3.4.2.1.4.1.6-.1l.8-.9c.2-.2.4-.3.7-.2l1.8.9c.3.1.5.3.5.5 0 .6-.3 1.4-.9 1.8-.7.5-1.6.6-2.5.3-3-.9-5.4-3.2-6.5-6.2-.3-.9-.2-1.9.4-2.6.2-.3.5-.5.8-.5z"/></svg>',
+               "tg": '<svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21.4 3.6 2.9 10.8c-1 .4-1 1.6 0 1.9l4.6 1.4 1.8 5.6c.2.7 1.1.9 1.6.4l2.6-2.4 4.7 3.5c.6.4 1.4.1 1.6-.6L22.9 5c.3-1.1-.6-1.9-1.5-1.4zM9.6 14l8.9-7.7-7.4 9.1-.3 2.8z"/></svg>',
+               "fb": '<svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M13.6 21v-7.5h2.6l.4-3.1h-3V8.5c0-.9.3-1.5 1.6-1.5h1.6V4.2c-.3 0-1.2-.1-2.3-.1-2.3 0-3.9 1.4-3.9 4V10.4H8v3.1h2.6V21z"/></svg>',
+               "link": '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1 1"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1-1"/></svg>'}
+# copy the page's link; browsers without the clipboard API get it in a prompt to copy by hand
+SHARE_JS = """<script>(function(){var b=document.getElementById('copyBtn');if(!b)return;var l=b.querySelector('span'),o=l.textContent;
+b.addEventListener('click',function(){var u=b.dataset.url;function ok(){l.textContent=b.dataset.done;setTimeout(function(){l.textContent=o},1800)}
+if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(u).then(ok,function(){window.prompt('',u)})}else{window.prompt('',u)}});})();</script>"""
 
 WIKI_JS = """<script>(function(){var s=document.getElementById('aa');if(!s)return;
 var cand=[[s.dataset.ui,s.dataset.name],[s.dataset.ui==='ar'?'en':'ar',s.dataset.alt],['en',s.dataset.alt||s.dataset.name]];var i=0;
@@ -285,25 +355,53 @@ def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool 
     desc = t["desc"].format(t=title, a=(("— %s " % author) if author else ""), l=lang, c=cat_name)
     page_title = ("%s — %s | %s" % (title, author, BRAND[ui])) if author else ("%s | %s" % (title, BRAND[ui]))
 
-    book = {"@type": "Book", "@id": canon + "#book", "name": title, "url": canon, "inLanguage": row["lang"] or "en",
-            "isAccessibleForFree": True, "genre": cat_name, "sameAs": main_url,
-            "potentialAction": {"@type": "ReadAction", "target": main_url}}
+    poem = row["cat"] == "poe" and row["curated"] == WS_KIND  # one poem from Wikisource, not a whole book
+    book = {"@type": "CreativeWork" if poem else "Book", "@id": canon + "#book", "name": title, "url": canon,
+            "mainEntityOfPage": {"@id": canon}, "description": desc, "genre": cat_name, "isAccessibleForFree": True,
+            "sameAs": main_url, "potentialAction": {"@type": "ReadAction", "target": {"@type": "EntryPoint", "urlTemplate": main_url}}}
+    if not poem:
+        book["bookFormat"] = "https://schema.org/EBook"
+    if row["lang"] and row["lang"] not in ("und", "mul", "zxx"):
+        book["inLanguage"] = row["lang"]
+    if title != row["title"]:
+        book["alternateName"] = row["title"]
     if author:
         book["author"] = {"@type": "Person", "name": author}
+        if row["author_key"]:
+            book["author"]["url"] = base + "/author/" + quote(row["author_key"])
+        if row["author_en"] and row["author_en"] != author:
+            book["author"]["alternateName"] = row["author_en"]
     if covers:
         book["image"] = covers[0]
-    crumbs = {"@type": "BreadcrumbList", "itemListElement": [
+    if numbers[1]:
+        book["interactionStatistic"] = {"@type": "InteractionCounter", "interactionType": "https://schema.org/LikeAction",
+                                        "userInteractionCount": numbers[1]}
+    crumbs = {"@type": "BreadcrumbList", "@id": canon + "#crumbs", "itemListElement": [
         {"@type": "ListItem", "position": 1, "name": t["home"], "item": base + "/"},
         {"@type": "ListItem", "position": 2, "name": cat_name, "item": base + "/category/" + row["cat"]},
         {"@type": "ListItem", "position": 3, "name": title, "item": canon}]}
-    ld = {"@context": "https://schema.org", "@graph": [book, crumbs]}
+    page_ld = {"@type": "ItemPage", "@id": canon, "url": canon, "name": page_title, "inLanguage": ui,
+               "isPartOf": {"@type": "WebSite", "@id": base + "/#site", "url": base + "/", "name": BRAND[ui]},
+               "mainEntity": {"@id": canon + "#book"}, "breadcrumb": {"@id": canon + "#crumbs"}}
+    ld = {"@context": "https://schema.org", "@graph": [page_ld, book, crumbs]}
     ld_json = json.dumps(ld, ensure_ascii=False).replace("</", "<\\/")
 
-    og_img = '<meta property="og:image" content="%s">' % esc(covers[0]) if covers else ""
+    og_img = '<meta property="og:image" content="%s">' % esc(covers[0] if covers else base + "/og-image.png")
     other_ui = "en" if ui == "ar" else "ar"
 
     btns = '<a class="btn" href="%s" target="_blank" rel="noopener">%s</a>' % (esc(main_url), esc(t["read" if direct else "find"]))
     btns += "".join('<a class="btn alt" href="%s" target="_blank" rel="noopener">%s</a>' % (esc(u), esc(n)) for u, n in extra)
+
+    msg = t["share_txt"].format(t=title)
+    share = ('<div class="share"><span>%s</span>'
+             '<a class="sh wa" href="https://wa.me/?text=%s" target="_blank" rel="noopener nofollow">%s%s</a>'
+             '<a class="sh tg" href="https://t.me/share/url?url=%s&amp;text=%s" target="_blank" rel="noopener nofollow">%s%s</a>'
+             '<a class="sh fb" href="https://www.facebook.com/sharer/sharer.php?u=%s" target="_blank" rel="noopener nofollow">%s%s</a>'
+             '<button type="button" class="sh cp" id="copyBtn" data-url="%s" data-done="%s">%s<span>%s</span></button></div>'
+             % (esc(t["share"]), quote(msg + " " + canon, safe=""), SHARE_ICONS["wa"], esc(t["wa"]),
+                quote(canon, safe=""), quote(msg, safe=""), SHARE_ICONS["tg"], esc(t["tg"]),
+                quote(canon, safe=""), SHARE_ICONS["fb"], esc(t["fb"]),
+                esc(canon), esc(t["copied"]), SHARE_ICONS["link"], esc(t["copy"])))
 
     tags = '<a class="tag" href="/category/%s">%s</a>' % (esc(row["cat"]), esc(cat_name))
     tags += '<span class="tag">%s</span>' % esc(lang)
@@ -371,7 +469,7 @@ def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool 
 <link rel="icon" type="image/svg+xml" href="/logo.svg">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="manifest" href="/manifest.webmanifest">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@500;700&family=Readex+Pro:wght@400;500;600;700&family=Reem+Kufi:wght@700&family=Source+Serif+4:wght@600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alexandria:wght@700;800&family=Amiri:wght@400;700&family=Fraunces:opsz,wght@9..144,700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
 <script type="application/ld+json">{ld}</script>
 <style>{css}</style>
 </head>
@@ -389,24 +487,26 @@ def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool 
 <div class="tags">{tags}</div>
 {numbers_html}
 <div class="btns">{btns}</div>
+{share}
 <p class="desc">{desc}</p>
 <dl>{facts}</dl>
 </div>
 </article>
 {about}
 {rel}
-<footer>{note}</footer>
+<footer>{legal}<p>{note}</p></footer>
 </main>
 {cv_script}
 {like_js}
 {wiki_js}
+{share_js}
 </body>
 </html>
 """.format(ui=ui, dir=t["dir"], page_title=esc(page_title), desc=esc(desc), canon=esc(canon), brand=esc(BRAND[ui]), og_img=og_img,
            ld=ld_json, css=CSS, all=esc(t["all"]), toggle=toggle, other_ui=other_ui, other_lang=esc(t["other_lang"]),
            home=esc(t["home"]), catkey=esc(row["cat"]), cat_name=esc(cat_name), hue=int(cat["hue"]), title=esc(title), author=esc(author),
-           alt=esc(title), by=('<p class="by">%s</p>' % esc(author)) if author else "", tags=tags, numbers_html=numbers_html, btns=btns, facts=facts, rel=rel_html, about=about_html,
-           note=esc(t["note"]), cv_script=cv_script, like_js=LIKE_JS, wiki_js=WIKI_JS,
+           alt=esc(title), by=('<p class="by">%s</p>' % esc(author)) if author else "", tags=tags, numbers_html=numbers_html, btns=btns, share=share, share_js=SHARE_JS, facts=facts, rel=rel_html, about=about_html,
+           note=esc(t["note"]), legal=legal_links(ui), cv_script=cv_script, like_js=LIKE_JS, wiki_js=WIKI_JS,
            logo=LOGO_SVG, search_icon=SEARCH_ICON, ph=esc(t["ph"]), search=esc(t["search"]),
            locale="ar_AR" if ui == "ar" else "en_US")
     # the Content-Security-Policy of this response only lets scripts carrying its nonce run

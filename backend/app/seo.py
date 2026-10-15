@@ -14,8 +14,9 @@ import sys
 import urllib.request
 from urllib.parse import quote
 
+from . import legal
 from .catalog import CATEGORIES
-from .pages import BRAND, CSS, LOGO_SVG, SEARCH_ICON, T, _authors, book_author, book_title, canonical_path, esc
+from .pages import BRAND, CSS, LOGO_SVG, SEARCH_ICON, T, _authors, book_author, book_title, canonical_path, esc, legal_links
 
 PER_PAGE = 60
 MAX_PAGES = 200  # category pages go this deep; the sitemaps list every single book anyway
@@ -37,10 +38,10 @@ S = {
 
 EXTRA_CSS = """
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 4px}
-.chips a{background:var(--card);border:1.5px solid var(--line);border-radius:99px;padding:5px 14px;text-decoration:none;color:var(--ink);font-size:.9rem}
+.chips a{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:5px 14px;text-decoration:none;color:var(--ink);font-size:.9rem}
 .chips a:hover,.chips a[aria-current]{border-color:var(--brand-2);color:var(--brand)}
 .pager{display:flex;justify-content:space-between;gap:12px;margin:22px 0}
-.pager a{background:var(--card);border:1.5px solid var(--line);border-radius:99px;padding:8px 18px;text-decoration:none}
+.pager a{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:8px 18px;text-decoration:none}
 h1{margin-top:22px}
 """
 
@@ -102,7 +103,7 @@ def home_html(frontend_dir: str, base: str, ui: str = "ar") -> str:
 
 # ---------- category and author pages (plain HTML: every crawler can read and follow them) ----------
 
-def _shell(ui, base, path, title, desc, body, ld, page=1, extra_q=""):
+def _shell(ui, base, path, title, desc, body, ld, page=1, extra_q="", extra_css=""):
     t = T[ui]
     canon = base + path + "?" + "&".join(x for x in (("lang=en" if ui == "en" else ""), ("page=%d" % page if page > 1 else "")) if x)
     canon = canon.rstrip("?")
@@ -127,7 +128,7 @@ def _shell(ui, base, path, title, desc, body, ld, page=1, extra_q=""):
 <link rel="icon" type="image/svg+xml" href="/logo.svg">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="manifest" href="/manifest.webmanifest">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@400;500;600;700&family=Reem+Kufi:wght@700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alexandria:wght@700;800&family=Amiri:wght@400;700&family=Fraunces:opsz,wght@9..144,700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
 {ld}
 <style>{css}{extra}</style>
 </head>
@@ -137,14 +138,14 @@ def _shell(ui, base, path, title, desc, body, ld, page=1, extra_q=""):
 <nav><a href="/#browse">{all}</a><a href="{toggle}" hreflang="{other}">{other_lang}</a></nav></div></header>
 <main class="wrap">
 {body}
-<footer>{note}</footer>
+<footer>{legal}<p>{note}</p></footer>
 </main>
 </body>
 </html>
 """.format(ui=ui, dir=t["dir"], title=esc(title), desc=esc(desc), canon=esc(canon), alts=_alternates(base, path),
-           brand=esc(BRAND[ui]), base=esc(base), ld=ld, css=CSS, extra=EXTRA_CSS, logo=LOGO_SVG, icon=SEARCH_ICON,
+           brand=esc(BRAND[ui]), base=esc(base), ld=ld, css=CSS, extra=EXTRA_CSS + extra_css, logo=LOGO_SVG, icon=SEARCH_ICON,
            ph=esc(t["ph"]), search=esc(t["search"]), all=esc(t["all"]), other=other, other_lang=esc(t["other_lang"]),
-           toggle=esc(path + ("?lang=en" if other == "en" else "")), body=body, note=esc(t["note"]))
+           toggle=esc(path + ("?lang=en" if other == "en" else "")), body=body, note=esc(t["note"]), legal=legal_links(ui))
 
 
 def _book_list(conn, rows, ui) -> str:
@@ -225,12 +226,16 @@ def author_page(conn, key: str, base: str, ui: str = "ar", page: int = 1):
 
 def robots_txt(base: str) -> str:
     # the home page fills itself from /api/*: crawlers must be able to read it to see the books
-    return ("User-agent: *\nAllow: /\nDisallow: /api/hit\nDisallow: /api/like/\nDisallow: /api/track/\n"
-            "Disallow: /docs\nDisallow: /redoc\nSitemap: %s/sitemap.xml\n" % base)
+    # AdSense's crawler gets its own group: nothing on the site is closed to it
+    return ("User-agent: Mediapartners-Google\nAllow: /\n\n"
+            "User-agent: *\nAllow: /\nDisallow: /api/hit\nDisallow: /api/like/\nDisallow: /api/track/\n"
+            "Disallow: /admin/\nDisallow: /docs\nDisallow: /redoc\nSitemap: %s/sitemap.xml\n" % base)
 
 
 def main_urls(conn, base: str):
     urls = [base + "/", base + "/?lang=en"]
+    for p in legal.PAGES:
+        urls += [base + "/" + p, base + "/" + p + "?lang=en"]
     for k in CATEGORIES:
         urls += [base + "/category/" + k, base + "/category/" + k + "?lang=en"]
     for r in conn.execute("SELECT key FROM authors ORDER BY ord"):

@@ -483,7 +483,11 @@ def test_seo_pages(client, monkeypatch):
     assert "/category/his</loc>" in sm and "/author/shakespeare</loc>" in sm and "?lang=en</loc>" in sm
     book = client.get("/book/1", follow_redirects=True).text
     assert 'href="/category/dra"' in book and 'href="/author/shakespeare"' in book
-    assert [g["@type"] for g in ld(book)[0]["@graph"]] == ["Book", "BreadcrumbList"]
+    graph = ld(book)[0]["@graph"]
+    assert [g["@type"] for g in graph] == ["ItemPage", "Book", "BreadcrumbList"]
+    work = graph[1]
+    assert work["author"]["url"] == "http://testserver/author/shakespeare" and work["bookFormat"] == "https://schema.org/EBook"
+    assert work["isAccessibleForFree"] is True and work["inLanguage"] == "en" and graph[0]["mainEntity"]["@id"] == work["@id"]
     assert client.get("/manifest.webmanifest").headers["content-type"].startswith("application/manifest+json")
     for f in ("/favicon.ico", "/icon-192.png", "/icon-512.png", "/apple-touch-icon.png", "/og-image.png"):
         assert client.get(f).status_code == 200, f
@@ -594,3 +598,85 @@ def test_links_use_the_public_https_address(client, monkeypatch):
     assert '<link rel="canonical" href="%s/">' % base in client.get("/").text
     monkeypatch.setenv("SITE_URL", "https://library.example.com/")  # an explicit address wins
     assert "Sitemap: https://library.example.com/sitemap.xml" in client.get("/robots.txt").text
+
+
+def test_about_privacy_terms_contact(tmp_path, monkeypatch):
+    monkeypatch.setenv("WARRAQ_DB", str(tmp_path / "t.db"))
+    monkeypatch.setenv("RATE_LIMIT_SCALE", "0")
+    monkeypatch.delenv("ADMIN_PASSWORD", raising=False)
+    from app import db, legal
+    from app.main import create_app
+    with TestClient(create_app()) as c:
+        for p in legal.PAGES:
+            for q in ("", "?lang=en"):
+                r = c.get("/" + p + q)
+                assert r.status_code == 200 and '<nav class="legal"' in r.text, (p, q)
+        assert "Google AdSense" in c.get("/privacy").text and "aboutads.info" in c.get("/privacy?lang=en").text
+        assert 'href="mailto:alwarraqibrary@gmail.com"' in c.get("/contact").text
+        assert "386" in c.get("/about?lang=en").text  # the numbers come from the catalogue
+        # every footer links to the four pages, and the sitemap lists them
+        assert 'href="/terms"' in c.get("/").text and 'href="/privacy"' in c.get("/category/poe").text
+        assert 'href="/contact' in c.get("/book/1").text  # an English book's page links to /contact?lang=en
+        assert "/contact?lang=en</loc>" in c.get("/sitemap-main.xml").text
+        assert "Disallow: /admin/" in c.get("/robots.txt").text
+
+        conn = db.connect()
+        old, fresh = legal.form_token(conn, time.time() - 60), legal.form_token(conn, time.time())
+        conn.close()
+        form = {"name": "Ali", "email": "ali@example.com", "topic": "suggest", "message": "Please add more books by al-Jahiz.", "t": old}
+        r = c.post("/contact", data=form, follow_redirects=False)
+        assert r.status_code == 303 and r.headers["location"] == "/contact?sent=1"
+        assert "شكراً" in c.get("/contact?sent=1").text
+        assert c.post("/contact?lang=en", data=form, follow_redirects=False).headers["location"] == "/contact?lang=en&sent=1"
+        # a bot fills the hidden field: it is told "thank you" and nothing is kept
+        assert c.post("/contact", data={**form, "website": "http://spam.example", "message": "buy pills now please"},
+                      follow_redirects=False).status_code == 303
+        # refused: sent too fast, forged token, bad email (what was typed comes back, escaped)
+        assert "انتهت صلاحية" in c.post("/contact", data={**form, "t": fresh}).text
+        assert c.post("/contact", data={**form, "t": old[:-1] + "0"}).status_code == 400
+        r = c.post("/contact", data={**form, "email": "not-an-email", "message": "<script>alert(1)</script> hello"})
+        assert r.status_code == 400 and "&lt;script&gt;" in r.text and "<script>alert" not in r.text
+        # a message from another website is refused
+        assert c.post("/contact", data=form, headers={"origin": "https://evil.example"}).status_code == 403
+        # five messages a day per visitor
+        for _ in range(3):
+            assert c.post("/contact", data=form, follow_redirects=False).status_code == 303
+        assert "كثيرة" in c.post("/contact", data=form).text
+
+        # the messages page exists only with a password, and asks for it
+        assert c.get("/admin/messages").status_code == 404
+        monkeypatch.setenv("ADMIN_PASSWORD", "s3cret")
+        assert c.get("/admin/messages").status_code == 401
+        assert c.get("/admin/messages", auth=("admin", "wrong")).status_code == 401
+        r = c.get("/admin/messages", auth=("admin", "s3cret"))
+        assert r.status_code == 200 and r.text.count("<article>") == 5 and "al-Jahiz" in r.text and "spam.example" not in r.text
+
+
+def test_share_buttons_poems_and_404(client):
+    import json as _json
+    import re as _re
+    from app import db, wikisource
+    book = client.get("/book/1", follow_redirects=True).text
+    for host in ("https://wa.me/?text=", "https://t.me/share/url?url=", "https://www.facebook.com/sharer/sharer.php?u="):
+        assert host in book
+    assert 'id="copyBtn"' in book and 'data-url="http://testserver/book/1/' in book
+    # a poem from Wikisource is described as a creative work, not as a book
+    conn = db.connect()
+    pid = conn.execute("SELECT id FROM books WHERE cat='poe' LIMIT 1").fetchone()[0]
+    conn.execute("UPDATE books SET curated=? WHERE id=?", (wikisource.WS_KIND, pid))
+    conn.commit()
+    conn.close()
+    page = client.get("/book/%d" % pid, follow_redirects=True).text
+    work = _json.loads(_re.search(r'<script[^>]*type="application/ld\+json"[^>]*>(.*?)</script>', page, _re.S).group(1))["@graph"][1]
+    assert work["@type"] == "CreativeWork" and "bookFormat" not in work
+    # unknown addresses get the designed 404 page; the API keeps answering in JSON
+    for url in ("/no/such/page", "/book/abc", "/book/999999999", "/category/nope"):
+        r = client.get(url)
+        assert r.status_code == 404 and r.headers["content-type"].startswith("text/html"), url
+        assert 'name="robots" content="noindex"' in r.text and 'role="search"' in r.text and 'class="btn" href="/"' in r.text, url
+    assert "Page not found" in client.get("/nothing-here?lang=en").text
+    r = client.get("/api/nothing")
+    assert r.status_code == 404 and r.headers["content-type"].startswith("application/json")
+    assert client.get("/api/books", params={"limit": 0}).status_code == 422
+    robots = client.get("/robots.txt").text
+    assert robots.startswith("User-agent: Mediapartners-Google\nAllow: /\n")

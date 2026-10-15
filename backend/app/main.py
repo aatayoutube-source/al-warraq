@@ -7,14 +7,17 @@ import time
 from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI, HTTPException, Query, Request
+from fastapi.encoders import jsonable_encoder
 from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse, Response
+from fastapi.exceptions import RequestValidationError
 from fastapi.staticfiles import StaticFiles
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.gzip import GZipMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from urllib.parse import quote, unquote
 
-from . import covers, db, pages, research, security, seo, stats, wikisource
+from . import covers, db, legal, pages, research, security, seo, stats, wikisource
 from .catalog import CATEGORIES
 from .textnorm import norm
 
@@ -278,13 +281,56 @@ def create_app() -> FastAPI:
     def category(key: str, request: Request, lang: str = Query("", max_length=5), page: int = Query(1, ge=1, le=seo.MAX_PAGES),
                  conn=Depends(get_conn)):
         body = seo.category_page(conn, key, pages.site_base(request), "en" if lang == "en" else "ar", page)
-        return HTMLResponse(body) if body else HTMLResponse(pages.not_found_html("ar"), status_code=404)
+        return HTMLResponse(body) if body else HTMLResponse(pages.not_found_html("en" if lang == "en" else "ar"), status_code=404)
 
     @app.get("/author/{key}", include_in_schema=False)
     def author(key: str, request: Request, lang: str = Query("", max_length=5), page: int = Query(1, ge=1, le=seo.MAX_PAGES),
                conn=Depends(get_conn)):
         body = seo.author_page(conn, key, pages.site_base(request), "en" if lang == "en" else "ar", page)
-        return HTMLResponse(body) if body else HTMLResponse(pages.not_found_html("ar"), status_code=404)
+        return HTMLResponse(body) if body else HTMLResponse(pages.not_found_html("en" if lang == "en" else "ar"), status_code=404)
+
+    # ---------- about, privacy, terms, contact (legal.py) ----------
+    def _ui(lang):
+        return "en" if lang == "en" else "ar"
+
+    @app.get("/about", include_in_schema=False)
+    def about(request: Request, lang: str = Query("", max_length=5), conn=Depends(get_conn)):
+        m = meta(conn)
+        n = {"books": m["total"], "poems": m["poem_total"], "authors": m["author_total"], "langs": m["lang_total"],
+             "cats": sum(1 for c in m["categories"] if c["count"])}
+        return HTMLResponse(legal.page_html("about", pages.site_base(request), _ui(lang), numbers=n))
+
+    @app.get("/privacy", include_in_schema=False)
+    def privacy(request: Request, lang: str = Query("", max_length=5)):
+        return HTMLResponse(legal.page_html("privacy", pages.site_base(request), _ui(lang)))
+
+    @app.get("/terms", include_in_schema=False)
+    def terms(request: Request, lang: str = Query("", max_length=5)):
+        return HTMLResponse(legal.page_html("terms", pages.site_base(request), _ui(lang)))
+
+    @app.get("/contact", include_in_schema=False)
+    def contact(request: Request, lang: str = Query("", max_length=5), sent: int = Query(0, ge=0, le=1), conn=Depends(get_conn)):
+        return HTMLResponse(legal.page_html("contact", pages.site_base(request), _ui(lang), conn=conn, sent=bool(sent)))
+
+    @app.post("/contact", include_in_schema=False)
+    async def contact_send(request: Request, lang: str = Query("", max_length=5), conn=Depends(get_conn)):
+        ui = _ui(lang)
+        if int(request.headers.get("content-length") or 0) > 20000:
+            return PlainTextResponse("message too large", status_code=413)
+        ok, err, values = legal.submit(conn, request, legal.parse_form(await request.body()), ui)
+        if ok:  # post/redirect/get: reloading the thank-you page does not send the message again
+            return RedirectResponse(legal.link("contact", ui) + ("&" if ui == "en" else "?") + "sent=1", status_code=303)
+        return HTMLResponse(legal.page_html("contact", pages.site_base(request), ui, conn=conn, values=values, error=err),
+                            status_code=400)
+
+    @app.get("/admin/messages", include_in_schema=False)
+    def admin_messages(request: Request, conn=Depends(get_conn)):
+        if not legal.admin_password():  # no password set: the page does not exist
+            return HTMLResponse(pages.not_found_html("ar"), status_code=404)
+        if not legal.admin_ok(request):
+            return PlainTextResponse("login required", status_code=401,
+                                     headers={"WWW-Authenticate": 'Basic realm="warraq", charset="UTF-8"'})
+        return HTMLResponse(legal.admin_html(conn), headers={"Cache-Control": "no-store", "X-Robots-Tag": "noindex"})
 
     indexnow_key = os.environ.get("INDEXNOW_KEY", "").strip()
     if indexnow_key:  # IndexNow checks that the key file is served by the site itself
@@ -311,7 +357,7 @@ def create_app() -> FastAPI:
     def _book_page(book_id: int, slug: str, request: Request, lang: str, conn):
         row = conn.execute("SELECT * FROM books WHERE id=?", (book_id,)).fetchone()
         if not row:
-            return HTMLResponse(pages.not_found_html(lang if lang in ("ar", "en") else "en"), status_code=404)
+            return HTMLResponse(pages.not_found_html("en" if lang == "en" else "ar"), status_code=404)
         canon = pages.canonical_path(row)
         if "/book/%d/%s" % (book_id, quote(unquote(slug))) != canon if slug else True:
             target = canon + (("?lang=" + lang) if lang in ("ar", "en") else "")
@@ -334,6 +380,23 @@ def create_app() -> FastAPI:
     @app.exception_handler(HTTPException)
     async def http_error(_req, exc):
         return JSONResponse({"error": exc.detail}, status_code=exc.status_code)
+
+    def _page_request(request) -> bool:  # a person's browser asking for a page, not the site's own API
+        return request.method in ("GET", "HEAD") and not request.url.path.startswith("/api/")
+
+    @app.exception_handler(StarletteHTTPException)
+    async def missing_page(request, exc):
+        """Unknown addresses (the static files answer them) get the designed 404 page; the API keeps JSON."""
+        if exc.status_code == 404 and _page_request(request):
+            return HTMLResponse(pages.not_found_html("en" if request.query_params.get("lang") == "en" else "ar"), status_code=404)
+        return JSONResponse({"error": exc.detail}, status_code=exc.status_code, headers=getattr(exc, "headers", None))
+
+    @app.exception_handler(RequestValidationError)
+    async def bad_address(request, exc):
+        """/book/abc or ?page=0 on a page: that page does not exist. The API still explains what was wrong."""
+        if _page_request(request):
+            return HTMLResponse(pages.not_found_html("en" if request.query_params.get("lang") == "en" else "ar"), status_code=404)
+        return JSONResponse({"detail": jsonable_encoder(exc.errors())}, status_code=422)
 
     if os.path.isdir(frontend):
         app.mount("/", StaticFiles(directory=frontend, html=True), name="site")

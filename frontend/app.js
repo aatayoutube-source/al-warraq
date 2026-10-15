@@ -36,6 +36,11 @@
             foot_about: 'فهرس عربي مفتوح للكتب والقصائد التي سقط عنها حق النشر. لا نستضيف الملفات، بل نوصلك إلى مصادرها الأصلية.',
             foot_src: 'المصادر',
             foot_cats: 'تصفّح التصنيفات',
+            foot_pages: 'صفحات المكتبة',
+            pg_about: 'عن المكتبة',
+            pg_privacy: 'سياسة الخصوصية',
+            pg_terms: 'شروط الاستخدام',
+            pg_contact: 'اتصل بنا',
             ws_name: 'ويكي مصدر',
             pop_h: 'الأكثر مشاهدة',
             pop_s: 'الأكثر بحثاً',
@@ -127,6 +132,11 @@
             foot_about: 'An open Arabic index of public-domain books and poems. We host no files; every link leads to the original source.',
             foot_src: 'Sources',
             foot_cats: 'Browse categories',
+            foot_pages: 'Library pages',
+            pg_about: 'About us',
+            pg_privacy: 'Privacy policy',
+            pg_terms: 'Terms of use',
+            pg_contact: 'Contact us',
             ws_name: 'Wikisource (Arabic)',
             pop_h: 'Most viewed',
             pop_s: 'Popular searches',
@@ -473,6 +483,7 @@
         document.querySelectorAll('[data-iph]').forEach((e) => { e.placeholder = tr(e.dataset.iph);
             e.setAttribute('aria-label', tr(e.dataset.iph)); });
         document.querySelectorAll('[data-iarl]').forEach((e) => { e.setAttribute('aria-label', tr(e.dataset.iarl)); });
+        document.querySelectorAll('[data-lhref]').forEach((e) => { e.href = e.dataset.lhref + (S.ui === 'en' ? '?lang=en' : ''); });
         $('#langBtn').textContent = S.ui === 'ar' ? 'EN' : 'ع';
         $('#langBtn').setAttribute('aria-label', S.ui === 'ar' ? 'English' : 'العربية');
         $('#filtBtn').textContent = tr('filters');
