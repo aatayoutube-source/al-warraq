@@ -162,6 +162,9 @@ def _author_keys(conn) -> dict:
 
 
 def import_records(conn, records) -> dict:
+    """Only the poems: Wikisource's book pages are mostly empty shells (a title, no text), so books are not taken
+    from it, nor are hand-picked books sent there."""
+    records = [r for r in records if r["cat"] == POEM]
     keys = _author_keys(conn)
     info = {r["key"]: (r["en"], r["ar"]) for r in conn.execute("SELECT key, en, ar FROM authors")}
     curated = {}

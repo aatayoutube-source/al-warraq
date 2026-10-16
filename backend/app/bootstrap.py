@@ -59,7 +59,10 @@ def main() -> int:
             print(wikisource.run(conn))
         except Exception as e:  # needs internet; the site works without it
             print("Wikisource import skipped (%s). Run `python -m app.wikisource` later." % e, file=sys.stderr)
-    total = conn.execute("SELECT COUNT(*) FROM books").fetchone()[0]
+    pruned = db.prune_unreadable(conn)  # after every import: they are what gives hand-picked books their links
+    if pruned:
+        print("Books without a reading link removed: %d" % pruned)
+    total = db.book_total(conn)  # the same number the site shows, so the author count below is reused as is
     print("Books in database: %d" % total)
     print("Authors in database: %d" % db.author_total(conn, total))  # counted now so the first page load is fast
     conn.close()

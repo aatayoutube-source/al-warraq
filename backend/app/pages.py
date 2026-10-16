@@ -13,9 +13,12 @@ from urllib.parse import quote
 
 from .catalog import CATEGORIES
 from .textnorm import norm
+from .modern import OL_KIND, SAFAHAT_KIND, ol_url, safahat_url
 from .wikisource import WS_KIND
 
 BRAND = {"ar": "مكتبة الوراق", "en": "Al-Warraq Library"}
+# the site's Google AdSense account: its tag goes in the head of every page (ADSENSE_ACCOUNT replaces it)
+ADSENSE_ACCOUNT = os.environ.get("ADSENSE_ACCOUNT", "").strip() or "ca-pub-7058063023261152"
 # the about / privacy / terms / contact pages (legal.py), linked from every footer
 LEGAL = {"ar": (("about", "عن المكتبة"), ("privacy", "سياسة الخصوصية"), ("terms", "شروط الاستخدام"), ("contact", "اتصل بنا")),
          "en": (("about", "About us"), ("privacy", "Privacy policy"), ("terms", "Terms of use"), ("contact", "Contact us"))}
@@ -39,13 +42,20 @@ T = {
         "find": "ابحث عن الكتاب", "more_author": "المزيد من كتب هذا المؤلف", "more_cat": "كتب أخرى من التصنيف نفسه",
         "ph": "ابحث بعنوان كتاب أو اسم مؤلف", "search": "بحث",
         "home": "الرئيسية", "all": "كل الكتب", "views": "مشاهدة", "likes": "إعجاب", "like": "أعجبني", "liked": "أعجبك", "similar": "كتب تشبه هذا الكتاب", "free": "كتاب مجاني ومسقط عنه حق النشر",
-        "note": "الموقع فهرس يدلّك على المصادر المفتوحة ولا يستضيف الكتب. الكتب هنا في الملكية العامة في الولايات المتحدة، وقد يختلف وضعها في بلدك.",
+        "note": "الموقع فهرس يدلّك على المصادر المفتوحة والقانونية ولا يستضيف الكتب. كتب الملك العام هنا في الملكية العامة في الولايات المتحدة وقد يختلف وضعها في بلدك، أما الكتب العربية الحديثة فحقوقها لأصحابها ونعرض بيانات فهرستها فقط.",
         "page_gut": "صفحة الكتاب في Gutenberg", "page_ht": "HathiTrust", "arch": "Internet Archive", "ol": "Open Library",
         "other_lang": "English", "other_code": "en", "notfound": "الصفحة غير موجودة", "dir": "rtl",
         "nf_p": "ربما نُقلت الصفحة التي تبحث عنها أو كُتب الرابط بشكل خاطئ. ابحث في المكتبة أو عد إلى الصفحة الرئيسية.",
         "nf_home": "العودة إلى الرئيسية", "nf_try": "أو تصفّح أحد التصنيفات:",
         "share": "شارك:", "wa": "واتساب", "tg": "تيليجرام", "fb": "فيسبوك", "copy": "نسخ الرابط", "copied": "تم النسخ ✓",
         "share_txt": "اقرأ «{t}» مجاناً في مكتبة الوراق",
+        "read_saf": "اقرأ على صفحات (هنداوي)", "view_ol": "اعرض الكتاب على Open Library",
+        "src_saf": "صفحات (مؤسسة هنداوي)", "src_ol": "Open Library", "pub": "الناشر", "year": "سنة النشر", "pages": "عدد الصفحات",
+        "note_saf": "هذا الكتاب متاح مجاناً على «صفحات» (مؤسسة هنداوي) بموجب اتفاق مع أصحاب حقوقه. نعرض هنا بيانات فهرسته فقط، والزر يوصلك إلى صفحته هناك.",
+        "note_ol": "حقوق هذا الكتاب محفوظة لأصحابها. نعرض هنا بيانات فهرسته فقط، والزر يوصلك إلى صفحته في Open Library.",
+        "desc_mod": "{t} {a}— ({l}، {c}). تعرّف على الكتاب وانتقل إلى صفحته في {s}.",
+        "about_saf": "«{t}» كتاب {a}ضمن تصنيف «{c}»، مكتوب باللغة {l}. تقرؤه كاملاً ومجاناً على {s} بموجب اتفاق مع أصحاب حقوقه، عبر الزر أعلاه. وفي الأسفل كتب مشابهة قد تعجبك.",
+        "about_ol": "«{t}» كتاب {a}ضمن تصنيف «{c}»، مكتوب باللغة {l}. حقوقه محفوظة لأصحابها، وتجد صفحته وطبعاته في {s} عبر الزر أعلاه. وفي الأسفل كتب مشابهة قد تعجبك.",
         "src_gut": "مشروع غوتنبرغ", "src_ht": "مكتبة HathiTrust", "src_ws": "ويكي مصدر", "src_idx": "فهرس الوراق",
         "about": "نبذة عن الكتاب", "about_author": "نبذة عن المؤلف", "wiki": "المصدر: ويكيبيديا",
         "about_txt": "«{t}» كتاب {a}ضمن تصنيف «{c}»، مكتوب باللغة {l}. هو من الكتب الموجودة في الملكية العامة، فيمكنك قراءته مجاناً من المصدر المفتوح عبر الأزرار أعلاه، وإن أعجبك فاضغط «أعجبني» لتساعد غيرك على اكتشافه. وفي الأسفل كتب مشابهة قد تعجبك.",
@@ -57,13 +67,20 @@ T = {
         "find": "Find the book", "more_author": "More books by this author", "more_cat": "More in this category",
         "ph": "Search a title or an author", "search": "Search",
         "home": "Home", "all": "All books", "views": "views", "likes": "likes", "like": "Like", "liked": "Liked", "similar": "Similar books", "free": "Free public-domain book",
-        "note": "This site is an index that points to open sources; it does not host the books. Books listed here are in the public domain in the United States and may be protected in your country.",
+        "note": "This site is an index that points to open and legal sources; it does not host the books. Public-domain books here are free in the United States and may be protected in your country; modern Arabic books belong to their rights holders, and we only show their catalogue records.",
         "page_gut": "Gutenberg book page", "page_ht": "HathiTrust", "arch": "Internet Archive", "ol": "Open Library",
         "other_lang": "العربية", "other_code": "ar", "notfound": "Page not found", "dir": "ltr",
         "nf_p": "The page you are looking for may have moved, or the link is mistyped. Search the library or go back home.",
         "nf_home": "Back to home", "nf_try": "Or browse a category:",
         "share": "Share:", "wa": "WhatsApp", "tg": "Telegram", "fb": "Facebook", "copy": "Copy link", "copied": "Copied ✓",
         "share_txt": "Read \u201c{t}\u201d free at Al-Warraq Library",
+        "read_saf": "Read on Safahat (Hindawi)", "view_ol": "View on Open Library",
+        "src_saf": "Safahat (Hindawi Foundation)", "src_ol": "Open Library", "pub": "Publisher", "year": "Published", "pages": "Pages",
+        "note_saf": "This book is free to read on Safahat (Hindawi Foundation) under an agreement with its rights holders. We only show its catalogue record; the button takes you to its page there.",
+        "note_ol": "This book is under copyright. We only show its catalogue record; the button takes you to its page on Open Library.",
+        "desc_mod": "{t} {a}— ({l}, {c}). About the book, with a link to its page on {s}.",
+        "about_saf": "\u201c{t}\u201d is a book {a}in the \u201c{c}\u201d category, written in {l}. You can read it in full and for free on {s}, under an agreement with its rights holders, using the button above. Similar books are listed below.",
+        "about_ol": "\u201c{t}\u201d is a book {a}in the \u201c{c}\u201d category, written in {l}. It is under copyright; its page and editions are on {s}, through the button above. Similar books are listed below.",
         "src_gut": "Project Gutenberg", "src_ht": "HathiTrust", "src_ws": "Wikisource", "src_idx": "Al-Warraq index",
         "about": "About this book", "about_author": "About the author", "wiki": "Source: Wikipedia",
         "about_txt": "\u201c{t}\u201d is a book {a}in the \u201c{c}\u201d category, written in {l}. It is in the public domain, so you can read it for free from the open source using the buttons above. If you enjoyed it, press Like to help others find it. Similar books are listed below.",
@@ -91,11 +108,11 @@ a{color:var(--brand)}
 @media (max-width:640px){.brand span{display:none}.sbox button{display:none}.bar nav a:first-child{display:none}}
 .crumbs{font-size:.88rem;color:var(--muted);margin:18px 0 6px}.crumbs a{color:var(--muted)}
 .book{display:grid;grid-template-columns:240px 1fr;gap:28px;margin:12px 0 28px;align-items:start}
-.cover{position:relative;aspect-ratio:2/3;border-radius:14px;overflow:hidden;box-shadow:0 22px 44px -22px rgba(10,74,62,.5);background:linear-gradient(165deg,hsl(var(--h) 85% 92%),hsl(var(--h) 75% 84%));color:hsl(var(--h) 50% 22%)}
-.cv-fb{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;padding:18px 16px;text-align:center}
-.cv-cat{font-size:.72rem;letter-spacing:.04em;opacity:.75}
+.cover{position:relative;aspect-ratio:2/3;border-radius:14px;overflow:hidden;box-shadow:0 22px 44px -22px rgba(10,74,62,.5);background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 26 26'%3E%3Cpath d='M13 1.5l3.2 8.3 8.3 3.2-8.3 3.2L13 24.5l-3.2-8.3L1.5 13l8.3-3.2z' fill='none' stroke='%23fff' stroke-opacity='.09'/%3E%3C/svg%3E"),linear-gradient(160deg,hsl(var(--h) 42% 27%),hsl(var(--h) 46% 17%));color:#F6F2E8}
+.cv-fb{position:absolute;inset:10px;display:flex;flex-direction:column;justify-content:space-between;padding:18px 12px;text-align:center;border:1.5px solid rgb(242 181 68 / .75);border-radius:3px;box-shadow:inset 0 0 0 3px hsl(var(--h) 44% 21%),inset 0 0 0 4px rgb(242 181 68 / .35)}
+.cv-cat{font-size:.72rem;letter-spacing:.04em;color:#F2B544}
 .cv-title{font:700 1.2rem/1.45 "Amiri","Fraunces",Georgia,serif;overflow:hidden;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical}
-.cv-auth{font-size:.82rem;opacity:.85}
+.cv-auth{font-size:.82rem;color:#F2B544}
 .cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .2s}.cover img.ok{opacity:1}
 h1{margin:0 0 6px;font:800 clamp(1.6rem,4vw,2.3rem)/1.35 "Alexandria","IBM Plex Sans Arabic",sans-serif;letter-spacing:-.01em}
 .by{margin:0 0 14px;color:var(--muted);font-size:1.05rem}
@@ -107,6 +124,7 @@ h1{margin:0 0 6px;font:800 clamp(1.6rem,4vw,2.3rem)/1.35 "Alexandria","IBM Plex 
 .like.on{color:#E5484D;border-color:#E5484D}
 .like:hover{border-color:var(--brand)}
 .btns{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 20px}
+.rights{margin:-8px 0 16px;padding:10px 14px;border-radius:12px;background:var(--rose-soft);color:var(--ink);font-size:.9rem;line-height:1.7}
 .btn{display:inline-block;background:var(--btn);color:var(--brand-ink);padding:10px 22px;border-radius:14px;font-weight:600;text-decoration:none;box-shadow:0 8px 18px -10px rgba(14,107,90,.7);transition:transform .25s cubic-bezier(.34,1.56,.64,1)}
 .btn:hover{transform:translateY(-2px)}
 .btn.alt{background:var(--card);color:var(--brand);border:1.5px solid var(--line);font-weight:500;box-shadow:none}.btn.alt:hover{border-color:var(--brand-2)}
@@ -186,6 +204,15 @@ def canonical_path(row) -> str:
     return "/book/%d/%s" % (row["id"], quote(slugify(book_title(row, ui))))
 
 
+def adsense_meta() -> str:
+    return '<meta name="google-adsense-account" content="%s">' % esc(ADSENSE_ACCOUNT)
+
+
+def ads_txt() -> str:
+    """ads.txt: Google may sell ads on this site for this publisher account, and nobody else may."""
+    return "google.com, %s, DIRECT, f08c47fec0942fa0\n" % ADSENSE_ACCOUNT.replace("ca-pub-", "pub-")
+
+
 def legal_links(ui: str) -> str:
     return '<nav class="legal" aria-label="%s">%s</nav>' % (
         esc(BRAND[ui]), "".join('<a href="/%s%s">%s</a>' % (k, "?lang=en" if ui == "en" else "", esc(n)) for k, n in LEGAL[ui]))
@@ -211,6 +238,10 @@ def lang_name(code: str, ui: str) -> str:
 def read_links(row, ui: str):
     """Returns (main_url, is_direct_read, [(label, url), ...])."""
     t = T[ui]
+    if row["ext"] and row["curated"] == SAFAHAT_KIND:  # free to read there
+        return safahat_url(row["ext"]), True, []
+    if row["ext"] and row["curated"] == OL_KIND:  # a catalogue record: "view", not "read"
+        return ol_url(row["ext"]), False, []
     last = (row["author_en"] or "").split(" ")[-1] if row["author_en"] else ""
     q = quote((row["title"] + " " + last).strip())
     arch = ("https://archive.org/search?query=" + q, t["arch"])
@@ -233,12 +264,23 @@ def read_links(row, ui: str):
     return ("https://www.gutenberg.org/ebooks/search/?query=" + q, False, [arch, ol])
 
 
+def read_label(row, ui: str, direct: bool) -> str:
+    t = T[ui]
+    if row["ext"] and row["curated"] == SAFAHAT_KIND:
+        return t["read_saf"]
+    if row["ext"] and row["curated"] == OL_KIND:
+        return t["view_ol"]
+    return t["read" if direct else "find"]
+
+
 def ws_url(page: str) -> str:
     return "https://ar.wikisource.org/wiki/" + quote(page.replace(" ", "_"))
 
 
 def source_name(row, ui: str) -> str:
     t = T[ui]
+    if row["ext"] and row["curated"] in (SAFAHAT_KIND, OL_KIND):
+        return t["src_saf" if row["curated"] == SAFAHAT_KIND else "src_ol"]
     if row["gid"]:
         return t["src_gut"]
     if row["htid"]:
@@ -293,6 +335,7 @@ def not_found_html(ui="ar") -> str:
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex">
+{adsense}
 <title>{h} | {brand}</title>
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" type="image/svg+xml" href="/logo.svg">
@@ -317,7 +360,7 @@ def not_found_html(ui="ar") -> str:
 """.format(ui=ui, dir=t["dir"], h=esc(t["notfound"]), brand=esc(BRAND[ui]), css=CSS, q=q, oq="?lang=en" if other == "en" else "",
            logo=LOGO_SVG, all=esc(t["all"]), other=other, other_lang=esc(t["other_lang"]), p=esc(t["nf_p"]), icon=SEARCH_ICON,
            ph=esc(t["ph"]), search=esc(t["search"]), home=esc(t["nf_home"]), try_=esc(t["nf_try"]), cats=cats,
-           legal=legal_links(ui), note=esc(t["note"]))
+           legal=legal_links(ui), note=esc(t["note"]), adsense=adsense_meta())
 
 
 SHARE_ICONS = {"wa": '<svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" d="M12 3a9 9 0 0 0-7.7 13.6L3 21l4.5-1.2A9 9 0 1 0 12 3z"/><path fill="currentColor" d="M9.1 7.6c.3 0 .5 0 .7.5l.8 1.9c.1.3 0 .5-.1.7l-.6.7c-.1.2-.2.4 0 .6.9 1.5 2 2.6 3.5 3.4.2.1.4.1.6-.1l.8-.9c.2-.2.4-.3.7-.2l1.8.9c.3.1.5.3.5.5 0 .6-.3 1.4-.9 1.8-.7.5-1.6.6-2.5.3-3-.9-5.4-3.2-6.5-6.2-.3-.9-.2-1.9.4-2.6.2-.3.5-.5.8-.5z"/></svg>',
@@ -352,7 +395,13 @@ def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool 
     main_url, direct, extra = read_links(row, ui)
     canon = base + canonical_path(row)
     covers = cover_candidates(row)
-    desc = t["desc"].format(t=title, a=(("— %s " % author) if author else ""), l=lang, c=cat_name)
+    modern = row["curated"] in (SAFAHAT_KIND, OL_KIND) and bool(row["ext"])
+    source = source_name(row, ui)
+    facts_x = json.loads(row["info"]) if row["info"] else {}
+    if modern:
+        desc = t["desc_mod"].format(t=title, a=(("— %s " % author) if author else ""), l=lang, c=cat_name, s=source)
+    else:
+        desc = t["desc"].format(t=title, a=(("— %s " % author) if author else ""), l=lang, c=cat_name)
     page_title = ("%s — %s | %s" % (title, author, BRAND[ui])) if author else ("%s | %s" % (title, BRAND[ui]))
 
     poem = row["cat"] == "poe" and row["curated"] == WS_KIND  # one poem from Wikisource, not a whole book
@@ -361,6 +410,16 @@ def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool 
             "sameAs": main_url, "potentialAction": {"@type": "ReadAction", "target": {"@type": "EntryPoint", "urlTemplate": main_url}}}
     if not poem:
         book["bookFormat"] = "https://schema.org/EBook"
+    if modern and row["curated"] == OL_KIND:  # under copyright, and the record cannot be read
+        book["isAccessibleForFree"] = False
+        book.pop("potentialAction")
+        book.pop("bookFormat")
+    if facts_x.get("year"):
+        book["datePublished"] = str(facts_x["year"])
+    if facts_x.get("pub"):
+        book["publisher"] = {"@type": "Organization", "name": facts_x["pub"]}
+    if facts_x.get("pages"):
+        book["numberOfPages"] = facts_x["pages"]
     if row["lang"] and row["lang"] not in ("und", "mul", "zxx"):
         book["inLanguage"] = row["lang"]
     if title != row["title"]:
@@ -389,7 +448,7 @@ def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool 
     og_img = '<meta property="og:image" content="%s">' % esc(covers[0] if covers else base + "/og-image.png")
     other_ui = "en" if ui == "ar" else "ar"
 
-    btns = '<a class="btn" href="%s" target="_blank" rel="noopener">%s</a>' % (esc(main_url), esc(t["read" if direct else "find"]))
+    btns = '<a class="btn" href="%s" target="_blank" rel="noopener">%s</a>' % (esc(main_url), esc(read_label(row, ui, direct)))
     btns += "".join('<a class="btn alt" href="%s" target="_blank" rel="noopener">%s</a>' % (esc(u), esc(n)) for u, n in extra)
 
     msg = t["share_txt"].format(t=title)
@@ -402,6 +461,8 @@ def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool 
                 quote(canon, safe=""), quote(msg, safe=""), SHARE_ICONS["tg"], esc(t["tg"]),
                 quote(canon, safe=""), SHARE_ICONS["fb"], esc(t["fb"]),
                 esc(canon), esc(t["copied"]), SHARE_ICONS["link"], esc(t["copy"])))
+    if modern:  # whose book it is, and why there is no text here
+        share = '<p class="rights">%s</p>' % esc(t["note_saf" if row["curated"] == SAFAHAT_KIND else "note_ol"]) + share
 
     tags = '<a class="tag" href="/category/%s">%s</a>' % (esc(row["cat"]), esc(cat_name))
     tags += '<span class="tag">%s</span>' % esc(lang)
@@ -420,7 +481,10 @@ def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool 
         link = ('<a href="/author/%s">%s</a>' % (esc(quote(row["author_key"])), esc(author))) if row["author_key"] else esc(author)
         facts += "<dt>%s</dt><dd>%s</dd>" % (esc(t["by"]), link)
     facts += "<dt>%s</dt><dd>%s</dd><dt>%s</dt><dd>%s</dd><dt>%s</dt><dd>%s</dd>" % (
-        esc(t["cat"]), esc(cat_name), esc(t["lang"]), esc(lang), esc(t["src"]), esc(source_name(row, ui)))
+        esc(t["cat"]), esc(cat_name), esc(t["lang"]), esc(lang), esc(t["src"]), esc(source))
+    for k in ("pub", "year", "pages"):
+        if facts_x.get(k):
+            facts += "<dt>%s</dt><dd>%s</dd>" % (esc(t[k]), esc(str(facts_x[k])))
 
     key, rel_rows = related(conn, row)
     rel_html = ""
@@ -432,7 +496,8 @@ def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool 
         rel_html = "<h2>%s</h2><ul class=\"rel\">%s</ul>" % (esc(t[key]), "".join(items))
 
     about_html = '<section class="about"><h2>%s</h2><p>%s</p></section>' % (
-        esc(t["about"]), esc(t["about_txt"].format(t=title, a=(t["about_by"].format(a=author) if author else ""), c=cat_name, l=lang)))
+        esc(t["about"]), esc(t["about_saf" if modern and row["curated"] == SAFAHAT_KIND else "about_ol" if modern else "about_txt"].format(
+            t=title, a=(t["about_by"].format(a=author) if author else ""), c=cat_name, l=lang, s=source)))
     if author:
         about_html += ('<section class="about" id="aa" hidden data-name="%s" data-alt="%s" data-ui="%s" data-src="%s"><h2>%s</h2><p id="aaT"></p>'
                        '<small><a id="aaL" href="#" target="_blank" rel="noopener">%s</a></small></section>'
@@ -465,6 +530,7 @@ def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool 
 <meta name="twitter:title" content="{page_title}">
 <meta name="twitter:description" content="{desc}">
 <meta name="robots" content="index,follow,max-image-preview:large">
+{adsense}
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" type="image/svg+xml" href="/logo.svg">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -508,7 +574,7 @@ def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool 
            alt=esc(title), by=('<p class="by">%s</p>' % esc(author)) if author else "", tags=tags, numbers_html=numbers_html, btns=btns, share=share, share_js=SHARE_JS, facts=facts, rel=rel_html, about=about_html,
            note=esc(t["note"]), legal=legal_links(ui), cv_script=cv_script, like_js=LIKE_JS, wiki_js=WIKI_JS,
            logo=LOGO_SVG, search_icon=SEARCH_ICON, ph=esc(t["ph"]), search=esc(t["search"]),
-           locale="ar_AR" if ui == "ar" else "en_US")
+           locale="ar_AR" if ui == "ar" else "en_US", adsense=adsense_meta())
     # the Content-Security-Policy of this response only lets scripts carrying its nonce run
     return page.replace("<script", '<script nonce="%s"' % esc(nonce)) if nonce else page
 

@@ -19,7 +19,7 @@
             search: 'بحث',
             eyebrow: 'كتب في الملك العام',
             h1: 'اقرأ ما سقط عنه حق النشر',
-            lede: 'فهرس مفتوح لأكثر من مليون كتاب وعشرات آلاف القصائد العربية، بأغلفتها وتصنيفاتها، يوصلك إلى روابط قراءة وتنزيل قانونية من المصادر الأصلية.',
+            lede: 'فهرس مفتوح لأكثر من مليون كتاب وعشرات آلاف القصائد العربية، وآلاف الكتب العربية الحديثة، بأغلفتها وتصنيفاتها، يوصلك إلى صفحاتها في مصادرها الأصلية القانونية.',
             quick: 'ابدأ من هنا:',
             st_books: 'كتاب',
             st_auth: 'مؤلف',
@@ -33,7 +33,7 @@
             poems_n: '{n} قصيدة',
             browse_h: 'كل الكتب',
             browse_p: 'ابحث وصفِّ حسب التصنيف واللغة، ثم افتح الكتاب من مصدره مباشرة.',
-            foot_about: 'فهرس عربي مفتوح للكتب والقصائد التي سقط عنها حق النشر. لا نستضيف الملفات، بل نوصلك إلى مصادرها الأصلية.',
+            foot_about: 'فهرس عربي مفتوح للكتب والقصائد التي سقط عنها حق النشر، وللكتب العربية الحديثة. لا نستضيف الملفات، بل نوصلك إلى مصادرها الأصلية.',
             foot_src: 'المصادر',
             foot_cats: 'تصفّح التصنيفات',
             foot_pages: 'صفحات المكتبة',
@@ -49,6 +49,8 @@
             v_month: 'زائر هذا الشهر',
             v_year: 'زائر هذه السنة',
             n_books: '{n} كتاب',
+            n_poems: '{n} قصيدة',
+            results_mix: '{b} كتاب و{p} قصيدة',
             f_lang: 'لغة الكتاب',
             f_org: 'الأصل',
             f_sort: 'الترتيب',
@@ -79,6 +81,8 @@
             l_ht: 'نسخ أخرى',
             read: 'اقرأ',
             find: 'ابحث عن الكتاب',
+            view: 'اعرض',
+            src_saf: 'صفحات (هنداوي)',
             authors_h: 'المؤلفون والشخصيات المشهورة',
             authors_p: 'اضغط على اسم لعرض أعماله.',
             show_all: 'عرض الكل ({n})',
@@ -100,7 +104,7 @@
             p_pdf: 'PDF مجاني',
             p_cited: '{n} استشهاد',
             r_open: '↗',
-            legal1: 'جميع الروابط تقود إلى مواقع خارجية. المكتبة لا تستضيف ملفات، وتعرض الأعمال المصنفة في الملك العام وفق مصادرها.',
+            legal1: 'جميع الروابط تقود إلى مواقع خارجية. المكتبة لا تستضيف ملفات، وتعرض أعمال الملك العام، أما الكتب الحديثة فنعرض بيانات فهرستها فقط ونوصلك إلى مصادرها القانونية.',
             legal2: 'حالة الملك العام تختلف من بلد لآخر (مشروع غوتنبرغ يتبع القانون الأمريكي). تحقق من قانون بلدك قبل إعادة النشر.'
         },
         en: {
@@ -115,7 +119,7 @@
             search: 'Search',
             eyebrow: 'Public-domain books',
             h1: 'Read what has left copyright',
-            lede: 'An open index of over a million books and tens of thousands of Arabic poems, with covers and categories, linking to legal reading pages at the original sources.',
+            lede: 'An open index of over a million books, tens of thousands of Arabic poems and thousands of modern Arabic books, with covers and categories, linking to their pages at legal original sources.',
             quick: 'Start with:',
             st_books: 'books',
             st_auth: 'authors',
@@ -129,7 +133,7 @@
             poems_n: '{n} poems',
             browse_h: 'All books',
             browse_p: 'Search, filter by category and language, then open the book at its source.',
-            foot_about: 'An open Arabic index of public-domain books and poems. We host no files; every link leads to the original source.',
+            foot_about: 'An open Arabic index of public-domain books and poems, and of modern Arabic books. We host no files; every link leads to the original source.',
             foot_src: 'Sources',
             foot_cats: 'Browse categories',
             foot_pages: 'Library pages',
@@ -145,6 +149,8 @@
             v_month: 'visitors this month',
             v_year: 'visitors this year',
             n_books: '{n} books',
+            n_poems: '{n} poems',
+            results_mix: '{b} books and {p} poems',
             f_lang: 'Book language',
             f_org: 'Origin',
             f_sort: 'Sort by',
@@ -175,6 +181,8 @@
             l_ht: 'Other copies',
             read: 'Read',
             find: 'Find the book',
+            view: 'View',
+            src_saf: 'Safahat (Hindawi)',
             authors_h: 'Famous authors & figures',
             authors_p: 'Select a name to see their works.',
             show_all: 'Show all ({n})',
@@ -196,7 +204,7 @@
             p_pdf: 'Free PDF',
             p_cited: '{n} citations',
             r_open: '↗',
-            legal1: 'All links lead to external sites. This library hosts no files and lists works that are public domain at their sources.',
+            legal1: 'All links lead to external sites. This library hosts no files; it lists public-domain works, and for modern books only their catalogue record with a link to a legal source.',
             legal2: 'Public-domain status differs by country (Project Gutenberg follows US law). Check your local law before republishing.'
         }
     };
@@ -236,6 +244,8 @@
         tra: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z M15.5 8.5l-2 5-5 2 2-5z',
         psy: 'M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z M2 20a7 7 0 0 1 14 0 M17 4.5a3.5 3.5 0 0 1 0 6 M19 20a7 7 0 0 0-3-5.7',
         art: 'M12 3a9 9 0 1 0 0 18c1.5 0 2-1 1.5-2s0-2 1.5-2h2a3 3 0 0 0 3-3 9 9 0 0 0-8-11z M7.5 11h.01 M10 7h.01 M14.5 7h.01',
+        dev: 'M3 20h18 M6 16l4-4 3 3 6-7 M15 8h4v4',
+        ara: 'M5 21V11a7 7 0 0 1 14 0v10z M9.5 21v-5a2.5 2.5 0 0 1 5 0v5 M12 4V2',
         gen: 'M4 4h6v6H4z M14 4h6v6h-6z M4 14h6v6H4z M14 14h6v6h-6z',
         eye: 'M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',
         cite: 'M6 17h3l2-4V7H5v6h3z M14 17h3l2-4V7h-6v6h3z',
@@ -376,7 +386,7 @@
             au = authName(b),
             h = hue(b.c);
         const ar = isArabic(title);
-        return '<a class="cover' + (title.length > 36 ? ' cv-long' : '') + '" style="--h:' + num(h) + '" href="/book/' + num(b.id) + '"' +
+        return '<a class="cover' + (title.length > 36 ? ' cv-long' : '') + '" style="--h:' + num(h) + '" data-v="' + (num(b.id) % 3) + '" href="/book/' + num(b.id) + '"' +
             ' data-id="' + num(b.id) + '" data-gid="' + (num(b.gid) || '') + '" data-hid="' + esc(b.hid || '') + '"' + (b.ws && !b.gid && !b.hid ? ' data-ws="1"' : '') + ' aria-label="' + esc(title + (au ? ' — ' + au : '')) + '">' +
             '<span class="cv-fb"><span class="cv-deco"></span><span class="cv-cat">' + esc(catName(b.c)) + '</span>' +
             '<span class="cv-title' + (ar ? ' ar' : '') + '">' + esc(title) + '</span><span class="cv-auth">' + esc(au || ' ') + '</span></span>' +
@@ -415,7 +425,8 @@
             if (id !== S.req) return;
             S.items = append ? S.items.concat(r.items) : r.items;
             if (r.total != null) { S.total = r.total;
-                S.capped = !!r.capped; }
+                S.capped = !!r.capped;
+                S.poems = r.poems || 0; }
             S.end = r.items.length < PAGE;
             S.loading = false;
             renderResults(append);
@@ -432,6 +443,7 @@
     const resetPaging = () => { S.items = [];
         S.total = 0;
         S.capped = false;
+        S.poems = 0;
         S.end = false; };
 
     /* ---------- links ---------- */
@@ -441,6 +453,9 @@
         const qs = enc((b.t + ' ' + last).trim());
         const arch = 'https://archive.org/search?query=' + qs;
         const ol = 'https://openlibrary.org/search?mode=everything&has_fulltext=true&q=' + qs;
+        // modern Arabic books: free to read on Safahat (Hindawi), or a catalogue record on Open Library
+        if (b.x && b.k === 5) { const u = 'https://www.safahat.org/books/' + enc(b.x) + '/'; return { main: u, read: true, list: [[tr('src_saf'), u]] }; }
+        if (b.x && b.k === 4) { const u = 'https://openlibrary.org/works/' + enc(b.x); return { main: u, read: false, label: tr('view'), list: [['Open Library', u]] }; }
         if (b.gid) {
             const read = 'https://www.gutenberg.org/cache/epub/' + b.gid + '/pg' + b.gid + '-images.html';
             return { main: read, read: true, list: [
@@ -548,8 +563,8 @@
     function renderCats() {
         const el = $('#catGrid');
         if (!el || !S.meta) return;
-        el.innerHTML = S.meta.categories.filter((c) => c.count > 0).map((c, i) =>
-            '<a class="cc" href="/category/' + esc(c.key) + (S.ui === 'en' ? '?lang=en' : '') + '" data-cat="' + esc(c.key) + '" style="--h:' + num(c.hue) + ';--i:' + i + '"><span class="cci">' + ico(c.key, 26) + '</span><b>' + esc(c[S.ui]) + '</b><small>' + esc(tr('n_books', { n: fmt(c.count) })) + '</small></a>').join('');
+        el.innerHTML = S.meta.categories.filter((c) => c.count + (c.poems || 0) > 0).map((c, i) =>
+            '<a class="cc" href="/category/' + esc(c.key) + (S.ui === 'en' ? '?lang=en' : '') + '" data-cat="' + esc(c.key) + '" style="--h:' + num(c.hue) + ';--i:' + i + '"><span class="cci">' + ico(c.key, 26) + '</span><b>' + esc(c[S.ui]) + '</b><small>' + esc(c.count ? tr('n_books', { n: fmt(c.count) }) + (c.poems ? ' · ' + tr('n_poems', { n: fmt(c.poems) }) : '') : tr('n_poems', { n: fmt(c.poems) })) + '</small></a>').join('');
         renderFootCats();
     }
 
@@ -632,7 +647,7 @@
             au = authName(b);
         return '<article class="book">' + coverHTML(b) +
             '<div class="meta"><h3 class="ttl"><a class="ttl-a" href="/book/' + num(b.id) + '">' + esc(title) + '</a></h3>' + (au ? '<p class="by">' + esc(au) + '</p>' : '') +
-            '<div class="row"><a class="btn" href="' + esc(safeUrl(L.main)) + '" target="_blank" rel="noopener">' + esc(tr(L.read ? 'read' : 'find')) + '</a>' +
+            '<div class="row"><a class="btn" href="' + esc(safeUrl(L.main)) + '" target="_blank" rel="noopener">' + esc(L.label || tr(L.read ? 'read' : 'find')) + '</a>' +
             L.list.map((x) => '<a class="lnk" href="' + esc(safeUrl(x[1])) + '" target="_blank" rel="noopener">' + esc(x[0]) + '</a>').join('') + '</div></div></article>';
     }
     let rendered = 0;
@@ -643,7 +658,9 @@
         if (S.ak && S.amap[S.ak]) chips.push('<button class="chip" type="button" data-clear="ak">' + esc(S.ui === 'ar' ? S.amap[S.ak].ar : S.amap[S.ak].en) + ' <span aria-hidden="true">×</span></button>');
         if (S.q) chips.push('<button class="chip" type="button" data-clear="q">«' + esc(S.q) + '» <span aria-hidden="true">×</span></button>');
         if (S.cat && S.cmap[S.cat]) chips.push('<button class="chip" type="button" data-clear="cat">' + esc(catName(S.cat)) + ' <span aria-hidden="true">×</span></button>');
-        $('#count').textContent = S.loading && !S.items.length ? tr('loading') : tr(S.capped ? 'results_more' : 'results', { n: fmt(S.total) });
+        $('#count').textContent = S.loading && !S.items.length ? tr('loading') : S.capped ? tr('results_more', { n: fmt(S.total) }) :
+            S.poems >= S.total && S.total ? tr('n_poems', { n: fmt(S.total) }) :
+            S.poems ? tr('results_mix', { b: fmt(S.total - S.poems), p: fmt(S.poems) }) : tr('results', { n: fmt(S.total) });
         $('#chips').innerHTML = chips.join('');
 
         const bq = $('#beyond');

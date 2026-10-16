@@ -97,6 +97,7 @@ def _about(ui, n):
 <li><b>{num("books")} كتاب</b> في الملك العام بـ{num("langs")} لغة، من مشروع غوتنبرغ وHathiTrust وOpen Library وأرشيف الإنترنت.</li>
 <li><b>ديوان العرب:</b> {num("poems")} قصيدة لكبار الشعراء من الجاهلية إلى العصر الحديث، من ويكي مصدر.</li>
 <li><b>{num("authors")} مؤلف</b> و{num("cats")} تصنيفاً، من الرواية والشعر إلى التاريخ والفلسفة والطب.</li>
+<li><b>{num("modern")} كتاب عربي حديث</b> (روايات وتنمية بشرية وغيرها): ما نشرته «صفحات» (مؤسسة هنداوي) مجاناً بإذن أصحابه تقرؤه هناك كاملاً، وما حقوقه محفوظة نعرض بيانات فهرسته ونوصلك إلى صفحته في Open Library.</li>
 <li><b>مكتب البحوث:</b> أوراق علمية طبية وهندسية مجانية الوصول، نبحث عنها في OpenAlex.</li>
 </ul>
 <h2>كيف نعمل</h2>
@@ -105,7 +106,7 @@ def _about(ui, n):
 <ul>
 <li><b>مجانية دائماً</b> للقارئ، بلا حسابات ولا اشتراكات.</li>
 <li><b>احترام الخصوصية:</b> إحصاءاتنا مجهولة الهوية، كما توضح <a href="{link("privacy", ui)}">سياسة الخصوصية</a>.</li>
-<li><b>احترام حقوق النشر:</b> نعرض ما سقط عنه الحق فقط، ونراجع أي بلاغ ونزيل الرابط إن ثبت أنه يخالف حقاً.</li>
+<li><b>احترام حقوق النشر:</b> لا نعرض نص أي كتاب محفوظ الحقوق، بل بيانات فهرسته ورابطاً إلى مصدر قانوني يعرضه، ونراجع أي بلاغ ونزيل الرابط إن ثبت أنه يخالف حقاً.</li>
 </ul>
 <h2>تواصل معنا</h2>
 <p>اقتراحاتك تصنع المكتبة: إن أردت كتاباً لم تجده، أو لاحظت خطأً، فـ<a href="{link("contact", ui)}">راسلنا</a>.</p>"""
@@ -120,6 +121,7 @@ def _about(ui, n):
 <li><b>{num("books")} public-domain books</b> in {num("langs")} languages, from Project Gutenberg, HathiTrust, Open Library and the Internet Archive.</li>
 <li><b>Diwan of the Arabs:</b> {num("poems")} poems by the great Arab poets, from pre-Islamic times to the modern era, from Arabic Wikisource.</li>
 <li><b>{num("authors")} authors</b> and {num("cats")} categories, from novels and poetry to history, philosophy and medicine.</li>
+<li><b>{num("modern")} modern Arabic books</b> (novels, self-development and more): those Safahat (Hindawi Foundation) publishes free with their owners' permission are read in full there; for books under copyright we show the catalogue record and link to their Open Library page.</li>
 <li><b>The research desk:</b> free-to-read medical and engineering papers, found through OpenAlex.</li>
 </ul>
 <h2>How it works</h2>
@@ -128,7 +130,7 @@ def _about(ui, n):
 <ul>
 <li><b>Always free</b> for readers: no accounts, no subscriptions.</li>
 <li><b>Privacy first:</b> our statistics are anonymous, as the <a href="{link("privacy", ui)}">privacy policy</a> explains.</li>
-<li><b>Respect for copyright:</b> we only list works that have left copyright, and we review every report and remove a link if it infringes.</li>
+<li><b>Respect for copyright:</b> we never show the text of a book under copyright, only its catalogue record and a link to a legal source that shows it; we review every report and remove a link if it infringes.</li>
 </ul>
 <h2>Get in touch</h2>
 <p>Your suggestions shape the library. If a book is missing or something is wrong, <a href="{link("contact", ui)}">write to us</a>.</p>"""
@@ -161,7 +163,7 @@ def _privacy(ui):
 <p>يحمّل متصفحك بعض المحتوى من خدمات خارجية، وتتلقى هذه الخدمات عنوان IP الخاص بك كما يحدث في أي طلب على الإنترنت:</p>
 <ul>
 <li>الخطوط من Google Fonts.</li>
-<li>أغلفة الكتب من Open Library ومشروع غوتنبرغ وHathiTrust، ونبذ المؤلفين من ويكيبيديا في صفحات الكتب.</li>
+<li>أغلفة الكتب من Open Library ومشروع غوتنبرغ وHathiTrust ومؤسسة هنداوي، ونبذ المؤلفين من ويكيبيديا في صفحات الكتب.</li>
 <li>روابط القراءة تنقلك إلى مواقع خارجية تحكمها سياسات الخصوصية الخاصة بها.</li>
 <li>عبارات البحث في مكتب البحوث يرسلها خادمنا إلى OpenAlex للعثور على الأوراق العلمية.</li>
 </ul>
@@ -202,7 +204,7 @@ def _privacy(ui):
 <p>Your browser loads some content from outside services, which receive your IP address as with any request on the Internet:</p>
 <ul>
 <li>Fonts from Google Fonts.</li>
-<li>Book covers from Open Library, Project Gutenberg and HathiTrust; author summaries from Wikipedia on book pages.</li>
+<li>Book covers from Open Library, Project Gutenberg, HathiTrust and the Hindawi Foundation; author summaries from Wikipedia on book pages.</li>
 <li>Reading links take you to external sites governed by their own privacy policies.</li>
 <li>Research-desk searches are sent by our server to OpenAlex to find papers.</li>
 </ul>
@@ -228,6 +230,7 @@ def _terms(ui):
 <p>مكتبة الوراق فهرس مجاني يدلّك على كتب في الملك العام وبحوث علمية مجانية الوصول في مواقع خارجية. لا نستضيف ملفات الكتب ولا نملكها، ولا نبيع أي محتوى.</p>
 <h2>2. الملك العام وحقوق النشر</h2>
 <p>نصنّف الكتب بحسب بيانات مصادرها، ومعظمها في الملك العام في الولايات المتحدة. قد يختلف وضع العمل نفسه في بلدك، وأنت المسؤول عن التحقق من قانون بلدك قبل تنزيل أي عمل أو إعادة نشره.</p>
+<p>ونعرض أيضاً كتباً عربية حديثة محفوظة الحقوق، تحمل صفحاتها شارة توضح ذلك: لا ننشر نصها، بل بيانات فهرستها (العنوان والمؤلف والناشر والسنة) ورابطاً إلى صفحتها لدى مصدر قانوني، مثل «صفحات» (مؤسسة هنداوي) التي تتيحها بإذن أصحابها، أو Open Library.</p>
 <h2>3. المواقع الخارجية</h2>
 <p>روابط القراءة والتنزيل تقود إلى مواقع خارجية لا نتحكم في محتواها أو سياساتها أو توافرها، ولا نتحمل مسؤوليتها.</p>
 <h2>4. دقة المعلومات</h2>
@@ -258,6 +261,7 @@ def _terms(ui):
 <p>Al-Warraq Library is a free index that points to public-domain books and free-to-read research on external websites. We do not host or own book files, and we do not sell any content.</p>
 <h2>2. Public domain and copyright</h2>
 <p>Books are classified according to the data of their sources, and most are in the public domain in the United States. The status of a work may differ in your country; you are responsible for checking your local law before downloading or republishing any work.</p>
+<p>We also list modern Arabic books that are under copyright; their pages say so. We never publish their text, only their catalogue record (title, author, publisher, year) and a link to their page at a legal source, such as Safahat (Hindawi Foundation), which offers them with their owners' permission, or Open Library.</p>
 <h2>3. External websites</h2>
 <p>Reading and download links lead to external websites. We do not control their content, policies or availability, and we are not responsible for them.</p>
 <h2>4. Accuracy</h2>

@@ -14,23 +14,30 @@ import sys
 import urllib.request
 from urllib.parse import quote
 
-from . import legal
-from .catalog import CATEGORIES
-from .pages import BRAND, CSS, LOGO_SVG, SEARCH_ICON, T, _authors, book_author, book_title, canonical_path, esc, legal_links
+from . import legal, modern
+from .wikisource import WS_KIND
+from .catalog import ARABIC_CAT, CATEGORIES
+from .pages import BRAND, CSS, LOGO_SVG, SEARCH_ICON, T, _authors, adsense_meta, book_author, book_title, canonical_path, esc, legal_links
 
 PER_PAGE = 60
 MAX_PAGES = 200  # category pages go this deep; the sitemaps list every single book anyway
 
 S = {
     "ar": {
-        "cat_h": "كتب {c} مجانية", "cat_d": "{n} كتاباً مجانياً في تصنيف «{c}» من الكتب التي سقط عنها حق النشر، تقرؤها كاملة من مصادرها المفتوحة.",
+        "cat_h": "كتب {c} مجانية", "cat_d": "{n} في تصنيف «{c}»، مجانية سقط عنها حق النشر، تقرؤها كاملة من مصادرها المفتوحة.",
+        "n_books": "{n} كتاباً", "n_poems": " و{p} قصيدة",
         "auth_h": "كتب {a}", "auth_d": "{n} من أعمال {a} مجانية في الملك العام، تقرؤها كاملة من مصادرها المفتوحة.",
+        "cat_hm": "كتب {c}", "cat_dm": "{n} في تصنيف «{c}»: كتب سقط عنها حق النشر تقرؤها مجاناً، وكتب عربية حديثة نوصلك إلى صفحاتها لدى مصادرها القانونية.",
+        "auth_dm": "{n} من أعمال {a} في مكتبة الوراق، نوصلك إليها في مصادرها المفتوحة والقانونية.",
         "cats": "التصنيفات", "authors": "مؤلفون مشهورون", "prev": "السابق", "next": "التالي", "page": "صفحة {p}",
         "open": "تصفّح في المكتبة", "home_t": "مكتبة الوراق | كتب مجانية وقصائد عربية في الملك العام",
     },
     "en": {
-        "cat_h": "Free {c} books", "cat_d": "{n} free public-domain books in “{c}”, readable in full at their open sources.",
+        "cat_h": "Free {c} books", "cat_d": "{n} in “{c}”, free and in the public domain, readable in full at their open sources.",
+        "n_books": "{n} books", "n_poems": " and {p} poems",
         "auth_h": "Books by {a}", "auth_d": "{n} public-domain works by {a}, free to read at their open sources.",
+        "cat_hm": "{c} books", "cat_dm": "{n} in “{c}”: public-domain books to read free, and modern Arabic books with links to their pages at legal sources.",
+        "auth_dm": "{n} works by {a} at Al-Warraq Library, with links to their open and legal sources.",
         "cats": "Categories", "authors": "Famous authors", "prev": "Previous", "next": "Next", "page": "page {p}",
         "open": "Browse in the library", "home_t": "Al-Warraq Library | Free public-domain books and Arabic poetry",
     },
@@ -115,6 +122,7 @@ def _shell(ui, base, path, title, desc, body, ld, page=1, extra_q="", extra_css=
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{title}</title>
 <meta name="description" content="{desc}">
+{adsense}
 <link rel="canonical" href="{canon}">
 {alts}
 <meta property="og:type" content="website">
@@ -145,7 +153,7 @@ def _shell(ui, base, path, title, desc, body, ld, page=1, extra_q="", extra_css=
 """.format(ui=ui, dir=t["dir"], title=esc(title), desc=esc(desc), canon=esc(canon), alts=_alternates(base, path),
            brand=esc(BRAND[ui]), base=esc(base), ld=ld, css=CSS, extra=EXTRA_CSS + extra_css, logo=LOGO_SVG, icon=SEARCH_ICON,
            ph=esc(t["ph"]), search=esc(t["search"]), all=esc(t["all"]), other=other, other_lang=esc(t["other_lang"]),
-           toggle=esc(path + ("?lang=en" if other == "en" else "")), body=body, note=esc(t["note"]), legal=legal_links(ui))
+           toggle=esc(path + ("?lang=en" if other == "en" else "")), body=body, note=esc(t["note"]), legal=legal_links(ui), adsense=adsense_meta())
 
 
 def _book_list(conn, rows, ui) -> str:
@@ -170,18 +178,30 @@ def _breadcrumbs(base, ui, name, path) -> dict:
         {"@type": "ListItem", "position": 2, "name": name, "item": base + path}]}
 
 
+def _has_modern(conn, cond: str, arg) -> bool:
+    """Whether some of these books are modern ones under copyright (Safahat / Open Library)."""
+    return bool(conn.execute("SELECT 1 FROM books WHERE " + cond + " AND curated IN (?, ?) LIMIT 1", (arg,) + modern.KINDS).fetchone())
+
+
 def category_page(conn, key: str, base: str, ui: str = "ar", page: int = 1):
     if key not in CATEGORIES:
         return None
-    total = conn.execute("SELECT COUNT(*) FROM books WHERE cat=?", (key,)).fetchone()[0]
+    # the Arabic category is every book written in Arabic, not a topic
+    cond, arg = ("lang=?", "ar") if key == ARABIC_CAT else ("cat=?", key)
+    total = conn.execute("SELECT COUNT(*) FROM books WHERE " + cond, (arg,)).fetchone()[0]
     pages = max(1, min(MAX_PAGES, math.ceil(total / PER_PAGE)))
     if page < 1 or page > pages:
         return None
-    rows = conn.execute("SELECT * FROM books WHERE cat=? ORDER BY ord LIMIT ? OFFSET ?", (key, PER_PAGE, (page - 1) * PER_PAGE)).fetchall()
+    rows = conn.execute("SELECT * FROM books WHERE " + cond + " ORDER BY ord LIMIT ? OFFSET ?", (arg, PER_PAGE, (page - 1) * PER_PAGE)).fetchall()
     s, name = S[ui], CATEGORIES[key][ui]
     path = "/category/" + key
+    if _has_modern(conn, cond, arg):  # not every book here is free: say so
+        s = dict(s, cat_h=s["cat_hm"], cat_d=s["cat_dm"])
     title = s["cat_h"].format(c=name) + ((" — " + s["page"].format(p=page)) if page > 1 else "") + " | " + BRAND[ui]
-    desc = s["cat_d"].format(n="{:,}".format(total), c=name)
+    # every poem is Arabic and in "poe": counted from the index alone
+    poems = conn.execute("SELECT COUNT(*) FROM books WHERE curated=?", (WS_KIND,)).fetchone()[0] if key in (ARABIC_CAT, "poe") else 0
+    n = s["n_books"].format(n="{:,}".format(total - poems)) + (s["n_poems"].format(p="{:,}".format(poems)) if poems else "")
+    desc = s["cat_d"].format(n=n, c=name)
     chips = "".join('<a href="/category/%s%s"%s>%s</a>' % (k, "?lang=en" if ui == "en" else "", ' aria-current="page"' if k == key else "", esc(v[ui]))
                     for k, v in CATEGORIES.items())
     body = ('<p class="crumbs"><a href="/">%s</a> / %s</p><h1>%s</h1><p class="desc">%s <a href="/?cat=%s#browse">%s</a></p>'
@@ -201,10 +221,12 @@ def author_page(conn, key: str, base: str, ui: str = "ar", page: int = 1):
         return None
     total = conn.execute("SELECT COUNT(*) FROM books WHERE author_key=?", (key,)).fetchone()[0]
     pages = max(1, min(MAX_PAGES, math.ceil(total / PER_PAGE)))
-    if page < 1 or page > pages:
+    if not total or page < 1 or page > pages:
         return None
     rows = conn.execute("SELECT * FROM books WHERE author_key=? ORDER BY ord LIMIT ? OFFSET ?", (key, PER_PAGE, (page - 1) * PER_PAGE)).fetchall()
     s, name = S[ui], (a["ar"] if ui == "ar" and a["ar"] else a["en"])
+    if _has_modern(conn, "author_key=?", key):
+        s = dict(s, auth_d=s["auth_dm"])
     path = "/author/" + quote(key)
     title = s["auth_h"].format(a=name) + ((" (%s)" % a["years"]) if a["years"] else "") + ((" — " + s["page"].format(p=page)) if page > 1 else "") + " | " + BRAND[ui]
     desc = s["auth_d"].format(n="{:,}".format(total), a=name)
@@ -238,7 +260,7 @@ def main_urls(conn, base: str):
         urls += [base + "/" + p, base + "/" + p + "?lang=en"]
     for k in CATEGORIES:
         urls += [base + "/category/" + k, base + "/category/" + k + "?lang=en"]
-    for r in conn.execute("SELECT key FROM authors ORDER BY ord"):
+    for r in conn.execute("SELECT key FROM authors a WHERE EXISTS (SELECT 1 FROM books WHERE author_key=a.key) ORDER BY ord"):
         urls += [base + "/author/" + quote(r["key"]), base + "/author/" + quote(r["key"]) + "?lang=en"]
     return urls
 

@@ -46,6 +46,8 @@ CREATE TABLE IF NOT EXISTS books(
   curated    INTEGER NOT NULL DEFAULT 0,
   htid       TEXT,
   ws         TEXT,
+  ext        TEXT,
+  info       TEXT,
   ord        INTEGER NOT NULL,
   search     TEXT NOT NULL
 );
@@ -57,7 +59,7 @@ CREATE INDEX IF NOT EXISTS ix_books_cat_ord ON books(cat, ord);   -- a category 
 CREATE INDEX IF NOT EXISTS ix_books_lang_ord ON books(lang, ord);
 CREATE INDEX IF NOT EXISTS ix_books_author ON books(author_key);
 CREATE INDEX IF NOT EXISTS ix_books_ord ON books(ord);
-CREATE INDEX IF NOT EXISTS ix_books_curated ON books(curated);
+CREATE INDEX IF NOT EXISTS ix_books_curated_cat ON books(curated, cat);  -- a source's books per category, from the index alone
 """
 
 STATS_SCHEMA = """
@@ -192,7 +194,12 @@ def init_db(conn: sqlite3.Connection) -> None:
         conn.execute("ALTER TABLE books ADD COLUMN htid TEXT")
     if "ws" not in cols:  # Arabic Wikisource page name (added with the Wikisource import)
         conn.execute("ALTER TABLE books ADD COLUMN ws TEXT")
+    if "ext" not in cols:  # the book's id at Safahat or Open Library (modern.py)
+        conn.execute("ALTER TABLE books ADD COLUMN ext TEXT")
+    if "info" not in cols:  # publisher, year, pages, subjects (JSON) for those books
+        conn.execute("ALTER TABLE books ADD COLUMN info TEXT")
     # (cat) and (lang) alone are covered by the (cat, ord) and (lang, ord) indexes: about 30 MB saved
+    conn.execute("DROP INDEX IF EXISTS ix_books_curated")  # (curated, cat) above serves it
     conn.execute("DROP INDEX IF EXISTS ix_books_cat")
     conn.execute("DROP INDEX IF EXISTS ix_books_lang")
     conn.commit()
@@ -278,6 +285,12 @@ def fix_author_names(conn: sqlite3.Connection) -> None:
 NOT_AUTHORS = ("various", "anonymous", "unknown", "unknown author", "anonymous & folk tradition")
 
 
+def book_total(conn: sqlite3.Connection) -> int:
+    """Books in the catalogue: single poems (Wikisource, curated=3) are poems, not books."""
+    return (conn.execute("SELECT COUNT(*) FROM books").fetchone()[0]
+            - conn.execute("SELECT COUNT(*) FROM books WHERE curated=3").fetchone()[0])
+
+
 def author_total(conn: sqlite3.Connection, books: int) -> int:
     """Distinct author names in the whole catalogue (not only the curated ones).
     Takes seconds on a million books, so it is kept in `meta` with the book count it was made for
@@ -332,6 +345,28 @@ def seed_curated(conn: sqlite3.Connection) -> int:
     conn.execute("INSERT OR REPLACE INTO meta(key,value) VALUES('seed_version',?)", (SEED_VERSION,))
     conn.commit()
     return n
+
+
+# a book with none of these has no page to read it on: the site could only send people searching elsewhere
+UNREADABLE = "(gid IS NULL OR gid=0) AND (htid IS NULL OR htid='') AND (ws IS NULL OR ws='') AND (ext IS NULL OR ext='')"
+
+
+def prune_unreadable(conn: sqlite3.Connection) -> int:
+    """Removes the books the site cannot open (hand-picked titles that no import could match to a copy), and the
+    books of Arabic Wikisource, whose pages are mostly empty shells (its single poems are complete and stay).
+    Only once the catalogue has been imported: before that every hand-picked book is still waiting for its link."""
+    if not conn.execute("SELECT 1 FROM books WHERE curated<>1 LIMIT 1").fetchone():
+        return 0
+    conn.execute("UPDATE books SET ws=NULL WHERE ws<>'' AND curated<>3")  # hand-picked books linked to a Wikisource page
+    ids = [r[0] for r in conn.execute("SELECT id FROM books WHERE " + UNREADABLE + " OR (curated=3 AND cat<>'poe')")]
+    for i in range(0, len(ids), 500):
+        chunk = ids[i:i + 500]
+        marks = ",".join("?" * len(chunk))
+        for table in ("cover_cache", "book_stats", "book_likes"):
+            conn.execute("DELETE FROM %s WHERE book_id IN (%s)" % (table, marks), chunk)
+        conn.execute("DELETE FROM books WHERE id IN (%s)" % marks, chunk)
+    conn.commit()
+    return len(ids)
 
 
 # ---------- a ready-made catalogue (DB_URL): the whole library in a minute instead of a long import ----------

@@ -17,8 +17,8 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from urllib.parse import quote, unquote
 
-from . import covers, db, legal, pages, research, security, seo, stats, wikisource
-from .catalog import CATEGORIES
+from . import covers, db, legal, modern, pages, research, security, seo, stats, wikisource
+from .catalog import ARABIC_CAT, CATEGORIES
 from .textnorm import norm
 
 mimetypes.add_type("application/manifest+json", ".webmanifest")  # not known to every OS
@@ -51,6 +51,7 @@ def book_json(r) -> dict:
         "id": r["id"], "gid": r["gid"], "hid": r["htid"], "ws": r["ws"], "t": r["title"], "ta": r["title_ar"],
         "ak": r["author_key"], "a": r["author_en"], "aa": r["author_ar"],
         "c": r["cat"], "o": r["origin"], "lg": r["lang"],
+        "x": r["ext"], "k": r["curated"],  # Safahat / Open Library: the book's id there (modern.py)
     }
 
 
@@ -60,6 +61,7 @@ def create_app() -> FastAPI:
         conn = db.connect()
         db.init_db(conn)
         db.seed_curated(conn)
+        db.prune_unreadable(conn)
         conn.close()
         yield
 
@@ -95,8 +97,17 @@ def create_app() -> FastAPI:
         return payload
 
     def build_meta(conn):
-        counts = {r["cat"]: r["n"] for r in conn.execute("SELECT cat, COUNT(*) n FROM books GROUP BY cat")}
-        cats = [{"key": k, "hue": v["hue"], "en": v["en"], "ar": v["ar"], "count": counts.get(k, 0)} for k, v in CATEGORIES.items()]
+        # a single poem (Wikisource) is counted as a poem, never as a book
+        ws = wikisource.WS_KIND
+        # every row per category straight from the (cat, ord) index, minus the poems (few rows, their own index):
+        # filtering the big count on "curated" would read the whole table instead
+        poems = {r["cat"]: r["n"] for r in conn.execute("SELECT cat, COUNT(*) n FROM books WHERE curated=? GROUP BY cat", (ws,))}
+        counts = {r["cat"]: r["n"] - poems.get(r["cat"], 0) for r in conn.execute("SELECT cat, COUNT(*) n FROM books GROUP BY cat")}
+        all_poems = sum(poems.values())
+        poems[ARABIC_CAT] = all_poems  # every one of them is Arabic
+        counts[ARABIC_CAT] = conn.execute("SELECT COUNT(*) FROM books WHERE lang='ar'").fetchone()[0] - all_poems
+        cats = [{"key": k, "hue": v["hue"], "en": v["en"], "ar": v["ar"], "count": counts.get(k, 0), "poems": poems.get(k, 0)}
+                for k, v in CATEGORIES.items()]
         authors = [
             {"key": r["key"], "en": r["en"], "ar": r["ar"], "years": r["years"], "origin": r["origin"],
              "count": r["n"], "cat": r["cat"] or "nov"}
@@ -110,7 +121,7 @@ def create_app() -> FastAPI:
             {"code": r["lang"], "count": r["n"]}
             for r in conn.execute("SELECT lang, COUNT(*) n FROM books WHERE lang NOT IN ('', 'und', 'mul', 'zxx') GROUP BY lang ORDER BY n DESC")
         ]
-        total = conn.execute("SELECT COUNT(*) FROM books").fetchone()[0]
+        total = db.book_total(conn)  # books only: poems are counted apart
         # Arabic poetry from Wikisource: the poets with the most poems, for the home page
         poets = [
             {"ar": r["author_ar"], "en": r["author_en"], "ak": r["author_key"], "count": r["n"]}
@@ -134,7 +145,9 @@ def create_app() -> FastAPI:
         if sort not in SORTS:
             raise HTTPException(400, "bad sort")
         where, args = [], []
-        if cat:
+        if cat == ARABIC_CAT:  # every Arabic book, whatever its topic
+            where.append("lang='ar'")
+        elif cat:
             where.append("cat=?"); args.append(cat)
         if org in ("a", "w"):
             where.append("origin=?"); args.append(org)
@@ -149,6 +162,7 @@ def create_app() -> FastAPI:
         long_words = [w for w in words if len(w) >= 3]  # the trigram index needs 3+ characters per word
         only_text = not filtered and len(long_words) == len(words)  # a plain search, every word 3+ letters
         hits = None  # how many books match, when the index could tell
+        fts_where, fts_args = "", []
         dense = False
         if long_words and _fts_on(conn):
             like = " AND ".join("search LIKE ?" for _ in long_words)
@@ -157,7 +171,8 @@ def create_app() -> FastAPI:
                              largs + [DENSE + 1]).fetchone()[0]
             if n <= DENSE:  # rare words: fetch exactly the matching rows through the index
                 hits = n
-                where.append("id IN (SELECT rowid FROM books_fts WHERE " + like + ")"); args += largs
+                fts_where, fts_args = "id IN (SELECT rowid FROM books_fts WHERE " + like + ")", largs
+                where.append(fts_where); args += largs
                 words = [w for w in words if len(w) < 3]
             else:  # very common words ("the"): matches are everywhere, so walking the list in order finds a page at once
                 dense = True
@@ -190,7 +205,23 @@ def create_app() -> FastAPI:
             "SELECT * FROM books" + clause + " ORDER BY " + order + " LIMIT ? OFFSET ?",
             args + oargs + [limit, offset],
         ).fetchall()
-        return {"total": total, "capped": capped, "offset": offset, "items": [book_json(r) for r in rows]}
+        # how many of them are single poems, told apart when that is cheap. Every poem is Arabic, in "poe", by an
+        # Arab author: those filters either rule poems out or say nothing, so the table itself is never read
+        poems = None
+        ws = wikisource.WS_KIND
+        if total is not None and not capped and not words:
+            if (cat and cat not in (ARABIC_CAT, "poe")) or (bl and bl.lower() != "ar") or org == "w":
+                poems = 0
+            elif au:  # one poet of the poetry section: the rows were just read for the total
+                poems = conn.execute("SELECT COUNT(*) FROM books" + clause + " AND curated=?", args + [ws]).fetchone()[0]
+            else:
+                pw, pa = ["curated=?"], [ws]
+                if ak:
+                    pw.append("author_key=?"); pa.append(ak)
+                if fts_where:
+                    pw.append(fts_where); pa += fts_args
+                poems = conn.execute("SELECT COUNT(*) FROM books WHERE " + " AND ".join(pw), pa).fetchone()[0]
+        return {"total": total, "capped": capped, "poems": poems, "offset": offset, "items": [book_json(r) for r in rows]}
 
     @app.post("/api/hit")
     def hit(request: Request, conn=Depends(get_conn)):
@@ -264,6 +295,10 @@ def create_app() -> FastAPI:
         except Exception:  # OpenAlex unreachable or slow: the desk still shows the source links
             return {"query": q, "translated": False, "total": 0, "items": [], "error": True}
 
+    @app.get("/ads.txt", include_in_schema=False)
+    def ads_txt():
+        return PlainTextResponse(pages.ads_txt())
+
     @app.get("/robots.txt", include_in_schema=False)
     def robots(request: Request):
         return PlainTextResponse(seo.robots_txt(pages.site_base(request)))
@@ -297,7 +332,8 @@ def create_app() -> FastAPI:
     def about(request: Request, lang: str = Query("", max_length=5), conn=Depends(get_conn)):
         m = meta(conn)
         n = {"books": m["total"], "poems": m["poem_total"], "authors": m["author_total"], "langs": m["lang_total"],
-             "cats": sum(1 for c in m["categories"] if c["count"])}
+             "cats": sum(1 for c in m["categories"] if c["count"]),
+             "modern": conn.execute("SELECT COUNT(*) FROM books WHERE curated IN (?, ?)", modern.KINDS).fetchone()[0]}
         return HTMLResponse(legal.page_html("about", pages.site_base(request), _ui(lang), numbers=n))
 
     @app.get("/privacy", include_in_schema=False)

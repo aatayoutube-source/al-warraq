@@ -1,9 +1,13 @@
 """Category definitions and Project Gutenberg metadata cleaning."""
 import re
 
+# "ara" is not a topic: it gathers every book written in Arabic, which also keeps its own topic below
+ARABIC_CAT = "ara"
 # key -> hue (used by the frontend to colour covers), English and Arabic labels
 CATEGORIES = {
+    "ara": {"hue": 158, "en": "Arabic Books", "ar": "الكتب العربية"},
     "nov": {"hue": 14, "en": "Novels & Stories", "ar": "روايات وقصص"},
+    "dev": {"hue": 120, "en": "Self-Development", "ar": "تنمية بشرية"},
     "poe": {"hue": 330, "en": "Poetry", "ar": "شعر"},
     "dra": {"hue": 282, "en": "Drama", "ar": "مسرح"},
     "phi": {"hue": 215, "en": "Philosophy", "ar": "فلسفة"},

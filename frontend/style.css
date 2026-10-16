@@ -274,6 +274,14 @@ h2 {
     --hover-anim: jelly .9s var(--spring)
 }
 
+.ic-dev {
+    --hover-anim: rise .8s var(--spring)
+}
+
+.ic-ara {
+    --hover-anim: bob .8s var(--spring)
+}
+
 @keyframes bob {
     0%,
     100% {
@@ -3433,4 +3441,158 @@ html[lang="en"] .hero h1 {
     .fan::before {
         clip-path: none
     }
+}
+
+/* ---------- covers: the Al-Warraq edition ----------
+   A book without a picture still gets a cover, never a blank: three designs (data-v, from the book id) in the
+   colours of its category: a gold-framed binding, a modern paper cover, and the doorway of the logo.
+   A real cover image, once it loads, sits on top of it. */
+
+.cover[data-v] {
+    --cv-ink: #F6F2E8;
+    --cv-gold: #F2B544;
+    --cv-girih: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 26 26'%3E%3Cpath d='M13 1.5l3.2 8.3 8.3 3.2-8.3 3.2L13 24.5l-3.2-8.3L1.5 13l8.3-3.2z' fill='none' stroke='%23fff' stroke-opacity='.09'/%3E%3C/svg%3E");
+    color: var(--cv-ink)
+}
+
+.cover[data-v] .cv-fb {
+    isolation: isolate;
+    align-items: center;
+    text-align: center;
+    gap: 6px;
+    padding: 18px 14px 14px
+}
+
+.cover[data-v] .cv-cat {
+    order: 0;
+    font-size: .64rem;
+    opacity: .9
+}
+
+.cover[data-v] .cv-title {
+    order: 1;
+    margin-top: auto;
+    font-size: 1.12rem;
+    line-height: 1.45;
+    -webkit-line-clamp: 4
+}
+
+.cover[data-v] .cv-title.ar {
+    font-size: 1.28rem;
+    line-height: 1.55
+}
+
+.cover[data-v].cv-long .cv-title {
+    font-size: .98rem
+}
+
+.cover[data-v] .cv-deco {
+    order: 2;
+    position: static;
+    flex: none;
+    width: 16px;
+    height: 19px;
+    margin: 6px auto auto;
+    border-radius: 0;
+    background: currentColor;
+    opacity: .85;
+    -webkit-mask: var(--arch) center / 100% 100% no-repeat;
+    mask: var(--arch) center / 100% 100% no-repeat
+}
+
+.cover[data-v]:hover .cv-deco {
+    transform: translateY(-2px)
+}
+
+.cover[data-v] .cv-auth {
+    order: 3;
+    padding-top: 0;
+    border-top: 0;
+    font-size: .76rem
+}
+
+/* 0 · the binding: a deep colour, a girih pattern, a gold double frame */
+.cover[data-v="0"] {
+    background: var(--cv-girih), linear-gradient(160deg, hsl(var(--h) 42% 27%), hsl(var(--h) 46% 17%))
+}
+
+.cover[data-v="0"] .cv-fb {
+    inset: 8px;
+    padding: 14px 10px 10px;
+    border: 1.5px solid rgb(242 181 68 / .75);
+    border-radius: 3px;
+    box-shadow: inset 0 0 0 3px hsl(var(--h) 44% 21%), inset 0 0 0 4px rgb(242 181 68 / .35)
+}
+
+.cover[data-v="0"] .cv-cat,
+.cover[data-v="0"] .cv-deco,
+.cover[data-v="0"] .cv-auth {
+    color: var(--cv-gold)
+}
+
+/* 1 · modern paper: a cream cover, a coloured band at the foot carrying the author */
+.cover[data-v="1"] {
+    background: linear-gradient(180deg, #F4EFE4 0 76%, hsl(var(--h) 48% 34%) 76%);
+    color: #1C2622
+}
+
+.cover[data-v="1"] .cv-cat,
+.cover[data-v="1"] .cv-deco {
+    color: hsl(var(--h) 50% 36%)
+}
+
+.cover[data-v="1"] .cv-title.ar {
+    font-family: var(--font-logo);
+    font-weight: 800;
+    font-size: 1.12rem;
+    line-height: 1.6
+}
+
+.cover[data-v="1"] .cv-auth {
+    color: var(--cv-ink);
+    min-height: 18%;
+    display: grid;
+    place-items: center;
+    width: 100%
+}
+
+/* 2 · the doorway: a lighter arch in the middle, a saffron sun above it */
+.cover[data-v="2"] {
+    background: linear-gradient(170deg, hsl(var(--h) 46% 36%), hsl(var(--h) 52% 24%))
+}
+
+.cover[data-v="2"] .cv-fb::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: 17% 15% 15%;
+    background: hsl(var(--h) 40% 46% / .55);
+    -webkit-mask: var(--arch) center / 100% 100% no-repeat;
+    mask: var(--arch) center / 100% 100% no-repeat
+}
+
+.cover[data-v="2"] .cv-fb::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    top: 10%;
+    inset-inline-end: 22%;
+    width: 15%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--cv-gold);
+    opacity: .9
+}
+
+.cover[data-v="2"] .cv-cat,
+.cover[data-v="2"] .cv-auth {
+    color: var(--cv-gold)
+}
+
+.cover[data-v="2"] .cv-deco {
+    display: none
+}
+
+.cover[data-v="2"] .cv-title {
+    margin-block: auto  /* inside the arch, not at its foot */
 }

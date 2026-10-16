@@ -4,6 +4,9 @@ Gutenberg books have a deterministic cover URL that the browser loads directly.
 For everything else (and when a Gutenberg cover is missing) the browser asks
 GET /api/cover/{id}; we look the book up on Open Library once, cache the answer
 in SQLite for every future visitor, and never hit their API faster than ~1/second.
+With GOOGLE_BOOKS_KEY set (a free key from Google Cloud), Google Books is asked next: it has covers
+for many modern Arabic books and old scanned ones that Open Library lacks. A book is looked up only
+when someone looks at it, so the daily quota follows the visitors, not the size of the catalogue.
 """
 import json
 import os
@@ -14,6 +17,7 @@ import urllib.parse
 import urllib.request
 
 OL_SEARCH = "https://openlibrary.org/search.json"
+GB_SEARCH = "https://www.googleapis.com/books/v1/volumes"
 UA = "AlWarraqLibrary/1.0 (public-domain book index)"
 MIN_GAP = 0.9  # seconds between Open Library requests
 LOCK_WAIT = 2.0  # longest a request waits for its turn
@@ -51,16 +55,47 @@ def lookup(title: str, author: str) -> str:
     return ""
 
 
+def google_key() -> str:
+    return os.environ.get("GOOGLE_BOOKS_KEY", "").strip()
+
+
+def _same_title(a: str, b: str) -> bool:
+    from .textnorm import norm
+    a, b = norm(a), norm(b)
+    return bool(a) and bool(b) and (a in b or b in a)
+
+
+def google_lookup(title: str, author: str) -> str:
+    """A Google Books cover for this title (and author), or ''. Raises when the quota is used up."""
+    title = re.split(r"[;:]", title or "")[0].strip()[:120]
+    if not title or not google_key():
+        return ""
+    q = 'intitle:"%s"' % title + ((' inauthor:"%s"' % author.split(",")[0].strip()) if author else "")
+    data = fetch_json(GB_SEARCH + "?" + urllib.parse.urlencode(
+        {"q": q, "maxResults": 5, "printType": "books", "key": google_key(),
+         "fields": "items(volumeInfo(title,imageLinks/thumbnail))"}))
+    for item in data.get("items", []) or []:
+        info = item.get("volumeInfo", {})
+        thumb = (info.get("imageLinks") or {}).get("thumbnail", "")
+        if thumb and _same_title(title, info.get("title", "")):  # never another book's cover
+            return thumb.replace("http://", "https://").replace("&edge=curl", "")
+    return ""
+
+
 def resolve(conn, book_id: int):
     """Cached cover URL, '' (known: none), or None (book unknown / lookup failed, try again later)."""
     row = conn.execute("SELECT url FROM cover_cache WHERE book_id=?", (book_id,)).fetchone()
     if row:
         return row["url"]
-    book = conn.execute("SELECT title, author_en, ws, gid, htid FROM books WHERE id=?", (book_id,)).fetchone()
+    book = conn.execute("SELECT title, title_ar, author_en, author_ar, ws, gid, htid, curated FROM books WHERE id=?", (book_id,)).fetchone()
     if not book or not enabled():
         return None
     if book["ws"] and not book["gid"] and not book["htid"]:
         return ""  # Wikisource texts (mostly single poems) have no printed cover: keep the designed one
+    from .modern import OL_KIND
+    known_none = book["curated"] == OL_KIND  # an Open Library book: its cover, if any, came with the import
+    if known_none and not google_key():
+        return ""  # nothing else to ask: the designed cover (not remembered, so a key added later still helps)
     # one lookup at a time, politely spaced; a request that cannot get its turn soon gives up instead of
     # holding a server worker (many such requests at once would otherwise freeze the whole site)
     if not _lock.acquire(timeout=LOCK_WAIT):
@@ -73,8 +108,10 @@ def resolve(conn, book_id: int):
         if wait > 0:
             time.sleep(wait)
         try:
-            url = lookup(book["title"], book["author_en"])
-        except Exception:
+            url = "" if known_none else lookup(book["title"], book["author_en"])
+            if not url and google_key():
+                url = google_lookup(book["title_ar"] or book["title"], book["author_ar"] or book["author_en"])
+        except Exception:  # offline, or the day's quota is spent: try again another time
             _last[0] = time.time()
             return None
         _last[0] = time.time()

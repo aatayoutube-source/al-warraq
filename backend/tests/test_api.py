@@ -46,7 +46,7 @@ def client(tmp_path, monkeypatch):
 def test_seed_and_meta(client):
     m = client.get("/api/meta").json()
     assert m["total"] == 386
-    assert len(m["categories"]) == 17
+    assert len(m["categories"]) == 19
     assert any(a["key"] == "gibran" and a["count"] == 6 for a in m["authors"])
     assert len(m["authors"]) == 146
     assert m["author_total"] == 145  # "Anonymous & Folk Tradition" is not counted as an author
@@ -314,7 +314,7 @@ def test_wikisource_import_offline(client):
     res = wikisource.import_records(conn, recs)
     again = wikisource.import_records(conn, recs)  # idempotent
     conn.close()
-    assert res == again and res["poems"] == 1 and res["linked"] == 1  # Risalat al-Ghufran is a hand-picked book
+    assert res == again and res["poems"] == 1 and res["works"] == 0 and res["linked"] == 0  # poems only
     m._meta_cache.clear()
 
     hit = client.get("/api/books", params={"q": "البيداء"}).json()["items"]
@@ -325,9 +325,16 @@ def test_wikisource_import_offline(client):
     assert hit[0]["id"] in [b["id"] for b in poets["items"]] and all(b["aa"] == "المتنبي" for b in poets["items"])
     page = client.get("/book/%d" % hit[0]["id"], follow_redirects=True).text
     assert "ar.wikisource.org/wiki/" in page
-    ghufran = [b for b in client.get("/api/books", params={"q": "الغفران"}).json()["items"] if b["ws"]]
-    assert ghufran and ghufran[0]["ak"] == "maarri"  # linked, not duplicated
+    assert not [b for b in client.get("/api/books", params={"q": "الغفران"}).json()["items"] if b["ws"]]  # no book from there
     assert client.get("/api/cover/%d" % hit[0]["id"]).json()["url"] is None  # no Open Library lookup for poems
+    # a poem is counted as a poem, never as a book: the totals stay exact
+    assert meta["total"] == 386  # the books only, as before the poem arrived
+    poe = next(c for c in meta["categories"] if c["key"] == "poe")
+    ara = next(c for c in meta["categories"] if c["key"] == "ara")
+    assert poe["poems"] == 1 and ara["poems"] == 1 and ara["count"] + ara["poems"] == client.get(
+        "/api/books", params={"cat": "ara"}).json()["total"]
+    res = client.get("/api/books", params={"cat": "poe"}).json()
+    assert res["poems"] == 1 and res["total"] == poe["count"] + 1
 
 
 def test_names_categories_and_languages(client):
@@ -621,8 +628,7 @@ def test_about_privacy_terms_contact(tmp_path, monkeypatch):
         assert "Disallow: /admin/" in c.get("/robots.txt").text
 
         conn = db.connect()
-        old, fresh = legal.form_token(conn, time.time() - 60), legal.form_token(conn, time.time())
-        conn.close()
+        old = legal.form_token(conn, time.time() - 60)
         form = {"name": "Ali", "email": "ali@example.com", "topic": "suggest", "message": "Please add more books by al-Jahiz.", "t": old}
         r = c.post("/contact", data=form, follow_redirects=False)
         assert r.status_code == 303 and r.headers["location"] == "/contact?sent=1"
@@ -632,8 +638,9 @@ def test_about_privacy_terms_contact(tmp_path, monkeypatch):
         assert c.post("/contact", data={**form, "website": "http://spam.example", "message": "buy pills now please"},
                       follow_redirects=False).status_code == 303
         # refused: sent too fast, forged token, bad email (what was typed comes back, escaped)
+        fresh = legal.form_token(conn, time.time())  # made just now: a slow machine must not age it past the 3 s
         assert "انتهت صلاحية" in c.post("/contact", data={**form, "t": fresh}).text
-        assert c.post("/contact", data={**form, "t": old[:-1] + "0"}).status_code == 400
+        assert c.post("/contact", data={**form, "t": old[:-1] + ("1" if old[-1] == "0" else "0")}).status_code == 400
         r = c.post("/contact", data={**form, "email": "not-an-email", "message": "<script>alert(1)</script> hello"})
         assert r.status_code == 400 and "&lt;script&gt;" in r.text and "<script>alert" not in r.text
         # a message from another website is refused
@@ -642,6 +649,7 @@ def test_about_privacy_terms_contact(tmp_path, monkeypatch):
         for _ in range(3):
             assert c.post("/contact", data=form, follow_redirects=False).status_code == 303
         assert "كثيرة" in c.post("/contact", data=form).text
+        conn.close()
 
         # the messages page exists only with a password, and asks for it
         assert c.get("/admin/messages").status_code == 404
@@ -680,3 +688,162 @@ def test_share_buttons_poems_and_404(client):
     assert client.get("/api/books", params={"limit": 0}).status_code == 422
     robots = client.get("/robots.txt").text
     assert robots.startswith("User-agent: Mediapartners-Google\nAllow: /\n")
+
+
+def test_books_without_a_reading_link_are_removed(client, tmp_path):
+    from app import db, importer
+    conn = db.connect()
+    assert db.prune_unreadable(conn) == 0  # nothing imported yet: hand-picked books are still waiting for their links
+    make_csv(tmp_path / "pg.csv")
+    importer.run(conn, limit=0, csv_path=str(tmp_path / "pg.csv"))
+    linked = conn.execute("SELECT id FROM books WHERE curated=1 AND gid>0").fetchone()["id"]  # e.g. Pride and Prejudice
+    lost = conn.execute("SELECT id, author_key FROM books WHERE curated=1 AND gid IS NULL AND author_key='gibran'").fetchone()
+    removed = db.prune_unreadable(conn)
+    assert removed > 0 and conn.execute("SELECT COUNT(*) FROM books WHERE " + db.UNREADABLE).fetchone()[0] == 0
+    conn.close()
+    assert client.get("/book/%d" % linked, follow_redirects=True).status_code == 200
+    assert client.get("/book/%d" % lost["id"]).status_code == 404
+    assert client.get("/author/gibran").status_code == 404  # no book left: no empty author page...
+    assert "/author/gibran<" not in client.get("/sitemap-main.xml").text  # ...and not in the sitemap
+    assert client.get("/api/books", params={"q": "gibran"}).json()["total"] == 0
+
+
+def test_modern_arabic_books_from_safahat_and_open_library(client, tmp_path):
+    import json as _json
+    import re as _re
+    from app import db, modern
+    recs = [
+        {"src": "safahat", "id": "61302419", "rank": 0, "title": "راغب عياد", "authors": ["بدر الدين أبو غازي"], "cats": ["arts", "biographies"]},
+        {"src": "safahat", "id": "70959593", "rank": 1, "title": "فارس بلا وجود", "authors": ["إيتالو كالفينو"], "cats": ["novels"], "translated": True},
+        {"src": "openlibrary", "id": "OL1W", "title": "أرض زيكولا", "authors": ["عمرو عبدالحميد", "Amr Abdelhamid"], "year": 2010,
+         "publishers": ["دار عصير الكتب"], "subjects": ["Arabic fiction", "روايات"], "pages": 420, "cover": 12345, "want": 40, "ratings": 9},
+        {"src": "openlibrary", "id": "OL2W", "title": "عقدك النفسية سجنك الأبدي", "authors": ["يوسف الحسيني"], "year": 2018, "subjects": []},
+        {"src": "openlibrary", "id": "OL3W", "title": "راغب عياد", "authors": ["بدر الدين أبو غازي"], "year": 1972},  # already on Safahat
+    ]
+    path = tmp_path / "modern.jsonl"
+    path.write_text("\n".join(_json.dumps(r, ensure_ascii=False) for r in recs), encoding="utf-8")
+    conn = db.connect()
+    res = modern.import_files(conn, [str(path)])
+    assert res == {"safahat": 2, "openlibrary": 2, "skipped_duplicates": 1}
+    ids = {r["ext"]: r["id"] for r in conn.execute("SELECT id, ext FROM books WHERE curated IN (4, 5)")}
+    assert modern.import_files(conn, [str(path)]) == res  # importing again replaces, never doubles...
+    assert {r["ext"]: r["id"] for r in conn.execute("SELECT id, ext FROM books WHERE curated IN (4, 5)")} == ids  # ...and keeps addresses
+    rows = {r["title"]: r for r in conn.execute("SELECT * FROM books WHERE curated IN (4, 5)")}
+    assert rows["عقدك النفسية سجنك الأبدي"]["cat"] == "dev" and rows["أرض زيكولا"]["cat"] == "nov"
+    assert rows["فارس بلا وجود"]["origin"] == "w" and rows["راغب عياد"]["origin"] == "a"
+    db.prune_unreadable(conn)  # they have a page to go to: never removed as unreadable
+    assert conn.execute("SELECT COUNT(*) FROM books WHERE curated IN (4, 5)").fetchone()[0] == 4
+    zik = rows["أرض زيكولا"]["id"]
+    conn.close()
+
+    found = client.get("/api/books", params={"q": "زيكولا"}).json()["items"]
+    assert found and found[0]["x"] == "OL1W" and found[0]["k"] == 4
+    assert client.get("/api/cover/%d" % zik).json()["url"] == "https://covers.openlibrary.org/b/id/12345-M.jpg"
+    page = client.get("/book/%d" % zik, follow_redirects=True).text
+    assert 'href="https://openlibrary.org/works/OL1W"' in page and "اعرض الكتاب على Open Library" in page
+    assert "حقوق هذا الكتاب محفوظة" in page and "دار عصير الكتب" in page and "420" in page and "كتاب مجاني" not in page
+    work = _json.loads(_re.search(r'<script[^>]*application/ld\+json[^>]*>(.*?)</script>', page, _re.S).group(1))["@graph"][1]
+    assert work["isAccessibleForFree"] is False and "potentialAction" not in work and work["datePublished"] == "2010"
+    saf = client.get("/book/%d" % rows["راغب عياد"]["id"], follow_redirects=True).text
+    assert 'href="https://www.safahat.org/books/61302419/"' in saf and "اقرأ على صفحات (هنداوي)" in saf
+    m = client.get("/api/meta").json()
+    assert any(c["key"] == "dev" and c["count"] == 1 for c in m["categories"])
+    assert client.get("/category/dev").status_code == 200
+
+
+def test_arabic_books_category(client):
+    m = client.get("/api/meta").json()
+    ara = next(c for c in m["categories"] if c["key"] == "ara")
+    assert m["categories"][0]["key"] == "ara" and ara["ar"] == "الكتب العربية"  # first on the home page
+    arabic = sum(l["count"] for l in m["languages"] if l["code"] == "ar")
+    assert ara["count"] == arabic > 0
+    r = client.get("/api/books", params={"cat": "ara", "limit": 200}).json()
+    assert r["total"] == arabic and all(b["lg"] == "ar" for b in r["items"])
+    # it still narrows down by words, and the books keep their own topic
+    poets = client.get("/api/books", params={"cat": "ara", "q": "المتنبي"}).json()
+    assert poets["total"] >= 1 and all(b["c"] != "ara" for b in poets["items"])
+    page = client.get("/category/ara")
+    assert page.status_code == 200 and "الكتب العربية" in page.text and 'href="/book/' in page.text
+
+
+def test_modern_import_cleans_names_and_guesses_categories(client, tmp_path):
+    import json as _json
+    from app import db, modern
+    recs = [
+        {"src": "openlibrary", "id": "OL10W", "title": "خوف 2", "authors": ["مـسـلـم، أسـامـة"], "subjects": ["Arabic fiction"]},
+        {"src": "openlibrary", "id": "OL11W", "title": "خوف", "authors": ["مسلم، أسامة"], "subjects": []},  # no subject: like his others
+        {"src": "openlibrary", "id": "OL12W", "title": "رياض الصالحات", "authors": ["Badrān ʻAyyārī"], "subjects": ["Conduct of life", "Islam"]},
+        {"src": "openlibrary", "id": "OL13W", "title": "گلستان", "authors": ["Saʻdī"], "subjects": []},  # Persian
+        {"src": "openlibrary", "id": "OL14W", "title": "الروض العاطر", "authors": ["x"], "subjects": ["Erotic literature"]},
+        {"src": "openlibrary", "id": "OL15W", "title": "المعتمد في علم الفرائض", "authors": ["y"], "subjects": ["Inheritance and succession"]},
+    ]
+    path = tmp_path / "ol.jsonl"
+    path.write_text("\n".join(_json.dumps(r, ensure_ascii=False) for r in recs), encoding="utf-8")
+    conn = db.connect()
+    assert modern.import_files(conn, [str(path)])["openlibrary"] == 4  # the Persian and the erotic ones are left out
+    got = {r["ext"]: r for r in conn.execute("SELECT * FROM books WHERE curated=4")}
+    conn.close()
+    assert got["OL11W"]["author_ar"] == "أسامة مسلم" and got["OL11W"]["cat"] == "nov"
+    assert got["OL12W"]["cat"] == "rel"  # manners in Islam: religion, not self-development
+    assert got["OL15W"]["cat"] != "dev"  # "succession" is not "success"
+    assert modern.fix_name("محفوظ، نجيب، 1911-2006") == "نجيب محفوظ"  # catalogue order and dates
+
+
+def test_google_books_covers(client, monkeypatch, tmp_path):
+    import json as _json
+    from app import covers, db, modern
+    calls = []
+
+    def fake(url):
+        calls.append(url)
+        if "googleapis" in url:
+            if "%D8%B2%D9%8A%D9%83%D9%88%D9%84%D8%A7" in url:  # زيكولا
+                return {"items": [{"volumeInfo": {"title": "قصة أخرى", "imageLinks": {"thumbnail": "http://x/wrong"}}},
+                                  {"volumeInfo": {"title": "أرض زيكولا", "imageLinks": {"thumbnail": "http://books.google.com/c?id=1&edge=curl"}}}]}
+            return {"items": []}
+        return {"docs": []}
+
+    monkeypatch.setattr(covers, "fetch_json", fake)
+    monkeypatch.setattr(covers, "MIN_GAP", 0)
+    path = tmp_path / "ol.jsonl"
+    path.write_text(_json.dumps({"src": "openlibrary", "id": "OL1W", "title": "أرض زيكولا", "authors": ["عمرو عبد الحميد"]},
+                                ensure_ascii=False), encoding="utf-8")
+    conn = db.connect()
+    modern.import_files(conn, [str(path)])
+    zik = conn.execute("SELECT id FROM books WHERE ext='OL1W'").fetchone()[0]
+    conn.close()
+    monkeypatch.delenv("GOOGLE_BOOKS_KEY", raising=False)
+    assert client.get("/api/cover/%d" % zik).json()["url"] is None and calls == []  # no key: designed cover, no request
+    monkeypatch.setenv("GOOGLE_BOOKS_KEY", "k")
+    assert client.get("/api/cover/%d" % zik).json()["url"] == "https://books.google.com/c?id=1"  # the matching title only
+    assert all("googleapis" in u for u in calls)  # Open Library is not asked again for its own book
+
+
+def test_wikisource_books_are_dropped_poems_stay(client, tmp_path):
+    from app import db, importer
+    conn = db.connect()
+    make_csv(tmp_path / "pg.csv")
+    importer.run(conn, limit=0, csv_path=str(tmp_path / "pg.csv"))  # a catalogue that has been imported
+    conn.execute("INSERT INTO books(ws,title,title_ar,cat,origin,lang,curated,ord,search) VALUES('ديوان','قصيدة','قصيدة','poe','a','ar',3,1,'قصيده')")
+    conn.execute("INSERT INTO books(ws,title,title_ar,cat,origin,lang,curated,ord,search) VALUES('كتاب','كتاب فارغ','كتاب فارغ','his','a','ar',3,2,'كتاب فارغ')")
+    linked = conn.execute("SELECT id FROM books WHERE curated=1 AND (gid IS NULL OR gid=0) LIMIT 1").fetchone()[0]
+    conn.execute("UPDATE books SET ws='صفحة' WHERE id=?", (linked,))  # a hand-picked book only Wikisource had
+    conn.commit()
+    db.prune_unreadable(conn)
+    kept = {r[0] for r in conn.execute("SELECT title FROM books WHERE curated=3")}
+    assert kept == {"قصيدة"}
+    assert not conn.execute("SELECT 1 FROM books WHERE id=?", (linked,)).fetchone()
+    assert not conn.execute("SELECT 1 FROM books WHERE ws<>'' AND curated<>3").fetchone()
+    conn.close()
+
+
+def test_adsense_tag_on_every_page_and_ads_txt(client):
+    tag = '<meta name="google-adsense-account" content="ca-pub-7058063023261152">'
+    for url in ("/", "/?lang=en", "/book/1", "/category/poe", "/author/shakespeare", "/about", "/privacy", "/terms",
+                "/contact", "/no/such/page"):
+        r = client.get(url, follow_redirects=True)
+        assert tag in r.text, url
+        head = r.text.split("</head>")[0]
+        assert tag in head, url  # inside <head>, where AdSense looks for it
+    r = client.get("/ads.txt")
+    assert r.status_code == 200 and r.text == "google.com, pub-7058063023261152, DIRECT, f08c47fec0942fa0\n"
