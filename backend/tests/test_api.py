@@ -847,3 +847,16 @@ def test_adsense_tag_on_every_page_and_ads_txt(client):
         assert tag in head, url  # inside <head>, where AdSense looks for it
     r = client.get("/ads.txt")
     assert r.status_code == 200 and r.text == "google.com, pub-7058063023261152, DIRECT, f08c47fec0942fa0\n"
+
+
+def test_api_docs_are_hidden_unless_asked(tmp_path, monkeypatch):
+    monkeypatch.setenv("WARRAQ_DB", str(tmp_path / "t.db"))
+    monkeypatch.delenv("API_DOCS", raising=False)
+    from app.main import create_app
+    with TestClient(create_app()) as c:
+        for path in ("/docs", "/redoc", "/openapi.json"):
+            assert c.get(path).status_code == 404, path
+        assert c.get("/api/health").json() == {"ok": True}
+    monkeypatch.setenv("API_DOCS", "1")
+    with TestClient(create_app()) as c:
+        assert c.get("/openapi.json").status_code == 200 and c.get("/docs").status_code == 200

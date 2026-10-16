@@ -65,7 +65,11 @@ def create_app() -> FastAPI:
         conn.close()
         yield
 
-    app = FastAPI(title="Al-Warraq Library API", version="2.0.0", lifespan=lifespan)
+    # the interactive API docs (/docs, /redoc, /openapi.json) are a map of every endpoint: not on the public site
+    # unless API_DOCS=1 (for development)
+    docs = os.environ.get("API_DOCS", "") == "1"
+    app = FastAPI(title="Al-Warraq Library API", version="2.0.0", lifespan=lifespan, docs_url="/docs" if docs else None,
+                  redoc_url="/redoc" if docs else None, openapi_url="/openapi.json" if docs else None)
     app.add_middleware(GZipMiddleware, minimum_size=800)
 
     @app.middleware("http")
@@ -84,8 +88,8 @@ def create_app() -> FastAPI:
 
     @app.get("/api/health")
     def health(conn=Depends(get_conn)):
-        n = conn.execute("SELECT COUNT(*) FROM books").fetchone()[0]
-        return {"ok": True, "books": n}
+        conn.execute("SELECT 1 FROM books LIMIT 1").fetchone()  # the database answers; nothing else is told
+        return {"ok": True}
 
     @app.get("/api/meta")
     def meta(conn=Depends(get_conn)):
