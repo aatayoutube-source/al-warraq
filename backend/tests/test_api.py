@@ -916,6 +916,36 @@ def test_adsense_tag_on_every_page_and_ads_txt(client):
     assert r.status_code == 200 and r.text == "google.com, pub-7058063023261152, DIRECT, f08c47fec0942fa0\n"
 
 
+def test_ad_units_on_content_pages_only(client, monkeypatch):
+    unit = 'data-ad-slot="1844690351"'
+    loader = "pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7058063023261152"
+    for url, n in (("/", 2), ("/?lang=en", 2), ("/category/poe", 1), ("/author/shakespeare", 1), ("/book/1", 1)):
+        r = client.get(url, follow_redirects=True)
+        csp = r.headers["content-security-policy"]
+        nonce = csp.split("'nonce-")[1].split("'")[0]
+        assert r.text.count(unit) == n and r.text.split("</head>")[0].count(loader) == 1, url
+        assert "'strict-dynamic'" in csp and "frame-src https:" in csp and "frame-ancestors 'none'" in csp, url
+        assert r.text.count("<script") == r.text.count('<script nonce="%s"' % nonce), url  # the only scripts that run
+        assert r.headers["cross-origin-opener-policy"] == "same-origin-allow-popups"  # an ad's click may open its page
+    book = client.get("/book/1", follow_redirects=True).text
+    assert book.index('class="btns"') < book.index("</article>") < book.index('class="ad"')  # well below the read buttons
+    # the in-feed unit: one item of a long book list, after the 8th book; the home page's script is told its name
+    feed = 'data-ad-slot="6915772378"'
+    cat = client.get("/category/nov").text
+    items = cat.split('<ul class="rel">')[1].split("</ul>")[0].split("<li")[1:]
+    assert cat.count(feed) == 1 and 'class="infeed"' in items[8] and len(items) >= 13
+    assert '<meta name="warraq-infeed" content="ca-pub-7058063023261152|6915772378|-gg+g-1f-3w+ci">' in client.get("/").text
+    for url in ("/about", "/privacy", "/terms", "/contact", "/no/such/page"):  # no ads beside thin or legal content
+        r = client.get(url)
+        assert unit not in r.text and loader not in r.text and "'strict-dynamic'" not in r.headers["content-security-policy"], url
+    monkeypatch.setenv("ADS", "0")  # a test copy of the site: no ads, the strict policies as before
+    r = client.get("/")
+    assert unit not in r.text and loader not in r.text and "script-src 'self'" in r.headers["content-security-policy"]
+    assert "warraq-infeed" not in r.text and "6915772378" not in client.get("/category/nov").text
+    r = client.get("/book/1", follow_redirects=True)
+    assert unit not in r.text and "'strict-dynamic'" not in r.headers["content-security-policy"]
+
+
 def test_api_docs_are_hidden_unless_asked(tmp_path, monkeypatch):
     monkeypatch.setenv("WARRAQ_DB", str(tmp_path / "t.db"))
     monkeypatch.delenv("API_DOCS", raising=False)

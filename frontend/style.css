@@ -3604,3 +3604,48 @@ html[lang="en"] .hero h1 {
 .cover[data-v="2"] .cv-title {
     margin-block: auto  /* inside the arch, not at its foot */
 }
+
+/* AdSense units (placed by the server): labelled once filled, no room taken while empty */
+.ad {
+    margin: 28px 0;
+    text-align: center
+}
+
+.ad .ad-l {
+    display: none;
+    font-size: 11px;
+    letter-spacing: .04em;
+    color: var(--muted);
+    margin-bottom: 6px
+}
+
+.ad:has(ins[data-ad-status=filled]) .ad-l {
+    display: block
+}
+
+.ad:has(ins[data-ad-status=unfilled]),
+ins.adsbygoogle[data-ad-status=unfilled] {
+    display: none !important
+}
+
+/* the in-feed unit among the results: a whole row of the grid */
+.grid .infeed {
+    grid-column: 1 / -1;
+    text-align: center
+}
+
+.infeed .ad-l {
+    display: none;
+    font-size: 11px;
+    letter-spacing: .04em;
+    color: var(--muted);
+    margin-bottom: 6px
+}
+
+.infeed:has(ins[data-ad-status=filled]) .ad-l {
+    display: block
+}
+
+.infeed:has(ins[data-ad-status=unfilled]) {
+    display: none
+}

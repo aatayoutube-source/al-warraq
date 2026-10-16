@@ -35,6 +35,14 @@ SITE_CSP = ("default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inl
 BOOK_CSP = ("default-src 'self'; script-src 'nonce-{nonce}'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
             "font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.wikipedia.org; "
             "object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'")
+# Pages with an ad (home, categories, authors, books): only scripts carrying this response's nonce run, and what
+# they load may load more ('strict-dynamic': AdSense pulls further scripts from Google addresses that change with
+# the visitor's country, adservice.google.iq ...). Ads draw in frames and report back to Google: frames and
+# connections to any https address. ('unsafe-inline' and https: only serve browsers too old for nonces.)
+AD_CSP = ("default-src 'self'; script-src 'nonce-{nonce}' 'strict-dynamic' 'unsafe-inline' https:; "
+          "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; "
+          "img-src 'self' data: https:; connect-src 'self' https:; frame-src https:; "
+          "object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'")
 NO_CSP = ("/docs", "/redoc", "/openapi.json")  # FastAPI's interactive docs load their own scripts
 
 
@@ -88,7 +96,7 @@ def install(app) -> None:
         h.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
         h.setdefault("X-Frame-Options", "DENY")
         h.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=()")
-        h.setdefault("Cross-Origin-Opener-Policy", "same-origin")
+        h.setdefault("Cross-Origin-Opener-Policy", "same-origin-allow-popups")  # an ad's click opens its page
         if request.url.scheme == "https":
             h.setdefault("Strict-Transport-Security", "max-age=15552000")
         if h.get("content-type", "").startswith("text/html") and not path.startswith(NO_CSP):

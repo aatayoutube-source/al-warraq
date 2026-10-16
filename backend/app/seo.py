@@ -17,7 +17,8 @@ from urllib.parse import quote
 from . import legal, modern
 from .wikisource import WS_KIND
 from .catalog import ARABIC_CAT, CATEGORIES
-from .pages import BRAND, CSS, LOGO_SVG, SEARCH_ICON, T, _authors, adsense_meta, book_author, book_title, canonical_path, esc, legal_links
+from .pages import (BRAND, CSS, INFEED_AT, INFEED_MIN, LOGO_SVG, SEARCH_ICON, T, _authors, ad_head, ad_unit, adsense_meta,
+                    book_author, book_title, canonical_path, esc, infeed_meta, infeed_unit, legal_links)
 
 PER_PAGE = 60
 MAX_PAGES = 200  # category pages go this deep; the sitemaps list every single book anyway
@@ -79,7 +80,12 @@ def _alternates(base: str, path: str, extra: str = "") -> str:
 _home = {"mtime": 0, "html": ""}
 
 
-def home_html(frontend_dir: str, base: str, ui: str = "ar") -> str:
+def with_nonce(page: str, nonce: str) -> str:
+    """Every script of the page carries the response's nonce: the only scripts its Content-Security-Policy runs."""
+    return page.replace("<script", '<script nonce="%s"' % esc(nonce)) if nonce else page
+
+
+def home_html(frontend_dir: str, base: str, ui: str = "ar", nonce: str = "") -> str:
     path = os.path.join(frontend_dir, "index.html")
     mtime = os.path.getmtime(path)
     if mtime != _home["mtime"]:
@@ -95,6 +101,8 @@ def home_html(frontend_dir: str, base: str, ui: str = "ar") -> str:
         '<meta property="og:locale" content="%s">' % ("en_US" if ui == "en" else "ar_AR"),
         '<meta name="twitter:image" content="%s/og-image.png">' % esc(base),
         verification_meta(),
+        ad_head() if nonce else "",
+        infeed_meta() if nonce else "",
         _ld({"@context": "https://schema.org", "@graph": [
             {"@type": "WebSite", "@id": base + "/#site", "url": base + "/", "name": BRAND["ar"], "alternateName": BRAND["en"],
              "inLanguage": ["ar", "en"], "publisher": {"@id": base + "/#org"},
@@ -105,12 +113,14 @@ def home_html(frontend_dir: str, base: str, ui: str = "ar") -> str:
         ]}),
     ])
     links = " ".join('<a href="/category/%s">%s</a>' % (k, esc(v["ar"])) for k, v in CATEGORIES.items())
-    return _home["html"].replace("<!--SEO:HEAD-->", head).replace("<!--SEO:CATS-->", links)
+    ad = '<div class="wrap">%s</div>' % ad_unit(ui) if nonce and ad_unit(ui) else ""
+    page = _home["html"].replace("<!--SEO:HEAD-->", head).replace("<!--SEO:CATS-->", links).replace("<!--SEO:AD-->", ad)
+    return with_nonce(page, nonce)
 
 
 # ---------- category and author pages (plain HTML: every crawler can read and follow them) ----------
 
-def _shell(ui, base, path, title, desc, body, ld, page=1, extra_q="", extra_css=""):
+def _shell(ui, base, path, title, desc, body, ld, page=1, extra_q="", extra_css="", nonce=""):
     t = T[ui]
     canon = base + path + "?" + "&".join(x for x in (("lang=en" if ui == "en" else ""), ("page=%d" % page if page > 1 else "")) if x)
     canon = canon.rstrip("?")
@@ -123,6 +133,7 @@ def _shell(ui, base, path, title, desc, body, ld, page=1, extra_q="", extra_css=
 <title>{title}</title>
 <meta name="description" content="{desc}">
 {adsense}
+{ad_head}
 <link rel="canonical" href="{canon}">
 {alts}
 <meta property="og:type" content="website">
@@ -153,7 +164,9 @@ def _shell(ui, base, path, title, desc, body, ld, page=1, extra_q="", extra_css=
 """.format(ui=ui, dir=t["dir"], title=esc(title), desc=esc(desc), canon=esc(canon), alts=_alternates(base, path),
            brand=esc(BRAND[ui]), base=esc(base), ld=ld, css=CSS, extra=EXTRA_CSS + extra_css, logo=LOGO_SVG, icon=SEARCH_ICON,
            ph=esc(t["ph"]), search=esc(t["search"]), all=esc(t["all"]), other=other, other_lang=esc(t["other_lang"]),
-           toggle=esc(path + ("?lang=en" if other == "en" else "")), body=body, note=esc(t["note"]), legal=legal_links(ui), adsense=adsense_meta())
+           toggle=esc(path + ("?lang=en" if other == "en" else "")),
+           body=body.replace("<!--SEO:AD-->", ad_unit(ui) if nonce else "").replace("<!--SEO:FEED-->", infeed_unit(ui) if nonce else ""),
+           note=esc(t["note"]), legal=legal_links(ui), adsense=adsense_meta(), ad_head=ad_head() if nonce else "")
 
 
 def _book_list(conn, rows, ui) -> str:
@@ -162,6 +175,8 @@ def _book_list(conn, rows, ui) -> str:
     for r in rows:
         a = book_author(r, ui, authors)
         items.append('<li><a href="%s">%s%s</a></li>' % (esc(canonical_path(r)), esc(book_title(r, ui)), ("<small>%s</small>" % esc(a)) if a else ""))
+    if len(items) >= INFEED_MIN:  # the in-feed ad's place, filled by _shell on pages that show ads
+        items.insert(INFEED_AT, "<!--SEO:FEED-->")
     return '<ul class="rel">%s</ul>' % "".join(items)
 
 
@@ -183,7 +198,7 @@ def _has_modern(conn, cond: str, arg) -> bool:
     return bool(conn.execute("SELECT 1 FROM books WHERE " + cond + " AND curated IN (?, ?) LIMIT 1", (arg,) + modern.KINDS).fetchone())
 
 
-def category_page(conn, key: str, base: str, ui: str = "ar", page: int = 1):
+def category_page(conn, key: str, base: str, ui: str = "ar", page: int = 1, nonce: str = ""):
     if key not in CATEGORIES:
         return None
     # the Arabic category is every book written in Arabic, not a topic
@@ -205,17 +220,17 @@ def category_page(conn, key: str, base: str, ui: str = "ar", page: int = 1):
     chips = "".join('<a href="/category/%s%s"%s>%s</a>' % (k, "?lang=en" if ui == "en" else "", ' aria-current="page"' if k == key else "", esc(v[ui]))
                     for k, v in CATEGORIES.items())
     body = ('<p class="crumbs"><a href="/">%s</a> / %s</p><h1>%s</h1><p class="desc">%s <a href="/?cat=%s#browse">%s</a></p>'
-            '<nav class="chips" aria-label="%s">%s</nav>%s%s'
+            '<nav class="chips" aria-label="%s">%s</nav><!--SEO:AD-->%s%s'
             % (esc(T[ui]["home"]), esc(name), esc(s["cat_h"].format(c=name)), esc(desc), key, esc(s["open"]), esc(s["cats"]), chips,
                _book_list(conn, rows, ui), _pager(path, ui, page, pages)))
     ld = _ld({"@context": "https://schema.org", "@graph": [
         {"@type": "CollectionPage", "name": title, "description": desc, "url": base + path, "inLanguage": ui,
          "isPartOf": {"@id": base + "/#site"}},
         _breadcrumbs(base, ui, name, path)]})
-    return _shell(ui, base, path, title, desc, body, ld, page)
+    return with_nonce(_shell(ui, base, path, title, desc, body, ld, page, nonce=nonce), nonce)
 
 
-def author_page(conn, key: str, base: str, ui: str = "ar", page: int = 1):
+def author_page(conn, key: str, base: str, ui: str = "ar", page: int = 1, nonce: str = ""):
     a = conn.execute("SELECT * FROM authors WHERE key=?", (key,)).fetchone()
     if not a:
         return None
@@ -233,7 +248,7 @@ def author_page(conn, key: str, base: str, ui: str = "ar", page: int = 1):
     others = conn.execute("SELECT key, en, ar FROM authors ORDER BY ord LIMIT 40").fetchall()
     chips = "".join('<a href="/author/%s%s">%s</a>' % (quote(o["key"]), "?lang=en" if ui == "en" else "", esc(o["ar"] if ui == "ar" else o["en"]))
                     for o in others if o["key"] != key)
-    body = ('<p class="crumbs"><a href="/">%s</a> / %s</p><h1>%s</h1><p class="desc">%s <a href="/?ak=%s#browse">%s</a></p>%s%s'
+    body = ('<p class="crumbs"><a href="/">%s</a> / %s</p><h1>%s</h1><p class="desc">%s <a href="/?ak=%s#browse">%s</a></p><!--SEO:AD-->%s%s'
             '<h2>%s</h2><nav class="chips">%s</nav>'
             % (esc(T[ui]["home"]), esc(name), esc(s["auth_h"].format(a=name)), esc(desc), esc(quote(key)), esc(s["open"]),
                _book_list(conn, rows, ui), _pager(path, ui, page, pages), esc(s["authors"]), chips))
@@ -241,7 +256,7 @@ def author_page(conn, key: str, base: str, ui: str = "ar", page: int = 1):
         {"@type": "ProfilePage", "name": title, "url": base + path, "inLanguage": ui,
          "mainEntity": {"@type": "Person", "name": a["en"], "alternateName": a["ar"]}},
         _breadcrumbs(base, ui, name, path)]})
-    return _shell(ui, base, path, title, desc, body, ld, page)
+    return with_nonce(_shell(ui, base, path, title, desc, body, ld, page, nonce=nonce), nonce)
 
 
 # ---------- robots.txt and the main sitemap ----------
