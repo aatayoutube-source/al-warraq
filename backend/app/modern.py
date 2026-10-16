@@ -34,6 +34,7 @@ SAFAHAT_KIND = 5  # books.curated value for Safahat (Hindawi) rows
 KINDS = (OL_KIND, SAFAHAT_KIND)
 SAFAHAT_ORD_BASE = 50_000      # free to read: right after the hand-picked books
 OL_POPULAR_ORD_BASE = 95_000   # Open Library books people want to read: before the big public-domain imports
+ARABIC_HORROR_ORD_BASE = 60_000  # Arabic horror from Open Library (a few dozen): right after Safahat's
 OL_POPULAR_MAX = 4_999
 OL_ORD_BASE = 2_000_000        # the rest: after HathiTrust, before single poems
 UA = "AlWarraqLibrary/2.0 (+https://warraq-fullstack-production.up.railway.app; alwarraqibrary@gmail.com)"
@@ -86,7 +87,7 @@ def is_arabic_title(text: str) -> bool:
 # ---------- categories ----------
 
 SAFAHAT_CATS = {
-    "novels": "nov", "science.fiction": "nov", "detective.fiction": "nov", "literature": "nov", "literary.criticism": "gen",
+    "detective.fiction": "mys", "novels": "nov", "science.fiction": "nov", "literature": "nov", "literary.criticism": "gen",
     "poetry": "poe", "plays": "dra", "children.stories": "chi", "travel.literature": "tra", "geography": "tra",
     "religions": "rel", "history": "his", "biographies": "bio", "philosophy": "phi", "psychology": "psy",
     "social.sciences": "psy", "politics": "pol", "economics": "pol", "business": "pol", "health": "med",
@@ -97,6 +98,10 @@ SAFAHAT_CATS = {
 # novel, "Conduct of life -- Juvenile fiction" a children's book), then religion ("Conduct of life" on an Islamic
 # book of manners is religion, not self-development).
 SUBJECT_RULES = [
+    ("hor", ["horror", "horror tales", "horror fiction", "ghost stories", "occult fiction", "vampires", "paranormal fiction",
+             "haunted houses", "قصص الرعب", "روايات الرعب"]),
+    ("mys", ["detective and mystery stories", "mystery fiction", "detective fiction", "crime fiction", "الروايات البوليسية",
+             "القصص البوليسية"]),
     ("chi", ["juvenile", "juvenile fiction", "juvenile literature", "children's stories", "أطفال"]),
     ("nov", ["fiction", "novel", "novels", "short stories", "روايات", "رواية", "قصص"]),
     ("poe", ["poetry", "poems", "شعر"]),
@@ -119,7 +124,13 @@ SUBJECT_RULES = [
     ("art", ["art", "arts", "music", "architecture", "cooking", "فنون", "موسيقى"]),
 ]
 # modern books usually reach Open Library without subjects: authors known for one kind of book give it away
-NOVELISTS = ["عمرو عبد الحميد", "أحمد مراد", "أحمد خالد توفيق", "حسن الجندي", "أسامة المسلم", "أسامة مسلم", "خولة حمدي",
+# Arab horror writers: their books are horror even when they arrive without a subject
+HORROR_WRITERS = ["حسن الجندي", "أسامة المسلم", "أسامة مسلم", "تامر إبراهيم", "عمرو المنوفي", "محمد عصمت", "شريف عبد الهادي",
+                  "منال عبد الحميد", "أحمد يونس",
+                  # the classics of world horror, as their translators spell them
+                  "ماري شيلي", "برام ستوكر", "هوارد فيليبس لافكرافت", "إتش بي لافكرافت", "شيريدان لو فانو", "ألجرنون بلاكوود",
+                  "آرثر ماكين", "أمبروز بيرس", "ويليام هوب هودجسون", "إم آر جيمس"]
+NOVELISTS = ["عمرو عبد الحميد", "أحمد مراد", "أحمد خالد توفيق", "خولة حمدي",
              "محمد صادق", "أحلام مستغانمي", "يوسف زيدان", "رضوى عاشور", "سعود السنعوسي", "علاء الأسواني", "الطيب صالح",
              "غسان كنفاني", "عبد الرحمن منيف", "نجيب محفوظ", "إحسان عبد القدوس", "يوسف السباعي", "محمد المنسي قنديل",
              "بهاء طاهر", "أحمد سعداوي", "إبراهيم نصر الله", "واسيني الأعرج", "حنان الشيخ", "ربيع جابر", "جبرا إبراهيم جبرا",
@@ -128,8 +139,13 @@ NOVELISTS = ["عمرو عبد الحميد", "أحمد مراد", "أحمد خا
              "شكري المبخوت", "أثير عبد الله النشمي", "إبراهيم عيسى", "أحمد آل حمدان", "منذر القباني", "تامر إبراهيم"]
 SELF_HELP = ["إبراهيم الفقي", "محمد طه", "أحمد الشقيري", "كريم الشاذلي", "صلاح الراشد", "ياسر حارب", "أحمد عمارة",
              "يوسف الحسيني", "فهد عامر الأحمدي"]  # not preachers who also write self-help: their books are mostly religion
-_KNOWN = {norm(n).replace(" ", ""): cat for cat, names in (("nov", NOVELISTS), ("dev", SELF_HELP)) for n in names}
-LITERARY = ("nov", "poe", "dra", "chi")  # forms an author keeps from book to book
+_KNOWN = {norm(n).replace(" ", ""): cat for cat, names in (("nov", NOVELISTS), ("dev", SELF_HELP), ("hor", HORROR_WRITERS))
+          for n in names}
+LITERARY = ("nov", "poe", "dra", "chi", "hor", "mys")  # forms an author keeps from book to book
+# horror in an Arabic title (series and words that never mean anything else)
+HORROR_TITLE = ["ما وراء الطبيعه", "قصص رعب", "قصه رعب", "حكايه رعب", "روايه رعب", "قصص الرعب", "بيت الاشباح", "مصاص دماء",
+                "دراكولا", "الدراكولا", "فرانكنشتاين", "فرانكنستين", "جيكل", "مستر هايد",
+                "مصاصي الدماء", "مصاصه دماء", "البيت المسكون", "المنزل المسكون"]
 
 
 def known_author_category(name: str) -> str:
@@ -157,20 +173,33 @@ def ol_category(title: str, subjects, fallback: bool = True) -> str:
     """Category from the title and the subjects; "" when neither says anything and fallback is off."""
     if _dev_title(title):
         return "dev"
+    if _horror_title(title) and not re.search(r"islam|koran|qur|hadith|religio|politic", " ".join(subjects or []), re.I):
+        return "hor"  # "the jinn" in Islamic studies or "terror" in politics are not horror
     if any(k in norm(title) for k in ("رسول الله", "صلي الله عليه وسلم", "سيره النبي", "السيره النبويه")):
         return "rel"
     text = " | ".join(subjects or []).lower()
+    serious = re.search(r"islam|koran|qur|hadith|religio|theolog|miracle|politic|histor|military|folklore", text)  # not horror
     for cat, pattern in _SUBJECT_COMPILED:
-        if pattern.search(text):
+        if pattern.search(text) and not (cat == "hor" and serious):
             return cat
     from .wikisource import ar_category
     cat = ar_category(title)
     return cat if fallback or cat != "gen" else ""
 
 
-def safahat_category(title: str, slugs) -> str:
+def _horror_title(title: str) -> bool:
+    t = " " + norm(title) + " "
+    return any(" " + norm(k) + " " in t for k in HORROR_TITLE)
+
+
+def safahat_category(title: str, slugs, authors=None) -> str:
     if _dev_title(title):
         return "dev"
+    fiction = set(slugs or []) & {"novels", "literature", "science.fiction", "detective.fiction"}
+    if fiction and (_horror_title(title) or known_author_category(" ".join(authors or [])) == "hor"):
+        return "hor"  # tales of horror, and the classic horror writers in translation
+    if "detective.fiction" in (slugs or []):
+        return "mys"  # crime and mystery novels
     for s in slugs or []:
         if s in SAFAHAT_CATS:
             return SAFAHAT_CATS[s]
@@ -385,7 +414,7 @@ def import_files(conn, paths) -> dict:
             covers.append((rec["id"], kind, cover))
 
     for rec in sorted(saf, key=lambda r: r.get("rank", 0)):
-        add(rec, SAFAHAT_KIND, SAFAHAT_ORD_BASE + rec.get("rank", 0), safahat_category(rec["title"], rec.get("cats")),
+        add(rec, SAFAHAT_KIND, SAFAHAT_ORD_BASE + rec.get("rank", 0), safahat_category(rec["title"], rec.get("cats"), rec.get("authors")),
             "https://downloads.hindawi.org/covers/304x406/%s.jpg" % rec["id"], None)
     # most modern novels come without subjects: they take the category of the author's other books
     def who(rec):
@@ -394,7 +423,7 @@ def import_files(conn, paths) -> dict:
 
     first = {r["id"]: ol_category(r["title"], r.get("subjects"), fallback=False) for r in ol}
     votes = {}  # author -> {category: books}
-    for rec, cat in [(r, safahat_category(r["title"], r.get("cats"))) for r in saf] + [(r, first[r["id"]]) for r in ol]:
+    for rec, cat in [(r, safahat_category(r["title"], r.get("cats"), r.get("authors"))) for r in saf] + [(r, first[r["id"]]) for r in ol]:
         if cat not in ("", "gen") and who(rec):
             v = votes.setdefault(who(rec), {})
             v[cat] = v.get(cat, 0) + 1
@@ -415,13 +444,17 @@ def import_files(conn, paths) -> dict:
     popular = sorted(ol, key=lambda r: (-(r.get("want") or 0), -(r.get("ratings") or 0), -(r.get("editions") or 0),
                                          -(r.get("year") or 0), r["title"]))
     for i, rec in enumerate(popular):
+        cat = category(rec)
         wanted = (rec.get("want") or 0) + (rec.get("ratings") or 0) > 0 or (rec.get("editions") or 0) >= 3
-        ord_ = OL_POPULAR_ORD_BASE + i if wanted and i <= OL_POPULAR_MAX else OL_ORD_BASE + i
+        if cat == "hor":  # the rare Arabic horror books: first in their category, before the world classics
+            ord_ = ARABIC_HORROR_ORD_BASE + i
+        else:
+            ord_ = OL_POPULAR_ORD_BASE + i if wanted and i <= OL_POPULAR_MAX else OL_ORD_BASE + i
         title = rec["title"] + ((": " + rec["subtitle"]) if rec.get("subtitle") else "")
         extra = {k: v for k, v in (("year", rec.get("year")), ("pub", (rec.get("publishers") or [""])[0]),
                                    ("pages", rec.get("pages")), ("subjects", [s for s in (rec.get("subjects") or []) if ARABIC.search(s)][:6]))
                  if v}
-        add(dict(rec, title=title), OL_KIND, ord_, category(rec),
+        add(dict(rec, title=title), OL_KIND, ord_, cat,
             "https://covers.openlibrary.org/b/id/%d-M.jpg" % int(rec["cover"]) if rec.get("cover") else "", extra)
 
     conn.executemany(

@@ -10,7 +10,11 @@ Project Gutenberg works are public domain under US law; check your own country's
 import argparse
 import csv
 import io
+import json
+import re
 import sys
+import time
+import urllib.parse
 import urllib.request
 
 from . import db
@@ -141,6 +145,88 @@ def run(conn, limit=0, langs=None, csv_path="") -> dict:
     return import_rows(conn, rows)
 
 
+def recategorize(conn, csv_path: str = "") -> int:
+    """Gives the Gutenberg books already in the database the categories of today's rules (a new category such
+    as horror) without importing them again: their ids, and so their addresses, likes and views, stay.
+    Hand-picked books keep the category chosen for them, except that a genre (horror, crime and mystery) wins:
+    Frankenstein and Dracula belong with the horror books."""
+    if csv_path:
+        with open(csv_path, encoding="utf-8", errors="replace", newline="") as f:
+            data = f.read()
+    else:
+        data = fetch(CATALOG_URL)
+    wanted = {gid: cat for _score, gid, _t, _a, _l, cat in parse_catalog(data, 0, set())}
+    # one pass over the Gutenberg rows, then updates by id: "WHERE gid=?" has no index and would scan the table each time
+    changes = [(wanted[r["gid"]], r["id"]) for r in conn.execute("SELECT id, gid, cat, curated FROM books WHERE curated IN (0, 1) AND gid>0")
+               if wanted.get(r["gid"], r["cat"]) != r["cat"] and (r["curated"] == 0 or wanted[r["gid"]] in ("hor", "mys"))]
+    conn.executemany("UPDATE books SET cat=? WHERE id=?", changes)
+    conn.commit()
+    return len(changes)
+
+
+# horror: the most downloaded first (Gutendex reads Gutenberg's download counts), and the scanned HathiTrust
+# books whose titles say so in so many words
+GUTENDEX = "https://gutendex.com/books/"
+HORROR_TOPICS = ("horror", "ghost stories", "vampires", "supernatural", "gothic fiction", "haunted", "werewolves")
+POPULAR_HORROR_ORD_BASE = 99_000  # before the rest of Gutenberg (100,000+)
+HORROR_TITLES = re.compile(r"\b(ghost stor(y|ies)|tales of (terror|horror|the supernatural|the uncanny)|horror stories|weird tales|"
+                           r"uncanny (tales|stories)|tales of mystery and imagination|the vampyre|vampires?|werewol(f|ves)|"
+                           r"haunted hous(e|es)|histoires extraordinaires|gespenstergeschichten)\b", re.I)
+NOT_HORROR = re.compile(r"\bbats?\b|bibliograph|catalogue|index of|politic|tammany|of the continent|press|history|histoire de|dakota", re.I)
+# "vampire bats" are zoology, a "political vampire" is politics, a town history with "its ghost stories" is history
+MYSTERY_TITLES = re.compile(r"\b(detective stor(y|ies)|mystery stories|murder mystery|sherlock holmes|crime stories)\b", re.I)
+
+
+def rank_horror(conn, pages: int = 4, fetch_json=None, pause: float = 1.0) -> int:
+    """Orders the horror category by Gutenberg downloads: Dracula and Frankenstein come before the obscure."""
+    fetch_json = fetch_json or (lambda url: json.loads(fetch(url)))
+
+    def patient(url):  # Gutendex is a free service that is often busy: wait and try again, then give up on that topic
+        for wait in (15, 45, 90):
+            try:
+                return fetch_json(url)
+            except Exception as e:
+                print("Gutendex busy (%s), trying again in %d s" % (e, wait), file=sys.stderr)
+                time.sleep(wait * (pause > 0))
+        return None
+
+    downloads = {}
+    for topic in HORROR_TOPICS:
+        url = GUTENDEX + "?" + urllib.parse.urlencode({"topic": topic})
+        for _ in range(pages):
+            data = patient(url)
+            if data is None:
+                break
+            for b in data.get("results", []):
+                downloads[b["id"]] = max(downloads.get(b["id"], 0), b.get("download_count") or 0)
+            url = data.get("next")
+            if not url:
+                break
+            time.sleep(pause)
+    ids = {r["gid"]: r["id"] for r in conn.execute("SELECT id, gid FROM books WHERE cat='hor' AND gid>0")}
+    ranked = [g for g in sorted(downloads, key=lambda g: -downloads[g]) if g in ids][:999]
+    conn.executemany("UPDATE books SET ord=? WHERE id=?", [(POPULAR_HORROR_ORD_BASE + i, ids[g]) for i, g in enumerate(ranked)])
+    conn.commit()
+    return len(ranked)
+
+
+def recategorize_hathi_titles(conn) -> dict:
+    """HathiTrust books are known only by their titles: those that say horror or detective stories outright move there."""
+    moves = {"hor": [], "mys": []}
+    for r in conn.execute("SELECT id, title, cat FROM books WHERE curated=2"):
+        t = r["title"] or ""
+        if r["cat"] != "hor" and HORROR_TITLES.search(t) and not NOT_HORROR.search(t):
+            moves["hor"].append(r["id"])
+        elif r["cat"] == "hor" and NOT_HORROR.search(t):  # put there by a looser rule: out again
+            moves.setdefault("gen", []).append(r["id"])
+        elif r["cat"] not in ("hor", "mys") and MYSTERY_TITLES.search(t):
+            moves["mys"].append(r["id"])
+    for cat, ids in moves.items():
+        conn.executemany("UPDATE books SET cat=? WHERE id=?", [(cat, i) for i in ids])
+    conn.commit()
+    return {k: len(v) for k, v in moves.items()}
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--limit", type=int, default=0, help="max books, 0 = all (default)")
@@ -151,7 +237,21 @@ def main() -> int:
     ap.add_argument("--hathi-limit", type=int, default=1000000, help="max HathiTrust books, 0 = all (default 1000000)")
     ap.add_argument("--no-gutenberg", action="store_true", help="skip Gutenberg (only import the --hathi file)")
     ap.add_argument("--wikisource", action="store_true", help="also import Arabic Wikisource (about 43,000 works, needs internet)")
+    ap.add_argument("--rank-horror", action="store_true", help="only order the horror books by Gutenberg downloads (Gutendex)")
+    ap.add_argument("--recategorize", action="store_true", help="only re-sort the Gutenberg books already imported into today's"
+                    " categories (keeps their ids); uses --csv when given")
     args = ap.parse_args()
+    if args.rank_horror:
+        conn = db.connect()
+        print("Horror books ordered by downloads: %d" % rank_horror(conn))
+        return 0
+    if args.recategorize:
+        conn = db.connect()
+        db.init_db(conn)
+        print("Gutenberg books moved to another category: %d" % recategorize(conn, args.csv))
+        print("HathiTrust books moved by their titles:", recategorize_hathi_titles(conn))
+        print("Horror books ordered by downloads: %d" % rank_horror(conn))
+        return 0
 
     conn = db.connect()
     db.init_db(conn)

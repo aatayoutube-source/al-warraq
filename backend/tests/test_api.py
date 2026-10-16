@@ -46,7 +46,7 @@ def client(tmp_path, monkeypatch):
 def test_seed_and_meta(client):
     m = client.get("/api/meta").json()
     assert m["total"] == 386
-    assert len(m["categories"]) == 19
+    assert len(m["categories"]) == 21
     assert any(a["key"] == "gibran" and a["count"] == 6 for a in m["authors"])
     assert len(m["authors"]) == 146
     assert m["author_total"] == 145  # "Anonymous & Folk Tradition" is not counted as an author
@@ -783,7 +783,7 @@ def test_modern_import_cleans_names_and_guesses_categories(client, tmp_path):
     assert modern.import_files(conn, [str(path)])["openlibrary"] == 4  # the Persian and the erotic ones are left out
     got = {r["ext"]: r for r in conn.execute("SELECT * FROM books WHERE curated=4")}
     conn.close()
-    assert got["OL11W"]["author_ar"] == "أسامة مسلم" and got["OL11W"]["cat"] == "nov"
+    assert got["OL11W"]["author_ar"] == "أسامة مسلم" and got["OL11W"]["cat"] == "hor"  # a horror writer's book
     assert got["OL12W"]["cat"] == "rel"  # manners in Islam: religion, not self-development
     assert got["OL15W"]["cat"] != "dev"  # "succession" is not "success"
     assert modern.fix_name("محفوظ، نجيب، 1911-2006") == "نجيب محفوظ"  # catalogue order and dates
@@ -860,3 +860,59 @@ def test_api_docs_are_hidden_unless_asked(tmp_path, monkeypatch):
     monkeypatch.setenv("API_DOCS", "1")
     with TestClient(create_app()) as c:
         assert c.get("/openapi.json").status_code == 200 and c.get("/docs").status_code == 200
+
+
+def test_horror_and_mystery(client, tmp_path):
+    from app import catalog, db, importer, modern
+    assert catalog.categorize("Horror tales; Science fiction", "") == "hor"
+    assert catalog.categorize("Detective and mystery stories", "Crime Fiction") == "mys"
+    assert catalog.categorize("Love stories", "") == "nov"
+    assert modern.safahat_category("علامة الأربعة", ["detective.fiction"]) == "mys"
+    assert modern.safahat_category("القضية الغريبة للدكتور جيكل ومستر هايد", ["novels"]) == "hor"
+    assert modern.safahat_category("تحوُّل", ["science.fiction"], ["ماري شيلي"]) == "hor"
+    assert modern.safahat_category("لويزيتو: قصة حب", ["novels"]) == "nov"
+    assert modern.ol_category("قصص رعب من الريف", []) == "hor"
+    assert modern.ol_category("دور سلاح الرعب في سياسة المغول", ["Politics and government"]) != "hor"
+    assert modern.known_author_category("حسن الجندي") == "hor"
+    # Gutenberg books move into the new category without being imported again: same ids
+    make_csv(tmp_path / "pg.csv", extra=3)
+    conn = db.connect()
+    importer.run(conn, limit=0, csv_path=str(tmp_path / "pg.csv"))
+    before = conn.execute("SELECT id, cat FROM books WHERE gid=20000").fetchone()  # an ordinary imported novel
+    assert before["cat"] == "nov"
+    lines = open(tmp_path / "pg.csv", encoding="utf-8").read().splitlines(keepends=True)
+    (tmp_path / "pg2.csv").write_text("".join(l.replace("Fiction", "Ghost stories") if l.startswith("20000,") else l for l in lines),
+                                      encoding="utf-8")
+    assert importer.recategorize(conn, str(tmp_path / "pg2.csv")) >= 1
+    assert conn.execute("SELECT id, cat FROM books WHERE gid=20000").fetchone()[:] == (before["id"], "hor")
+    conn.close()
+
+
+def test_horror_ranked_by_downloads_and_hathi_titles(client, tmp_path):
+    from app import db, importer
+    make_csv(tmp_path / "pg.csv", extra=3)
+    conn = db.connect()
+    importer.run(conn, limit=0, csv_path=str(tmp_path / "pg.csv"))
+    rows = conn.execute("SELECT id, gid FROM books WHERE gid IN (20000, 20001, 20002)").fetchall()
+    conn.executemany("UPDATE books SET cat='hor' WHERE id=?", [(r["id"],) for r in rows])
+    conn.commit()
+    pages = {"horror": [{"id": 20001, "download_count": 900}, {"id": 20002, "download_count": 50}, {"id": 999999, "download_count": 5000}]}
+
+    def fake(url):  # Gutendex: one page per topic, the most downloaded first
+        topic = url.split("topic=")[1].replace("+", " ")
+        return {"results": pages.get(topic, []), "next": None}
+
+    assert importer.rank_horror(conn, fetch_json=fake, pause=0) == 2  # a book we do not have is skipped
+    order = [r["gid"] for r in conn.execute("SELECT gid FROM books WHERE cat='hor' ORDER BY ord")]
+    assert order[:2] == [20001, 20002] and order[-1] == 20000
+    # HathiTrust titles that say so outright
+    for i, title in enumerate(["Ghost stories of an antiquary", "The vampire bat in Brazil", "The adventures of Sherlock Holmes",
+                               "A history of Rome"]):
+        conn.execute("INSERT INTO books(htid,title,cat,origin,lang,curated,ord,search) VALUES(?,?,'gen','w','en',2,?,?)",
+                     ("h.%d" % i, title, 2000000 + i, title.lower()))
+    conn.commit()
+    assert importer.recategorize_hathi_titles(conn) == {"hor": 1, "mys": 1}
+    cats = {r["title"]: r["cat"] for r in conn.execute("SELECT title, cat FROM books WHERE curated=2")}
+    assert cats["Ghost stories of an antiquary"] == "hor" and cats["The vampire bat in Brazil"] == "gen"
+    assert cats["The adventures of Sherlock Holmes"] == "mys" and cats["A history of Rome"] == "gen"
+    conn.close()

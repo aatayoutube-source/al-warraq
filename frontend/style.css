@@ -282,6 +282,14 @@ h2 {
     --hover-anim: bob .8s var(--spring)
 }
 
+.ic-hor {
+    --hover-anim: shake .8s ease-in-out
+}
+
+.ic-mys {
+    --hover-anim: wobble .9s ease-in-out
+}
+
 @keyframes bob {
     0%,
     100% {

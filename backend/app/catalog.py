@@ -7,6 +7,8 @@ ARABIC_CAT = "ara"
 CATEGORIES = {
     "ara": {"hue": 158, "en": "Arabic Books", "ar": "الكتب العربية"},
     "nov": {"hue": 14, "en": "Novels & Stories", "ar": "روايات وقصص"},
+    "hor": {"hue": 262, "en": "Horror", "ar": "رعب"},
+    "mys": {"hue": 228, "en": "Crime & Mystery", "ar": "جريمة وغموض"},
     "dev": {"hue": 120, "en": "Self-Development", "ar": "تنمية بشرية"},
     "poe": {"hue": 330, "en": "Poetry", "ar": "شعر"},
     "dra": {"hue": 282, "en": "Drama", "ar": "مسرح"},
@@ -53,8 +55,18 @@ _COMPILED = [
 ]
 
 
+# horror, then crime and mystery, come before everything: "Horror tales; Science fiction" is horror
+HORROR = re.compile(r"horror|ghost stor|ghosts|supernatural|vampire|werewol|haunted|gothic fiction|occult fiction")
+MYSTERY = re.compile(r"detective and mystery|mystery and detective|detective fiction|mystery fiction|crime fiction|"
+                     r"detective stories|mystery stories|private investigators")
+
+
 def categorize(subjects: str, shelves: str, default: str = "nov") -> str:
     text = ((subjects or "") + " ; " + (shelves or "")).lower()
+    if HORROR.search(text):
+        return "hor"
+    if MYSTERY.search(text):
+        return "mys"
     if "science fiction" in text:
         return "nov"
     for code, pattern in _COMPILED:

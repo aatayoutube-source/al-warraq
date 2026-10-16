@@ -4,7 +4,7 @@ WORKDIR /app
 # into temporary storage (fits Railway's free plan); visitor numbers go to /data, the place for a volume.
 # docker-compose keeps the catalogue on its volume too, so it is downloaded only once there.
 ENV PYTHONUNBUFFERED=1 \
-    DB_URL=https://github.com/aliabbas1111/warraq-fullstack/releases/download/data-v2/warraq-books.db.gz \
+    DB_URL=https://github.com/aliabbas1111/warraq-fullstack/releases/download/data-v3/warraq-books.db.gz \
     WARRAQ_DB=/app/cache/warraq.db \
     STATS_DB=/data/stats.db \
     FRONTEND_DIR=/app/frontend \
