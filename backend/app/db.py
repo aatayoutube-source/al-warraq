@@ -13,10 +13,10 @@ import sys
 import tempfile
 import urllib.request
 
-from .textnorm import norm
+from .textnorm import NORM_VERSION, has_invisible, norm
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
-SEED_VERSION = "2"  # bump when authors.txt / books.txt / norm() change: curated rows are rebuilt
+SEED_VERSION = "2"  # bump when authors.txt / books.txt change: curated rows are rebuilt (norm() has its own: renorm_search)
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS meta(
@@ -206,6 +206,29 @@ def init_db(conn: sqlite3.Connection) -> None:
     fix_author_names(conn)
     seed_period_visitors(conn)
     ensure_fts(conn)
+    renorm_search(conn)
+
+
+def renorm_search(conn: sqlite3.Connection) -> int:
+    """Once per NORM_VERSION: bring books.search (made by an older norm()) to the current one, so the
+    search box and the stored text agree. The index follows through its trigger. Returns the rows changed."""
+    if conn.execute("SELECT 1 FROM meta WHERE key='search_norm' AND value=?", (NORM_VERSION,)).fetchone():
+        return 0
+    changed = []
+    for r in conn.execute("SELECT id, search, title, title_ar, author_en, author_ar FROM books"):
+        new = norm(r["search"])  # the new rules only merge letters, so the stored text is enough...
+        fields = " ".join(f for f in (r["title"], r["title_ar"], r["author_en"], r["author_ar"]) if f)
+        if has_invisible(fields):  # ...except where an invisible mark split a word in two: add it whole
+            have = set(new.split())
+            extra = [w for w in norm(fields).split() if w not in have]
+            if extra:
+                new += " " + " ".join(extra)
+        if new != r["search"]:
+            changed.append((new, r["id"]))
+    conn.executemany("UPDATE books SET search=? WHERE id=?", changed)
+    conn.execute("INSERT OR REPLACE INTO meta(key,value) VALUES('search_norm',?)", (NORM_VERSION,))
+    conn.commit()
+    return len(changed)
 
 
 def seed_period_visitors(conn: sqlite3.Connection) -> None:

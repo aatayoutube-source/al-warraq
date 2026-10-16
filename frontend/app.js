@@ -65,6 +65,8 @@
             filters: 'تصفية',
             results: '{n} كتاب',
             results_more: 'أكثر من {n} كتاب',
+            near_all: 'لا يوجد تطابق تام لـ«{q}»، وهذه {n} نتيجة قريبة منه',
+            near_some: 'منها {n} بتهجئة قريبة',
             loading: 'جارٍ التحميل…',
             more: 'عرض المزيد',
             none: 'لا توجد نتائج في الفهرس. جرّب المصادر الكاملة أعلاه.',
@@ -165,6 +167,8 @@
             filters: 'Filters',
             results: '{n} books',
             results_more: 'More than {n} books',
+            near_all: 'No exact match for “{q}”: {n} close results',
+            near_some: '{n} of them spelled a little differently',
             loading: 'Loading…',
             more: 'Show more',
             none: 'No matches in the index. Try the full sources above.',
@@ -271,6 +275,7 @@
         items: [],
         total: 0,
         capped: false, // the server stopped counting at 10,000
+        near: 0, // results found with a letter forgiven
         end: false, // the last page came back short: nothing more to load
         meta: null,
         cmap: {},
@@ -428,7 +433,8 @@
             S.items = append ? S.items.concat(r.items) : r.items;
             if (r.total != null) { S.total = r.total;
                 S.capped = !!r.capped;
-                S.poems = r.poems || 0; }
+                S.poems = r.poems || 0;
+                S.near = r.near || 0; }
             S.end = r.items.length < PAGE;
             S.loading = false;
             renderResults(append);
@@ -446,6 +452,7 @@
         S.total = 0;
         S.capped = false;
         S.poems = 0;
+        S.near = 0;
         S.end = false; };
 
     /* ---------- links ---------- */
@@ -660,9 +667,12 @@
         if (S.ak && S.amap[S.ak]) chips.push('<button class="chip" type="button" data-clear="ak">' + esc(S.ui === 'ar' ? S.amap[S.ak].ar : S.amap[S.ak].en) + ' <span aria-hidden="true">×</span></button>');
         if (S.q) chips.push('<button class="chip" type="button" data-clear="q">«' + esc(S.q) + '» <span aria-hidden="true">×</span></button>');
         if (S.cat && S.cmap[S.cat]) chips.push('<button class="chip" type="button" data-clear="cat">' + esc(catName(S.cat)) + ' <span aria-hidden="true">×</span></button>');
+        // near: books found by forgiving a letter (the search found almost nothing as typed)
         $('#count').textContent = S.loading && !S.items.length ? tr('loading') : S.capped ? tr('results_more', { n: fmt(S.total) }) :
-            S.poems >= S.total && S.total ? tr('n_poems', { n: fmt(S.total) }) :
-            S.poems ? tr('results_mix', { b: fmt(S.total - S.poems), p: fmt(S.poems) }) : tr('results', { n: fmt(S.total) });
+            S.near && S.near >= S.total ? tr('near_all', { q: S.q.trim(), n: fmt(S.total) }) :
+            (S.poems >= S.total && S.total ? tr('n_poems', { n: fmt(S.total) }) :
+            S.poems ? tr('results_mix', { b: fmt(S.total - S.poems), p: fmt(S.poems) }) : tr('results', { n: fmt(S.total) })) +
+            (S.near ? ' · ' + tr('near_some', { n: fmt(S.near) }) : '');
         $('#chips').innerHTML = chips.join('');
 
         const bq = $('#beyond');

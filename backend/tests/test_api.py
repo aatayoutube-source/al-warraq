@@ -317,8 +317,9 @@ def test_wikisource_import_offline(client):
     assert res == again and res["poems"] == 1 and res["works"] == 0 and res["linked"] == 0  # poems only
     m._meta_cache.clear()
 
-    hit = client.get("/api/books", params={"q": "البيداء"}).json()["items"]
-    assert len(hit) == 1 and hit[0]["ws"] and hit[0]["ak"] == "mutanabbi" and hit[0]["c"] == "poe"
+    found = client.get("/api/books", params={"q": "البيداء"}).json()
+    hit = found["items"]  # the poem, then books one letter away (counted as "near")
+    assert found["total"] - found["near"] == 1 and hit[0]["ws"] and hit[0]["ak"] == "mutanabbi" and hit[0]["c"] == "poe"
     meta = client.get("/api/meta").json()
     assert meta["poem_total"] == 1 and meta["poets"][0]["ar"] == "المتنبي"
     poets = client.get("/api/books", params={"au": meta["poets"][0]["ar"], "cat": "poe"}).json()
@@ -359,7 +360,73 @@ def test_fulltext_search_matches_like(client):
         words = norm(q).split()
         sql = "SELECT COUNT(*) FROM books WHERE " + " AND ".join("search LIKE ?" for _ in words)
         expected = conn.execute(sql, ["%" + w + "%" for w in words]).fetchone()[0]
-        assert client.get("/api/books", params={"q": q}).json()["total"] == expected, q
+        r = client.get("/api/books", params={"q": q}).json()
+        assert r["total"] - (r.get("near") or 0) == expected, q  # near: extra books one letter away, never fewer
+    conn.close()
+
+
+def test_search_relevance_spelling_and_lookalikes(client):
+    from app import db, ranking
+    from app.textnorm import norm
+    conn = db.connect()
+    rows = [  # (title, author, ord): the exact title has the worst catalogue position
+        ("رسائل الحب والحرب", "كاتب أول", 1), ("الحب في زمن آخر", "كاتب ثان", 2), ("والحب أيضا", "كاتب ثالث", 3),
+        ("حبيبتي", "كاتب رابع", 4), ("الحب", "إبراهيم خليل", 900000),
+        ("طه حسين والأدب", "ناقد", 5), ("الأيام", "طه حسين", 800000), ("دعاء الكروان", "طه حسين", 800001),
+        ("رواية ١٩٨٤", "جورج أورويل", 6), ("زی‌کولا الثانية", "عمرو عبدالحميد", 7),
+        ("النفوس الميتة", "نيكولاي غوغول", 8), ("مغامرات شرلوك هولمز", "آرثر كونان دويل", 9),
+    ]
+    for i, (t, a, o) in enumerate(rows):
+        conn.execute("INSERT INTO books(title,title_ar,author_key,author_en,author_ar,cat,origin,lang,curated,ord,search,ext)"
+                     " VALUES(?,?,'','',?,'nov','a','ar',4,?,?,?)", (t, t, a, o, norm(t + " " + a), "T%d" % i))
+    conn.commit()
+    ranking.clear_cache()
+
+    def titles(q, **kw):
+        return [b["ta"] for b in client.get("/api/books", params=dict(q=q, **kw)).json()["items"]]
+    got = titles("الحب")
+    assert got[0] == "الحب"  # exact title first, whatever its place in the catalogue
+    assert got.index("الحب في زمن آخر") < got.index("رسائل الحب والحرب")  # then titles starting with it
+    assert "والحب أيضا" in got and "حبيبتي" not in got  # "و" joined to the word still counts; a longer word does not
+    assert titles("طه حسين") == ["الأيام", "دعاء الكروان", "طه حسين والأدب"]  # his own books, then the books about him
+    assert titles("طه حسين الأيام")[0] == "الأيام"  # title and author together
+    assert titles("1984") == ["رواية ١٩٨٤"] and titles("١٩٨٤") == ["رواية ١٩٨٤"]  # Eastern digits
+    assert "زی‌کولا الثانية" in titles("زيكولا")  # Persian letters and an invisible joiner
+
+    # a letter missing, extra or swapped: the closest books, after the exact ones and said so
+    r = client.get("/api/books", params={"q": "فرانكشتاين"}).json()  # an ن left out
+    assert r["near"] == r["total"] >= 1 and r["items"][0]["ta"] == "فرانكنشتاين"
+    assert client.get("/api/books", params={"q": "فرانكنشتاين"}).json()["near"] == 0
+    assert any(b["ta"] == "فرانكنشتاين" for b in client.get("/api/books", params={"q": "فرانكنشتياين"}).json()["items"])
+    # every page of a ranked search: each book once
+    seen = []
+    for off in range(0, 40, 3):
+        seen += [b["id"] for b in client.get("/api/books", params={"q": "الحب", "limit": 3, "offset": off}).json()["items"]]
+    assert len(seen) == len(set(seen)) == client.get("/api/books", params={"q": "الحب"}).json()["total"]
+    r = client.get("/api/books", params={"q": "شرلوك هولمس"}).json()  # the last letter wrong
+    assert r["near"] == r["total"] >= 1 and "مغامرات شرلوك هولمز" in [b["ta"] for b in r["items"]]
+    # loose patterns only gather candidates: "يكولا" is inside "نيكولاي", two letters away from "زيكولا"
+    assert "النفوس الميتة" not in titles("زيكولاا") and "النفوس الميتة" not in titles("زيكولا")
+    # the patterns stay usable by the index: three letters in a row
+    for w in ("زيكولا", "الخيميائي", "abcde"):
+        v = ranking.variants(w)
+        assert v and all(max(len(p) for p in x.split("_")) >= 3 for x in v)
+    assert "خيميائي" in ranking.variants("الخيميائي")  # the word without its article
+    assert ranking.close_to("دستويفسكي", {"فيودور", "دوستويفسكي"}) == "دوستويفسكي" and not ranking.close_to("زيكولا", {"نيكولاي"})
+    conn.close()
+
+
+def test_old_search_text_is_renormalised(client):
+    from app import db
+    conn = db.connect()
+    conn.execute("INSERT INTO books(title,title_ar,author_key,author_en,author_ar,cat,origin,lang,curated,ord,search,ext)"
+                 " VALUES('کتاب الدر‌اسات ٣','','','','','gen','a','ar',4,5,?, 'X1')", ("کتاب الدر اسات ٣",))  # as norm() v1 made it
+    conn.execute("DELETE FROM meta WHERE key='search_norm'")
+    conn.commit()
+    assert db.renorm_search(conn) == 1 and db.renorm_search(conn) == 0
+    s = conn.execute("SELECT search FROM books WHERE ext='X1'").fetchone()[0]
+    assert s.startswith("كتاب الدر اسات 3") and "الدراسات" in s
+    assert conn.execute("SELECT COUNT(*) FROM books_fts WHERE search LIKE '%الدراسات%'").fetchone()[0] == 1
     conn.close()
 
 

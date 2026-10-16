@@ -17,7 +17,7 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from urllib.parse import quote, unquote
 
-from . import covers, db, legal, modern, pages, research, security, seo, stats, wikisource
+from . import covers, db, legal, modern, pages, ranking, research, security, seo, stats, wikisource
 from .catalog import ARABIC_CAT, CATEGORIES
 from .textnorm import norm
 
@@ -36,6 +36,13 @@ def _fts_on(conn) -> bool:
     if not _fts.get(path):
         _fts[path] = db.fts_ready(conn)
     return _fts[path]
+
+
+def _fts_count(conn, words, cap: int) -> int:
+    """Books holding every word (substring), counted through the index up to cap."""
+    like = " AND ".join("search LIKE ?" for _ in words)
+    return conn.execute("SELECT COUNT(*) FROM (SELECT 1 FROM books_fts WHERE " + like + " LIMIT ?)",
+                        ["%" + w + "%" for w in words] + [cap]).fetchone()[0]
 
 
 def get_conn():
@@ -163,26 +170,51 @@ def create_app() -> FastAPI:
             where.append("lang=?"); args.append(bl.lower())
         filtered = bool(where)
         words = norm(q).split()[:MAX_WORDS]
+        query = " ".join(words)
         long_words = [w for w in words if len(w) >= 3]  # the trigram index needs 3+ characters per word
         only_text = not filtered and len(long_words) == len(words)  # a plain search, every word 3+ letters
         hits = None  # how many books match, when the index could tell
         fts_where, fts_args = "", []
-        dense = False
+        dense = rank = False
         if long_words and _fts_on(conn):
-            like = " AND ".join("search LIKE ?" for _ in long_words)
-            largs = ["%" + w + "%" for w in long_words]
-            n = conn.execute("SELECT COUNT(*) FROM (SELECT 1 FROM books_fts WHERE " + like + " LIMIT ?)",
-                             largs + [DENSE + 1]).fetchone()[0]
+            n = _fts_count(conn, long_words, DENSE + 1)
             if n <= DENSE:  # rare words: fetch exactly the matching rows through the index
                 hits = n
-                fts_where, fts_args = "id IN (SELECT rowid FROM books_fts WHERE " + like + ")", largs
-                where.append(fts_where); args += largs
+                rank = sort == "def"  # few enough to put the best matches first
+                # almost nothing found: a rare word may be misspelt by a letter, or carry an article the title lacks
+                wide = {}
+                if rank and n < ranking.FEW:
+                    for w in long_words:
+                        if (len(wide) < ranking.MAX_WIDE and len(w) <= ranking.MAX_WIDE_LEN
+                                and _fts_count(conn, [w], ranking.FEW) < ranking.FEW):
+                            wide[w] = [w] + ranking.variants(w)
+                plain = [w for w in long_words if w not in wide]
+                parts = []
+                for pats in wide.values():
+                    parts.append("id IN (" + " UNION ".join("SELECT rowid FROM books_fts WHERE search LIKE ?" for _ in pats) + ")")
+                    fts_args += ["%" + p + "%" for p in pats]
+                if wide:  # the rare word's few books lead; the other words are checked on them alone ("the" is everywhere)
+                    parts += ["search LIKE ?" for _ in plain]
+                elif plain:
+                    parts.append("id IN (SELECT rowid FROM books_fts WHERE " + " AND ".join("search LIKE ?" for _ in plain) + ")")
+                fts_args += ["%" + w + "%" for w in plain]
+                fts_where = " AND ".join(parts)
+                where.append(fts_where); args += fts_args
                 words = [w for w in words if len(w) < 3]
             else:  # very common words ("the"): matches are everywhere, so walking the list in order finds a page at once
                 dense = True
         for w in words:
             where.append("search LIKE ?"); args.append("%" + w + "%")
         clause = (" WHERE " + " AND ".join(where)) if where else ""
+        if rank:  # every match is known: the best ones first, the order kept for the next pages
+            ids, poems, near, capped = ranking.ranked(conn, (db.db_path(), clause, tuple(args), query), clause, args,
+                                                      query, long_words, wide)
+            page = list(ids[offset:offset + limit])
+            got = {r["id"]: r for r in conn.execute("SELECT * FROM books WHERE id IN (%s)" % ",".join("?" * len(page)), page)} if page else {}
+            first = not offset
+            return {"total": (COUNT_CAP if capped else len(ids)) if first else None, "capped": capped,
+                    "poems": poems if first and not capped else None, "near": near if first else None, "offset": offset,
+                    "items": [book_json(got[i]) for i in page if i in got]}
         if sort == "t":
             order = "CASE WHEN ?='ar' AND title_ar!='' THEN title_ar ELSE title END COLLATE NOCASE, ord"
             oargs = [ui]
