@@ -297,6 +297,11 @@
     const hash = (s) => { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return h; };
     const lsGet = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
     const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+    // the visitor's language choice, read by the server for every page (pages.visitor_ui)
+    const saveLang = (ui) => {
+        document.cookie = 'warraq_lang=' + ui + '; path=/; max-age=31536000; samesite=lax' + (location.protocol === 'https:' ? '; secure' : '');
+        try { localStorage.removeItem('warraq.lang'); } catch (e) {}
+    };
     const tr = (k, v) => { let s = (T[S.ui] && T[S.ui][k]) || k; if (v)
             for (const x in v) s = s.replace('{' + x + '}', v[x]); return s; };
     const isArabic = (s) => /[؀-ۿ]/.test(s || '');
@@ -826,7 +831,7 @@
 
     $('#langBtn').addEventListener('click', () => {
         S.ui = S.ui === 'ar' ? 'en' : 'ar';
-        lsSet('warraq.lang', S.ui);
+        saveLang(S.ui);
         applyStatic();
         renderHero();
         renderSide();
@@ -849,11 +854,17 @@
     });
     const _t = lsGet('warraq.theme');
     if (_t === 'dark' || _t === 'light') document.documentElement.setAttribute('data-theme', _t);
-    let _l = lsGet('warraq.lang');
+    // The language: ?lang= when the address has it, otherwise the one the server wrote in <html lang>: the
+    // visitor's saved choice (a cookie, set by the language button), else their browser's language. Crawlers
+    // always get Arabic on "/", so search engines see the Arabic page there as before.
+    let _l = '';
     try { const ql = new URLSearchParams(location.search).get('lang'); if (ql === 'en' || ql === 'ar') _l = ql; } catch (e) {}
-    // Arabic unless the visitor chose English (the EN button or ?lang=en): it is an Arabic library, and
-    // search engines are told that "/" is the Arabic page
-    S.ui = _l === 'en' ? 'en' : 'ar';
+    const _old = lsGet('warraq.lang'); // where the choice used to be kept: carried over to the cookie once
+    if ((_old === 'en' || _old === 'ar') && !/(?:^|;\s*)warraq_lang=/.test(document.cookie)) {
+        saveLang(_old);
+        if (!_l) _l = _old;
+    }
+    S.ui = (_l || document.documentElement.lang) === 'en' ? 'en' : 'ar';
 
     // a fresh choice (category card, quick search, new search) starts from the whole library
     function freshStart(keepQuery) {

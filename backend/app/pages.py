@@ -190,6 +190,52 @@ def default_ui(row) -> str:
     return "ar" if (row["lang"] == "ar" or row["origin"] == "a") and (row["title_ar"] or is_arabic(row["title"])) else "en"
 
 
+# ---------- the visitor's language ----------
+LANG_COOKIE = "warraq_lang"  # the language button's choice (kept a year); the server reads it for every page
+# Crawlers always get a page's own language: Googlebot sends no Accept-Language, and these are recognised too
+# (Google's other fetchers and the AdSense crawler Mediapartners-Google, page-speed tools, headless browsers...)
+_CRAWLER = re.compile(r"bot|crawl|spider|slurp|google|bing|yandex|baidu|lighthouse|pagespeed|preview|headless|"
+                      r"facebookexternalhit|curl|wget|python|monitor|uptime", re.I)
+
+
+def browser_ui(accept_language: str) -> str:
+    """Whichever of Arabic and English comes first in the browser's languages ("en-US,en;q=0.9,ar;q=0.8" -> en,
+    "ku,ar;q=0.8" -> ar); English when it lists neither (fr-FR); "" when the browser sends no list."""
+    tags = []
+    for i, part in enumerate((accept_language or "").split(",")):
+        tag, _, params = part.strip().partition(";")
+        q = 1.0
+        for p in params.split(";"):
+            k, _, v = p.strip().partition("=")
+            if k.strip() == "q":
+                try:
+                    q = float(v)
+                except ValueError:
+                    q = 0.0
+        tag = tag.strip().lower()
+        if tag and tag != "*" and q > 0:
+            tags.append((-q, i, tag))
+    for _, _, tag in sorted(tags):
+        if tag == "ar" or tag.startswith("ar-"):
+            return "ar"
+        if tag == "en" or tag.startswith("en-"):
+            return "en"
+    return "en" if tags else ""
+
+
+def visitor_ui(request, lang: str = "", default: str = "ar") -> str:
+    """The language a page opens in: ?lang= when the address has it; else the visitor's saved choice; else their
+    browser's language; else the page's own, which crawlers always get (search engines see every page as before)."""
+    if lang in ("ar", "en"):
+        return lang
+    saved = request.cookies.get(LANG_COOKIE, "")
+    if saved in ("ar", "en"):
+        return saved
+    if _CRAWLER.search(request.headers.get("user-agent", "") or ""):
+        return default
+    return browser_ui(request.headers.get("accept-language", "")) or default
+
+
 def book_title(row, ui: str) -> str:
     return (row["title_ar"] or row["title"]) if ui == "ar" else row["title"]
 

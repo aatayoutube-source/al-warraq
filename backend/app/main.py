@@ -84,6 +84,17 @@ def create_app() -> FastAPI:
         response = await call_next(request)
         if not request.url.path.startswith("/api/"):
             response.headers.setdefault("Cache-Control", "no-cache")
+            if response.headers.get("content-type", "").startswith("text/html"):
+                # a page's language follows the visitor (pages.visitor_ui): say so to any cache on the way
+                vary = response.headers.get("vary", "")
+                response.headers["Vary"] = ", ".join(x for x in (vary, "Accept-Language, Cookie") if x)
+                lang = request.query_params.get("lang", "")
+                # moving to the other language inside the site (its language links) is a choice to keep;
+                # arriving from elsewhere on a ?lang= address (a search result, a shared link) is not
+                if (lang in ("ar", "en") and request.headers.get("sec-fetch-site") == "same-origin"
+                        and request.cookies.get(pages.LANG_COOKIE) != lang):
+                    response.set_cookie(pages.LANG_COOKIE, lang, max_age=365 * 86400, samesite="lax",
+                                        secure=request.url.scheme == "https")
         else:  # crawlers may read the API (the home page needs it) but must not list it in results
             response.headers.setdefault("X-Robots-Tag", "noindex")
         return response
@@ -353,26 +364,28 @@ def create_app() -> FastAPI:
         if not os.path.isfile(os.path.join(frontend, "index.html")):
             raise HTTPException(404, "not found")
         nonce = _ad_nonce()
-        return HTMLResponse(seo.home_html(frontend, pages.site_base(request), "en" if lang == "en" else "ar", nonce),
+        return HTMLResponse(seo.home_html(frontend, pages.site_base(request), pages.visitor_ui(request, lang), nonce),
                             headers=_ad_headers(nonce))
 
     @app.get("/category/{key}", include_in_schema=False)
     def category(key: str, request: Request, lang: str = Query("", max_length=5), page: int = Query(1, ge=1, le=seo.MAX_PAGES),
                  conn=Depends(get_conn)):
         nonce = _ad_nonce()
-        body = seo.category_page(conn, key, pages.site_base(request), "en" if lang == "en" else "ar", page, nonce)
-        return HTMLResponse(body, headers=_ad_headers(nonce)) if body else HTMLResponse(pages.not_found_html("en" if lang == "en" else "ar"), status_code=404)
+        ui = pages.visitor_ui(request, lang)
+        body = seo.category_page(conn, key, pages.site_base(request), ui, page, nonce)
+        return HTMLResponse(body, headers=_ad_headers(nonce)) if body else HTMLResponse(pages.not_found_html(ui), status_code=404)
 
     @app.get("/author/{key}", include_in_schema=False)
     def author(key: str, request: Request, lang: str = Query("", max_length=5), page: int = Query(1, ge=1, le=seo.MAX_PAGES),
                conn=Depends(get_conn)):
         nonce = _ad_nonce()
-        body = seo.author_page(conn, key, pages.site_base(request), "en" if lang == "en" else "ar", page, nonce)
-        return HTMLResponse(body, headers=_ad_headers(nonce)) if body else HTMLResponse(pages.not_found_html("en" if lang == "en" else "ar"), status_code=404)
+        ui = pages.visitor_ui(request, lang)
+        body = seo.author_page(conn, key, pages.site_base(request), ui, page, nonce)
+        return HTMLResponse(body, headers=_ad_headers(nonce)) if body else HTMLResponse(pages.not_found_html(ui), status_code=404)
 
     # ---------- about, privacy, terms, contact (legal.py) ----------
-    def _ui(lang):
-        return "en" if lang == "en" else "ar"
+    def _ui(request, lang):
+        return pages.visitor_ui(request, lang)
 
     @app.get("/about", include_in_schema=False)
     def about(request: Request, lang: str = Query("", max_length=5), conn=Depends(get_conn)):
@@ -380,23 +393,23 @@ def create_app() -> FastAPI:
         n = {"books": m["total"], "poems": m["poem_total"], "authors": m["author_total"], "langs": m["lang_total"],
              "cats": sum(1 for c in m["categories"] if c["count"]),
              "modern": conn.execute("SELECT COUNT(*) FROM books WHERE curated IN (?, ?)", modern.KINDS).fetchone()[0]}
-        return HTMLResponse(legal.page_html("about", pages.site_base(request), _ui(lang), numbers=n))
+        return HTMLResponse(legal.page_html("about", pages.site_base(request), _ui(request, lang), numbers=n))
 
     @app.get("/privacy", include_in_schema=False)
     def privacy(request: Request, lang: str = Query("", max_length=5)):
-        return HTMLResponse(legal.page_html("privacy", pages.site_base(request), _ui(lang)))
+        return HTMLResponse(legal.page_html("privacy", pages.site_base(request), _ui(request, lang)))
 
     @app.get("/terms", include_in_schema=False)
     def terms(request: Request, lang: str = Query("", max_length=5)):
-        return HTMLResponse(legal.page_html("terms", pages.site_base(request), _ui(lang)))
+        return HTMLResponse(legal.page_html("terms", pages.site_base(request), _ui(request, lang)))
 
     @app.get("/contact", include_in_schema=False)
     def contact(request: Request, lang: str = Query("", max_length=5), sent: int = Query(0, ge=0, le=1), conn=Depends(get_conn)):
-        return HTMLResponse(legal.page_html("contact", pages.site_base(request), _ui(lang), conn=conn, sent=bool(sent)))
+        return HTMLResponse(legal.page_html("contact", pages.site_base(request), _ui(request, lang), conn=conn, sent=bool(sent)))
 
     @app.post("/contact", include_in_schema=False)
     async def contact_send(request: Request, lang: str = Query("", max_length=5), conn=Depends(get_conn)):
-        ui = _ui(lang)
+        ui = _ui(request, lang)
         if int(request.headers.get("content-length") or 0) > 20000:
             return PlainTextResponse("message too large", status_code=413)
         ok, err, values = legal.submit(conn, request, legal.parse_form(await request.body()), ui)
@@ -439,7 +452,7 @@ def create_app() -> FastAPI:
     def _book_page(book_id: int, slug: str, request: Request, lang: str, conn):
         row = conn.execute("SELECT * FROM books WHERE id=?", (book_id,)).fetchone()
         if not row:
-            return HTMLResponse(pages.not_found_html("en" if lang == "en" else "ar"), status_code=404)
+            return HTMLResponse(pages.not_found_html(pages.visitor_ui(request, lang)), status_code=404)
         canon = pages.canonical_path(row)
         if "/book/%d/%s" % (book_id, quote(unquote(slug))) != canon if slug else True:
             target = canon + (("?lang=" + lang) if lang in ("ar", "en") else "")
@@ -447,7 +460,7 @@ def create_app() -> FastAPI:
         stats.track_visitor(conn, request)
         stats.add_view(conn, request, book_id)
         nonce = secrets.token_urlsafe(16)  # only this page's own scripts may run
-        return HTMLResponse(pages.render_book(conn, row, pages.site_base(request), lang,
+        return HTMLResponse(pages.render_book(conn, row, pages.site_base(request), pages.visitor_ui(request, lang, pages.default_ui(row)),
                                               stats.book_numbers(conn, book_id), stats.has_liked(conn, request, book_id), nonce),
                             headers={"Content-Security-Policy": (security.AD_CSP if pages.ads_on() else security.BOOK_CSP).format(nonce=nonce)})
 
@@ -470,14 +483,14 @@ def create_app() -> FastAPI:
     async def missing_page(request, exc):
         """Unknown addresses (the static files answer them) get the designed 404 page; the API keeps JSON."""
         if exc.status_code == 404 and _page_request(request):
-            return HTMLResponse(pages.not_found_html("en" if request.query_params.get("lang") == "en" else "ar"), status_code=404)
+            return HTMLResponse(pages.not_found_html(pages.visitor_ui(request, request.query_params.get("lang", ""))), status_code=404)
         return JSONResponse({"error": exc.detail}, status_code=exc.status_code, headers=getattr(exc, "headers", None))
 
     @app.exception_handler(RequestValidationError)
     async def bad_address(request, exc):
         """/book/abc or ?page=0 on a page: that page does not exist. The API still explains what was wrong."""
         if _page_request(request):
-            return HTMLResponse(pages.not_found_html("en" if request.query_params.get("lang") == "en" else "ar"), status_code=404)
+            return HTMLResponse(pages.not_found_html(pages.visitor_ui(request, request.query_params.get("lang", ""))), status_code=404)
         return JSONResponse({"detail": jsonable_encoder(exc.errors())}, status_code=422)
 
     if os.path.isdir(frontend):

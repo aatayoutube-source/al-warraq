@@ -18,7 +18,8 @@ from urllib.parse import parse_qs
 from . import stats
 from .pages import BRAND, LEGAL, T, esc
 
-UPDATED = {"ar": "16 أكتوبر 2026", "en": "16 October 2026"}
+# each page its own date: the privacy policy changed with the language cookie, the terms did not
+UPDATED = {"privacy": {"ar": "18 أكتوبر 2026", "en": "18 October 2026"}, "terms": {"ar": "16 أكتوبر 2026", "en": "16 October 2026"}}
 EMAIL_DEFAULT = "alwarraqibrary@gmail.com"  # the library's mailbox
 PAGES = ("about", "privacy", "terms", "contact")
 KEEP_SECONDS = 365 * 86400  # contact messages are deleted after a year
@@ -146,12 +147,13 @@ def _privacy(ui):
 <li><b>إحصاءات مجهولة الهوية:</b> لنعدّ الزوار والمشاهدات والإعجابات والعبارات الأكثر بحثاً، نحسب رمزاً مجهولاً من عنوان IP ونوع المتصفح مع قيمة سرية (تجزئة SHA-256). لا نحفظ عنوان IP ولا نوع المتصفح نفسيهما. تُحذف رموز الزيارات اليومية بعد 3 أيام، ورموز الشهر والسنة بانتهاء الفترة. ونحفظ عبارات البحث بلا اسم أصحابها لنعرض «الأكثر بحثاً».</li>
 <li><b>نموذج الاتصال:</b> الاسم والبريد الإلكتروني والرسالة التي ترسلها، نستخدمها للرد عليك فقط، وتُحذف تلقائياً بعد 12 شهراً.</li>
 <li><b>سجلات الخادم:</b> قد يحتفظ مزوّد الاستضافة مؤقتاً بسجلات تقنية (مثل عنوان IP ووقت الطلب) لأغراض الأمان ومنع الإساءة.</li>
-<li><b>التخزين المحلي في متصفحك:</b> نحفظ فيه اختيارك للغة والمظهر (فاتح أو داكن) فقط، ولا يُرسل إلينا.</li>
+<li><b>لغة الموقع:</b> يفتح الموقع بلغة متصفحك (العربية أو الإنكليزية). وإذا غيّرت اللغة بنفسك، نحفظ اختيارك في ملف كوكيز صغير اسمه warraq_lang لمدة سنة، يحمل كلمة واحدة (ar أو en) ليعرض لك الموقع باللغة التي اخترتها، ولا نستخدمه لتتبعك.</li>
+<li><b>التخزين المحلي في متصفحك:</b> نحفظ فيه اختيارك للمظهر (فاتح أو داكن) فقط، ولا يُرسل إلينا.</li>
 </ul>
 <h2>2. ملفات تعريف الارتباط (الكوكيز)</h2>
-<p>الكوكيز ملفات نصية صغيرة تحفظها المواقع في متصفحك. لا يضع موقعنا كوكيز لتتبعك، لكن أطرافاً ثالثة، منها Google، قد تستخدمها عند عرض الإعلانات كما يوضح البند التالي. يمكنك ضبط متصفحك لرفض الكوكيز أو حذفها في أي وقت، وقد يغيّر ذلك الإعلانات التي تراها.</p>
+<p>الكوكيز ملفات نصية صغيرة تحفظها المواقع في متصفحك. لا يضع موقعنا إلا ملف كوكيز واحداً هو كوكيز اللغة المذكور أعلاه، ولا يستخدم أي كوكيز لتتبعك، لكن أطرافاً ثالثة، منها Google، قد تستخدمها عند عرض الإعلانات كما يوضح البند التالي. يمكنك ضبط متصفحك لرفض الكوكيز أو حذفها في أي وقت، وقد يغيّر ذلك الإعلانات التي تراها.</p>
 <h2>3. الإعلانات وGoogle AdSense</h2>
-<p>قد نعرض إعلانات من خلال Google AdSense لتغطية تكاليف تشغيل المكتبة وإبقائها مجانية:</p>
+<p>نعرض إعلانات من خلال Google AdSense لتغطية تكاليف تشغيل المكتبة وإبقائها مجانية:</p>
 <ul>
 <li>يستخدم موردو الجهات الخارجية، ومنهم Google، ملفات تعريف الارتباط لعرض الإعلانات استناداً إلى زياراتك السابقة لهذا الموقع أو لمواقع أخرى على الإنترنت.</li>
 <li>يتيح استخدام Google لملفات تعريف ارتباط الإعلانات لها ولشركائها عرض إعلانات لك استناداً إلى زيارتك لهذا الموقع و/أو لمواقع أخرى على الإنترنت.</li>
@@ -187,12 +189,13 @@ def _privacy(ui):
 <li><b>Anonymous statistics:</b> to count visitors, views, likes and popular searches we compute an anonymous code from your IP address and browser type together with a secret value (a SHA-256 hash). We do not store the IP address or the browser type themselves. Daily visit codes are deleted after 3 days; monthly and yearly codes when the period ends. Search phrases are kept without any link to who searched, to show “most searched”.</li>
 <li><b>Contact form:</b> the name, email address and message you send. We use them only to reply to you, and they are deleted automatically after 12 months.</li>
 <li><b>Server logs:</b> our hosting provider may keep technical logs (such as IP address and time of request) for a short time, for security and abuse prevention.</li>
-<li><b>Local storage in your browser:</b> only your choice of language and theme (light or dark). It is never sent to us.</li>
+<li><b>Site language:</b> the site opens in your browser's language (Arabic or English). If you change the language yourself, we keep your choice for a year in a small cookie named warraq_lang, holding one word (ar or en), so the site shows you the language you chose. It is not used to track you.</li>
+<li><b>Local storage in your browser:</b> only your choice of theme (light or dark). It is never sent to us.</li>
 </ul>
 <h2>2. Cookies</h2>
-<p>Cookies are small text files that websites store in your browser. Our site does not set cookies to track you, but third parties, including Google, may use cookies when showing ads, as described below. You can set your browser to refuse or delete cookies at any time; this may change the ads you see.</p>
+<p>Cookies are small text files that websites store in your browser. Our site sets a single cookie of its own, the language cookie above, and none to track you, but third parties, including Google, may use cookies when showing ads, as described below. You can set your browser to refuse or delete cookies at any time; this may change the ads you see.</p>
 <h2>3. Advertising and Google AdSense</h2>
-<p>We may show ads through Google AdSense to cover the costs of running the library and keep it free:</p>
+<p>We show ads through Google AdSense to cover the costs of running the library and keep it free:</p>
 <ul>
 <li>Third-party vendors, including Google, use cookies to serve ads based on your prior visits to this website or other websites.</li>
 <li>Google's use of advertising cookies enables it and its partners to serve ads to you based on your visit to this site and/or other sites on the Internet.</li>
@@ -403,7 +406,7 @@ def page_html(kind: str, base: str, ui: str, conn=None, numbers=None, values=Non
     l = L[ui]
     body_html = {"about": lambda: _about(ui, numbers or {}), "privacy": lambda: _privacy(ui), "terms": lambda: _terms(ui),
                  "contact": lambda: _contact(conn, ui, values, error, sent)}[kind]()
-    updated = '<p class="updated">%s</p>' % esc(l["updated"].format(d=UPDATED[ui])) if kind in ("privacy", "terms") else ""
+    updated = '<p class="updated">%s</p>' % esc(l["updated"].format(d=UPDATED[kind][ui])) if kind in ("privacy", "terms") else ""
     body = '<article class="page"><p class="crumbs"><a href="/%s">%s</a> / %s</p><h1>%s</h1>%s%s</article>' % (
         "?lang=en" if ui == "en" else "", esc(T[ui]["home"]), esc(l[kind]), esc(l[kind]), updated, body_html)
     types = {"about": "AboutPage", "contact": "ContactPage"}

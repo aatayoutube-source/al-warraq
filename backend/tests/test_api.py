@@ -539,6 +539,39 @@ def test_home_page_words_are_in_its_html(client):
         assert 'data-iph="ph" placeholder="' in page
 
 
+def test_pages_open_in_the_visitors_language(client):
+    from app.pages import browser_ui
+    assert browser_ui("ar-IQ,ar;q=0.9,en-US;q=0.8") == "ar" and browser_ui("en-US,en;q=0.9,ar;q=0.8") == "en"
+    assert browser_ui("ku-IQ,ar;q=0.8") == "ar" and browser_ui("fr-FR,fr;q=0.9") == "en" and browser_ui("") == ""
+    chrome = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0 Safari/537.36"
+
+    def lang_of(url, **headers):
+        r = client.get(url, headers=dict({"user-agent": chrome}, **headers), follow_redirects=True)
+        return r.text.split('<html lang="')[1][:2]
+    assert lang_of("/") == "ar"  # a browser that names no language: the page's own
+    assert lang_of("/", **{"accept-language": "en-US,en;q=0.9"}) == "en"
+    assert lang_of("/", **{"accept-language": "ar-IQ,ar;q=0.9,en;q=0.8"}) == "ar"
+    assert lang_of("/category/nov", **{"accept-language": "en-GB"}) == "en" and lang_of("/about", **{"accept-language": "en"}) == "en"
+    assert lang_of("/book/1", **{"accept-language": "ar"}) == "ar"  # Hamlet, an English book, with an Arabic interface
+    # search engines keep seeing every page in its own language
+    for bot in ("Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)", "Mediapartners-Google",
+                "Mozilla/5.0 (compatible; bingbot/2.0)", "Mozilla/5.0 Chrome-Lighthouse"):
+        assert lang_of("/", **{"accept-language": "en-US", "user-agent": bot}) == "ar", bot
+    # the visitor's own choice wins over the browser; an address with ?lang= wins over both
+    assert lang_of("/", **{"accept-language": "en", "cookie": "warraq_lang=ar"}) == "ar"
+    assert lang_of("/", **{"cookie": "warraq_lang=en"}) == "en" and lang_of("/?lang=ar", **{"cookie": "warraq_lang=en"}) == "ar"
+    # the language links inside the site keep the choice; arriving from elsewhere on ?lang= does not
+    inside = client.get("/category/nov?lang=en", headers={"sec-fetch-site": "same-origin"})
+    assert "warraq_lang=en" in inside.headers.get("set-cookie", "") and "Accept-Language" in inside.headers["vary"]
+    assert "set-cookie" not in client.get("/?lang=en", headers={"sec-fetch-site": "cross-site"}).headers
+    client.cookies.clear()  # the test client kept that choice, as a browser would: start again without one
+    privacy = client.get("/privacy").text  # and the privacy policy says so, dated
+    assert "warraq_lang" in privacy and "اختيارك للغة والمظهر" not in privacy and "آخر تحديث: 18 أكتوبر 2026" in privacy
+    assert "<p>نعرض إعلانات من خلال Google AdSense" in privacy and "قد نعرض إعلانات" not in privacy
+    assert "single cookie of its own" in client.get("/privacy?lang=en").text
+    assert "آخر تحديث: 16 أكتوبر 2026" in client.get("/terms").text  # the terms did not change
+
+
 def test_seo_pages(client, monkeypatch):
     import json
     import re
