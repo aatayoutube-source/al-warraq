@@ -525,6 +525,20 @@ def test_rate_limit(client):
     assert codes[:20] == [200] * 20 and codes[-1] == 429
 
 
+def test_home_page_words_are_in_its_html(client):
+    """A crawler reads the HTML before (or without) the script: /?lang=en must already be English there."""
+    import re as _re
+    en = client.get("/?lang=en").text
+    assert '<html lang="en" dir="ltr">' in en and "<title>Al-Warraq Library | Free public-domain books" in en
+    assert '<meta name="description" content="Al-Warraq Library' in en and '<h1 data-i="h1">Read what has left copyright</h1>' in en
+    assert 'href="/about?lang=en"' in en and 'href="/category/nov?lang=en">Novels &amp; Stories</a>' in en
+    ar = client.get("/").text
+    assert '<html lang="ar" dir="rtl">' in ar and '<h1 data-i="h1">اقرأ ما سقط عنه حق النشر</h1>' in ar and "<title>مكتبة الوراق" in ar
+    for page in (en, ar):  # every text the script would write is already there
+        assert not _re.findall(r'data-i="\w+"[^>]*></', page)
+        assert 'data-iph="ph" placeholder="' in page
+
+
 def test_seo_pages(client, monkeypatch):
     import json
     import re

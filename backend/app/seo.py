@@ -10,6 +10,7 @@ GOOGLE_SITE_VERIFICATION, BING_SITE_VERIFICATION, YANDEX_VERIFICATION.
 import json
 import math
 import os
+import re
 import sys
 import urllib.request
 from urllib.parse import quote
@@ -41,6 +42,9 @@ S = {
         "auth_dm": "{n} works by {a} at Al-Warraq Library, with links to their open and legal sources.",
         "cats": "Categories", "authors": "Famous authors", "prev": "Previous", "next": "Next", "page": "page {p}",
         "open": "Browse in the library", "home_t": "Al-Warraq Library | Free public-domain books and Arabic poetry",
+        "home_og": "Al-Warraq Library | مكتبة الوراق",
+        "home_d": "Al-Warraq Library (مكتبة الوراق): over a million free public-domain books, Arabic poetry and modern Arabic "
+                  "books, with covers and categories, linked to their legal sources.",
     },
 }
 
@@ -77,7 +81,60 @@ def _alternates(base: str, path: str, extra: str = "") -> str:
 
 # ---------- the home page: the same file, with the tags only the server can know ----------
 
-_home = {"mtime": 0, "html": ""}
+_home = {}  # ui -> (file times, index.html with that language's words in place)
+# app.js keeps the interface strings (const T = {ar: {...}, en: {...}}): the server reads them there, one source
+_STRING = re.compile(r"^ +(\w+): '((?:[^'\\]|\\.)*)',?$", re.M)
+_DATA_I = re.compile(r'(<([a-z0-9]+)[^>]*? data-i="(\w+)"[^>]*>)([^<]*)(</\2>)')
+_DATA_IPH = re.compile(r' data-iph="(\w+)"')
+_DATA_IARL = re.compile(r' data-iarl="(\w+)"(?: aria-label="[^"]*")?')
+_LHREF = re.compile(r' href="([^"]*)" data-lhref="([^"]*)"')
+
+
+def ui_strings(frontend_dir: str) -> dict:
+    """{"ar": {...}, "en": {...}}: the interface strings of app.js, the very words its script puts in the page."""
+    with open(os.path.join(frontend_dir, "app.js"), encoding="utf-8") as f:
+        src = f.read()
+    table = src[src.index("const T = {"):]
+    out = {}
+    for ui in ("ar", "en"):
+        start = table.index("\n        %s: {" % ui)
+        end = table.index("\n        }", start)
+        out[ui] = {k: v.replace("\\'", "'") for k, v in _STRING.findall(table[start:end])}
+    return out
+
+
+def _home_template(frontend_dir: str, ui: str) -> str:
+    """index.html with its words already in place for that language. A crawler reads the page before (or without)
+    running the script: /?lang=en must be English in its very HTML (language, title, headings), not an empty shell
+    with the Arabic title, or English searches have nothing to find."""
+    paths = [os.path.join(frontend_dir, n) for n in ("index.html", "app.js")]
+    key = tuple(os.path.getmtime(p) for p in paths if os.path.exists(p))
+    hit = _home.get(ui)
+    if hit and hit[0] == key:
+        return hit[1]
+    with open(paths[0], encoding="utf-8") as f:
+        html = f.read()
+    try:
+        t = ui_strings(frontend_dir)[ui]
+    except (OSError, ValueError):  # no script beside the page: the words are left to it
+        t = {}
+    if t:
+        html = _DATA_I.sub(lambda m: m.group(1) + (esc(t[m.group(3)]) if m.group(3) in t else m.group(4)) + m.group(5), html)
+        html = _DATA_IPH.sub(lambda m: m.group(0) + (' placeholder="%s" aria-label="%s"' % ((esc(t[m.group(1)]),) * 2)
+                                                     if m.group(1) in t else ""), html)
+        html = _DATA_IARL.sub(lambda m: ' data-iarl="%s" aria-label="%s"' % (m.group(1), esc(t.get(m.group(1), ""))), html)
+        html = re.sub(r'(id="filtBtn"[^>]*>)(</button>)', lambda m: m.group(1) + esc(t.get("filters", "")) + m.group(2), html)
+    if ui == "en":
+        s = S["en"]
+        html = html.replace('<html lang="ar" dir="rtl">', '<html lang="en" dir="ltr">', 1)
+        html = re.sub(r"<title>[^<]*</title>", lambda m: "<title>%s</title>" % esc(s["home_t"]), html, count=1)
+        for attr, value in (('name="description"', s["home_d"]), ('property="og:description"', s["home_d"]),
+                            ('property="og:title"', s["home_og"]), ('name="twitter:title"', s["home_og"])):
+            html = re.sub(r'<meta %s content="[^"]*">' % attr, lambda m: '<meta %s content="%s">' % (attr, esc(value)), html, count=1)
+        html = _LHREF.sub(lambda m: ' href="%s?lang=en" data-lhref="%s"' % (m.group(2), m.group(2)), html)
+        html = html.replace('id="langBtn" type="button" aria-label="Language">EN<', 'id="langBtn" type="button" aria-label="العربية">ع<', 1)
+    _home[ui] = (key, html)
+    return html
 
 
 def with_nonce(page: str, nonce: str) -> str:
@@ -86,11 +143,6 @@ def with_nonce(page: str, nonce: str) -> str:
 
 
 def home_html(frontend_dir: str, base: str, ui: str = "ar", nonce: str = "") -> str:
-    path = os.path.join(frontend_dir, "index.html")
-    mtime = os.path.getmtime(path)
-    if mtime != _home["mtime"]:
-        with open(path, encoding="utf-8") as f:
-            _home.update(mtime=mtime, html=f.read())
     canon = base + ("/?lang=en" if ui == "en" else "/")
     head = "\n".join([
         '<link rel="canonical" href="%s">' % esc(canon),
@@ -112,9 +164,9 @@ def home_html(frontend_dir: str, base: str, ui: str = "ar", nonce: str = "") -> 
              "logo": base + "/icon-512.png"},
         ]}),
     ])
-    links = " ".join('<a href="/category/%s">%s</a>' % (k, esc(v["ar"])) for k, v in CATEGORIES.items())
+    links = " ".join('<a href="/category/%s%s">%s</a>' % (k, "?lang=en" if ui == "en" else "", esc(v[ui])) for k, v in CATEGORIES.items())
     ad = '<div class="wrap">%s</div>' % ad_unit(ui) if nonce and ad_unit(ui) else ""
-    page = _home["html"].replace("<!--SEO:HEAD-->", head).replace("<!--SEO:CATS-->", links).replace("<!--SEO:AD-->", ad)
+    page = _home_template(frontend_dir, ui).replace("<!--SEO:HEAD-->", head).replace("<!--SEO:CATS-->", links).replace("<!--SEO:AD-->", ad)
     return with_nonce(page, nonce)
 
 
