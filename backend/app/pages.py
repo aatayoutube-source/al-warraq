@@ -310,6 +310,27 @@ def infeed_meta() -> str:
     return '<meta name="warraq-infeed" content="%s|%s|%s">' % (esc(ADSENSE_ACCOUNT), esc(INFEED_SLOT), esc(INFEED_LAYOUT))
 
 
+# Google Analytics 4 (the site's property). ANALYTICS=0 turns it off (a test copy); GA_ID replaces the property.
+GA_ID = os.environ.get("GA_ID", "").strip() or "G-RB47QYRPE9"
+
+
+def analytics_on() -> bool:
+    return os.environ.get("ANALYTICS", "1").strip() != "0"
+
+
+def analytics_head() -> str:
+    """Google's loader, and the site's own /ga.js in place of Google's inline lines (no inline script: CSP)."""
+    if not analytics_on():
+        return ""
+    return ('<script async src="https://www.googletagmanager.com/gtag/js?id=%s"></script>\n'
+            '<script src="/ga.js?v=1" data-id="%s"></script>' % (esc(GA_ID), esc(GA_ID)))
+
+
+def site_head() -> str:
+    """What every page carries in its head: AdSense's site tag and Google Analytics."""
+    return adsense_meta() + "\n" + analytics_head()
+
+
 def ads_txt() -> str:
     """ads.txt: Google may sell ads on this site for this publisher account, and nobody else may."""
     return "google.com, %s, DIRECT, f08c47fec0942fa0\n" % ADSENSE_ACCOUNT.replace("ca-pub-", "pub-")
@@ -462,7 +483,7 @@ def not_found_html(ui="ar") -> str:
 """.format(ui=ui, dir=t["dir"], h=esc(t["notfound"]), brand=esc(BRAND[ui]), css=CSS, q=q, oq="?lang=en" if other == "en" else "",
            logo=LOGO_SVG, all=esc(t["all"]), other=other, other_lang=esc(t["other_lang"]), p=esc(t["nf_p"]), icon=SEARCH_ICON,
            ph=esc(t["ph"]), search=esc(t["search"]), home=esc(t["nf_home"]), try_=esc(t["nf_try"]), cats=cats,
-           legal=legal_links(ui), note=esc(t["note"]), adsense=adsense_meta())
+           legal=legal_links(ui), note=esc(t["note"]), adsense=site_head())
 
 
 SHARE_ICONS = {"wa": '<svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" d="M12 3a9 9 0 0 0-7.7 13.6L3 21l4.5-1.2A9 9 0 1 0 12 3z"/><path fill="currentColor" d="M9.1 7.6c.3 0 .5 0 .7.5l.8 1.9c.1.3 0 .5-.1.7l-.6.7c-.1.2-.2.4 0 .6.9 1.5 2 2.6 3.5 3.4.2.1.4.1.6-.1l.8-.9c.2-.2.4-.3.7-.2l1.8.9c.3.1.5.3.5.5 0 .6-.3 1.4-.9 1.8-.7.5-1.6.6-2.5.3-3-.9-5.4-3.2-6.5-6.2-.3-.9-.2-1.9.4-2.6.2-.3.5-.5.8-.5z"/></svg>',
@@ -678,7 +699,7 @@ def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool 
            alt=esc(title), by=('<p class="by">%s</p>' % esc(author)) if author else "", tags=tags, numbers_html=numbers_html, btns=btns, share=share, share_js=SHARE_JS, facts=facts, rel=rel_html, about=about_html,
            note=esc(t["note"]), legal=legal_links(ui), cv_script=cv_script, like_js=LIKE_JS, wiki_js=WIKI_JS,
            logo=LOGO_SVG, search_icon=SEARCH_ICON, ph=esc(t["ph"]), search=esc(t["search"]),
-           locale="ar_AR" if ui == "ar" else "en_US", adsense=adsense_meta(),
+           locale="ar_AR" if ui == "ar" else "en_US", adsense=site_head(),
            # far from the read buttons (an ad must not invite a mistaken click); only with a nonce to run it
            ad_head=ad_head() if nonce else "", ad=ad_unit(ui) if nonce else "")
     # the Content-Security-Policy of this response only lets scripts carrying its nonce run

@@ -19,7 +19,7 @@ from . import stats
 from .pages import BRAND, LEGAL, T, esc
 
 # each page its own date: the privacy policy changed with the language cookie, the terms did not
-UPDATED = {"privacy": {"ar": "18 أكتوبر 2026", "en": "18 October 2026"}, "terms": {"ar": "16 أكتوبر 2026", "en": "16 October 2026"}}
+UPDATED = {"privacy": {"ar": "19 أكتوبر 2026", "en": "19 October 2026"}, "terms": {"ar": "16 أكتوبر 2026", "en": "16 October 2026"}}
 EMAIL_DEFAULT = "alwarraqibrary@gmail.com"  # the library's mailbox
 PAGES = ("about", "privacy", "terms", "contact")
 KEEP_SECONDS = 365 * 86400  # contact messages are deleted after a year
@@ -151,7 +151,7 @@ def _privacy(ui):
 <li><b>التخزين المحلي في متصفحك:</b> نحفظ فيه اختيارك للمظهر (فاتح أو داكن) فقط، ولا يُرسل إلينا.</li>
 </ul>
 <h2>2. ملفات تعريف الارتباط (الكوكيز)</h2>
-<p>الكوكيز ملفات نصية صغيرة تحفظها المواقع في متصفحك. لا يضع موقعنا إلا ملف كوكيز واحداً هو كوكيز اللغة المذكور أعلاه، ولا يستخدم أي كوكيز لتتبعك، لكن أطرافاً ثالثة، منها Google، قد تستخدمها عند عرض الإعلانات كما يوضح البند التالي. يمكنك ضبط متصفحك لرفض الكوكيز أو حذفها في أي وقت، وقد يغيّر ذلك الإعلانات التي تراها.</p>
+<p>الكوكيز ملفات نصية صغيرة تحفظها المواقع في متصفحك. يضع موقعنا كوكيز اللغة المذكور أعلاه، وتضع خدمة Google Analytics كوكيز إحصائية (مثل _ga) كما يوضح البند الرابع، وقد تستخدم أطراف ثالثة، منها Google، الكوكيز عند عرض الإعلانات كما يوضح البند التالي. يمكنك ضبط متصفحك لرفض الكوكيز أو حذفها في أي وقت، وقد يغيّر ذلك الإعلانات التي تراها.</p>
 <h2>3. الإعلانات وGoogle AdSense</h2>
 <p>نعرض إعلانات من خلال Google AdSense لتغطية تكاليف تشغيل المكتبة وإبقائها مجانية:</p>
 <ul>
@@ -159,7 +159,7 @@ def _privacy(ui):
 <li>يتيح استخدام Google لملفات تعريف ارتباط الإعلانات لها ولشركائها عرض إعلانات لك استناداً إلى زيارتك لهذا الموقع و/أو لمواقع أخرى على الإنترنت.</li>
 <li>يمكنك إيقاف الإعلانات المخصّصة من <a href="https://adssettings.google.com" rel="noopener" target="_blank">إعدادات الإعلانات في Google</a>، كما يمكنك إيقاف استخدام موردين آخرين لملفات تعريف الارتباط للإعلانات المخصّصة عبر <a href="https://www.aboutads.info/choices/" rel="noopener" target="_blank">www.aboutads.info</a>.</li>
 <li>لمعرفة المزيد عن طريقة استخدام Google للبيانات، راجع <a href="https://policies.google.com/technologies/partner-sites" rel="noopener" target="_blank">كيف تستخدم Google المعلومات من المواقع التي تستخدم خدماتها</a> و<a href="https://policies.google.com/technologies/ads" rel="noopener" target="_blank">طريقة استخدام Google للكوكيز في الإعلانات</a>.</li>
-<li>للزوار من المنطقة الاقتصادية الأوروبية والمملكة المتحدة وسويسرا: نطلب موافقتك قبل استخدام الكوكيز في الإعلانات المخصّصة، كما تفرض القوانين هناك.</li>
+<li>للزوار من المنطقة الاقتصادية الأوروبية والمملكة المتحدة وسويسرا: نطلب موافقتك قبل استخدام الكوكيز في الإعلانات المخصّصة وفي الإحصاءات، كما تفرض القوانين هناك.</li>
 </ul>
 <h2>4. خدمات أطراف ثالثة أخرى</h2>
 <p>يحمّل متصفحك بعض المحتوى من خدمات خارجية، وتتلقى هذه الخدمات عنوان IP الخاص بك كما يحدث في أي طلب على الإنترنت:</p>
@@ -168,9 +168,10 @@ def _privacy(ui):
 <li>أغلفة الكتب من Open Library ومشروع غوتنبرغ وHathiTrust ومؤسسة هنداوي، ونبذ المؤلفين من ويكيبيديا في صفحات الكتب.</li>
 <li>روابط القراءة تنقلك إلى مواقع خارجية تحكمها سياسات الخصوصية الخاصة بها.</li>
 <li>عبارات البحث في مكتب البحوث يرسلها خادمنا إلى OpenAlex للعثور على الأوراق العلمية.</li>
+<li><b>Google Analytics:</b> لنعرف عدد الزوار والصفحات الأكثر زيارة وكيف يُستخدم الموقع، تجمع Google بيانات الاستخدام (الصفحات التي تزورها، ومدة الزيارة، ونوع الجهاز والمتصفح، والبلد أو المدينة على وجه التقريب) بكوكيز مثل _ga تبقى حتى سنتين. لا نرسل إليها اسمك ولا بريدك. يمكنك منعها بتثبيت <a href="https://tools.google.com/dlpage/gaoptout" rel="noopener" target="_blank">إضافة إيقاف Google Analytics</a>، ولمعرفة المزيد راجع <a href="https://policies.google.com/privacy" rel="noopener" target="_blank">سياسة خصوصية Google</a>.</li>
 </ul>
 <h2>5. كيف نستخدم المعلومات</h2>
-<p>لتشغيل الموقع وتحسينه، ولعرض الكتب الأكثر مشاهدة والعبارات الأكثر بحثاً، وللرد على رسائلك، ولحماية الموقع من الإساءة. لا نبيع بياناتك، ولا نشاركها إلا مع مزوّدي الخدمات المذكورين أعلاه، أو إذا ألزمنا القانون بذلك.</p>
+<p>لتشغيل الموقع وتحسينه ومعرفة كيف يُستخدم، ولعرض الكتب الأكثر مشاهدة والعبارات الأكثر بحثاً، وللرد على رسائلك، ولحماية الموقع من الإساءة. لا نبيع بياناتك، ولا نشاركها إلا مع مزوّدي الخدمات المذكورين أعلاه، أو إذا ألزمنا القانون بذلك.</p>
 <h2>6. الأطفال</h2>
 <p>الموقع موجّه لعامة القرّاء، ولا نجمع عن قصد بيانات شخصية من أطفال دون 13 عاماً. إن علمت أن طفلاً أرسل إلينا بياناته فراسلنا لنحذفها.</p>
 <h2>7. حقوقك</h2>
@@ -193,7 +194,7 @@ def _privacy(ui):
 <li><b>Local storage in your browser:</b> only your choice of theme (light or dark). It is never sent to us.</li>
 </ul>
 <h2>2. Cookies</h2>
-<p>Cookies are small text files that websites store in your browser. Our site sets a single cookie of its own, the language cookie above, and none to track you, but third parties, including Google, may use cookies when showing ads, as described below. You can set your browser to refuse or delete cookies at any time; this may change the ads you see.</p>
+<p>Cookies are small text files that websites store in your browser. Our site sets the language cookie above, Google Analytics sets statistics cookies (such as _ga) as section 4 explains, and third parties, including Google, may use cookies when showing ads, as described below. You can set your browser to refuse or delete cookies at any time; this may change the ads you see.</p>
 <h2>3. Advertising and Google AdSense</h2>
 <p>We show ads through Google AdSense to cover the costs of running the library and keep it free:</p>
 <ul>
@@ -201,7 +202,7 @@ def _privacy(ui):
 <li>Google's use of advertising cookies enables it and its partners to serve ads to you based on your visit to this site and/or other sites on the Internet.</li>
 <li>You may opt out of personalised advertising by visiting <a href="https://adssettings.google.com" rel="noopener" target="_blank">Google Ads Settings</a>. You can also opt out of a third-party vendor's use of cookies for personalised advertising at <a href="https://www.aboutads.info/choices/" rel="noopener" target="_blank">www.aboutads.info</a>.</li>
 <li>To learn more, see <a href="https://policies.google.com/technologies/partner-sites" rel="noopener" target="_blank">how Google uses information from sites that use its services</a> and <a href="https://policies.google.com/technologies/ads" rel="noopener" target="_blank">how Google uses cookies in advertising</a>.</li>
-<li>Visitors from the European Economic Area, the United Kingdom and Switzerland are asked for consent before cookies are used for personalised ads, as the law there requires.</li>
+<li>Visitors from the European Economic Area, the United Kingdom and Switzerland are asked for consent before cookies are used for personalised ads and for statistics, as the law there requires.</li>
 </ul>
 <h2>4. Other third-party services</h2>
 <p>Your browser loads some content from outside services, which receive your IP address as with any request on the Internet:</p>
@@ -210,9 +211,10 @@ def _privacy(ui):
 <li>Book covers from Open Library, Project Gutenberg, HathiTrust and the Hindawi Foundation; author summaries from Wikipedia on book pages.</li>
 <li>Reading links take you to external sites governed by their own privacy policies.</li>
 <li>Research-desk searches are sent by our server to OpenAlex to find papers.</li>
+<li><b>Google Analytics:</b> to learn how many people visit, which pages they read and how the site is used, Google collects usage data (the pages you visit, visit length, device and browser type, approximate country or city) with cookies such as _ga that last up to two years. We never send it your name or email. You can block it with the <a href="https://tools.google.com/dlpage/gaoptout" rel="noopener" target="_blank">Google Analytics opt-out add-on</a>; see <a href="https://policies.google.com/privacy" rel="noopener" target="_blank">Google's privacy policy</a> for more.</li>
 </ul>
 <h2>5. How we use information</h2>
-<p>To run and improve the site, to show the most viewed books and most searched phrases, to reply to your messages and to protect the site from abuse. We do not sell your data, and we share it only with the service providers above, or when the law requires it.</p>
+<p>To run and improve the site and learn how it is used, to show the most viewed books and most searched phrases, to reply to your messages and to protect the site from abuse. We do not sell your data, and we share it only with the service providers above, or when the law requires it.</p>
 <h2>6. Children</h2>
 <p>The site is meant for the general public, and we do not knowingly collect personal data from children under 13. If you learn that a child has sent us personal data, contact us and we will delete it.</p>
 <h2>7. Your rights</h2>

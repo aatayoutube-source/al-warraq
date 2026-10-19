@@ -28,12 +28,16 @@ RULES = [
 ]
 
 # The home page has no inline script; inline style attributes carry the cover colours.
-SITE_CSP = ("default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
-            "font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self'; "
+# Google Analytics: its loader comes from googletagmanager.com and reports to google-analytics.com.
+GA_CONNECT = "https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com"
+SITE_CSP = ("default-src 'self'; script-src 'self' https://www.googletagmanager.com; "
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+            "font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' " + GA_CONNECT + "; "
             "object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'")
 # Book pages run small inline scripts, each carrying this response's nonce.
-BOOK_CSP = ("default-src 'self'; script-src 'nonce-{nonce}'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
-            "font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.wikipedia.org; "
+BOOK_CSP = ("default-src 'self'; script-src 'nonce-{nonce}' https://www.googletagmanager.com; "
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+            "font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.wikipedia.org " + GA_CONNECT + "; "
             "object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'")
 # Pages with an ad (home, categories, authors, books): only scripts carrying this response's nonce run, and what
 # they load may load more ('strict-dynamic': AdSense pulls further scripts from Google addresses that change with

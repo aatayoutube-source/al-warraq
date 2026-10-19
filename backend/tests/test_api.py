@@ -566,9 +566,9 @@ def test_pages_open_in_the_visitors_language(client):
     assert "set-cookie" not in client.get("/?lang=en", headers={"sec-fetch-site": "cross-site"}).headers
     client.cookies.clear()  # the test client kept that choice, as a browser would: start again without one
     privacy = client.get("/privacy").text  # and the privacy policy says so, dated
-    assert "warraq_lang" in privacy and "اختيارك للغة والمظهر" not in privacy and "آخر تحديث: 18 أكتوبر 2026" in privacy
+    assert "warraq_lang" in privacy and "اختيارك للغة والمظهر" not in privacy and "آخر تحديث: 19 أكتوبر 2026" in privacy
     assert "<p>نعرض إعلانات من خلال Google AdSense" in privacy and "قد نعرض إعلانات" not in privacy
-    assert "single cookie of its own" in client.get("/privacy?lang=en").text
+    assert "Our site sets the language cookie above" in client.get("/privacy?lang=en").text
     assert "آخر تحديث: 16 أكتوبر 2026" in client.get("/terms").text  # the terms did not change
 
 
@@ -991,6 +991,30 @@ def test_ad_units_on_content_pages_only(client, monkeypatch):
     assert "warraq-infeed" not in r.text and "6915772378" not in client.get("/category/nov").text
     r = client.get("/book/1", follow_redirects=True)
     assert unit not in r.text and "'strict-dynamic'" not in r.headers["content-security-policy"]
+
+
+def test_google_analytics_on_every_page(client, monkeypatch):
+    loader = '<script async src="https://www.googletagmanager.com/gtag/js?id=G-RB47QYRPE9"></script>'
+    setup = 'src="/ga.js?v=1" data-id="G-RB47QYRPE9"></script>'
+    for url in ("/", "/?lang=en", "/category/nov", "/author/shakespeare", "/book/1", "/about", "/privacy", "/terms",
+                "/contact", "/no/such/page"):
+        r = client.get(url, follow_redirects=True)
+        head = r.text.split("</head>")[0]
+        csp = r.headers["content-security-policy"]
+        assert head.count("googletagmanager.com/gtag/js") == 1 and setup in head, url  # once, in the head
+        if "'nonce-" in csp:  # the pages with ads: both scripts carry the nonce
+            nonce = csp.split("'nonce-")[1].split("'")[0]
+            assert r.text.count("<script") == r.text.count('<script nonce="%s"' % nonce), url
+        else:  # the strict policy lets Google's loader in and its reports out, and nothing inline
+            assert loader in head and "script-src 'self' https://www.googletagmanager.com;" in csp, url
+            assert "https://*.google-analytics.com" in csp and "'unsafe-inline' https://fonts" in csp and "script-src 'self' 'unsafe" not in csp
+    ga = client.get("/ga.js")
+    assert ga.status_code == 200 and "gtag('config', id)" in ga.text and "analytics_storage: 'denied'" in ga.text
+    privacy = client.get("/privacy").text  # the privacy policy names it, its cookies and how to opt out
+    assert "Google Analytics" in privacy and "_ga" in privacy and "tools.google.com/dlpage/gaoptout" in privacy
+    assert "single cookie" not in client.get("/privacy?lang=en").text
+    monkeypatch.setenv("ANALYTICS", "0")  # a test copy of the site measures nothing
+    assert "googletagmanager" not in client.get("/").text and "ga.js" not in client.get("/about").text
 
 
 def test_api_docs_are_hidden_unless_asked(tmp_path, monkeypatch):

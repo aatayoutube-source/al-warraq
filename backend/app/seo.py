@@ -18,8 +18,8 @@ from urllib.parse import quote
 from . import legal, modern
 from .wikisource import WS_KIND
 from .catalog import ARABIC_CAT, CATEGORIES
-from .pages import (BRAND, CSS, INFEED_AT, INFEED_MIN, LOGO_SVG, SEARCH_ICON, T, _authors, ad_head, ad_unit, adsense_meta,
-                    book_author, book_title, canonical_path, esc, infeed_meta, infeed_unit, legal_links)
+from .pages import (BRAND, CSS, INFEED_AT, INFEED_MIN, LOGO_SVG, SEARCH_ICON, T, _authors, ad_head, ad_unit, analytics_head,
+                    book_author, book_title, canonical_path, esc, infeed_meta, infeed_unit, legal_links, site_head)
 
 PER_PAGE = 60
 MAX_PAGES = 200  # category pages go this deep; the sitemaps list every single book anyway
@@ -153,6 +153,7 @@ def home_html(frontend_dir: str, base: str, ui: str = "ar", nonce: str = "") -> 
         '<meta property="og:locale" content="%s">' % ("en_US" if ui == "en" else "ar_AR"),
         '<meta name="twitter:image" content="%s/og-image.png">' % esc(base),
         verification_meta(),
+        analytics_head(),
         ad_head() if nonce else "",
         infeed_meta() if nonce else "",
         _ld({"@context": "https://schema.org", "@graph": [
@@ -218,7 +219,7 @@ def _shell(ui, base, path, title, desc, body, ld, page=1, extra_q="", extra_css=
            ph=esc(t["ph"]), search=esc(t["search"]), all=esc(t["all"]), other=other, other_lang=esc(t["other_lang"]),
            toggle=esc(path + ("?lang=en" if other == "en" else "")),
            body=body.replace("<!--SEO:AD-->", ad_unit(ui) if nonce else "").replace("<!--SEO:FEED-->", infeed_unit(ui) if nonce else ""),
-           note=esc(t["note"]), legal=legal_links(ui), adsense=adsense_meta(), ad_head=ad_head() if nonce else "")
+           note=esc(t["note"]), legal=legal_links(ui), adsense=site_head(), ad_head=ad_head() if nonce else "")
 
 
 def _book_list(conn, rows, ui) -> str:
