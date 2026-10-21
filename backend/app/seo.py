@@ -18,8 +18,8 @@ from urllib.parse import quote
 from . import content, legal, modern
 from .wikisource import WS_KIND
 from .catalog import ARABIC_CAT, CATEGORIES
-from .pages import (ARTICLES_NAME, BRAND, CSS, INFEED_AT, INFEED_MIN, LOGO_SVG, SEARCH_ICON, T, UI_LANGS, _authors, ad_head, ad_unit,
-                    analytics_head, book_author, book_title, canonical_path, esc, infeed_meta, infeed_unit, lang_switcher, legal_links, site_head)
+from .pages import (ARTICLES_NAME, BRAND, CSS, INFEED_AT, INFEED_MIN, LOGO_SVG, SEARCH_ICON, T, _authors, ad_head, ad_unit,
+                    analytics_head, book_author, book_title, canonical_path, esc, infeed_meta, infeed_unit, legal_links, site_head)
 
 PER_PAGE = 60
 MAX_PAGES = 200  # category pages go this deep; the sitemaps list every single book anyway
@@ -82,15 +82,11 @@ def _ld(obj) -> str:
 
 
 def _alternates(base: str, path: str, extra: str = "") -> str:
-    """hreflang links for all supported UI languages; Arabic is x-default."""
-    links = []
-    for lang in UI_LANGS:
-        q = ("?lang=" + lang + (("&" + extra) if extra else "")) if lang != "ar" else (("?" + extra) if extra else "")
-        url = base + path + q
-        links.append('<link rel="alternate" hreflang="%s" href="%s">' % (lang, esc(url)))
-    ar_url = base + path + (("?" + extra) if extra else "")
-    links.append('<link rel="alternate" hreflang="x-default" href="%s">' % esc(ar_url))
-    return "\n".join(links)
+    """hreflang links: Arabic is the main language of the site, English is ?lang=en."""
+    ar = base + path + (("?" + extra) if extra else "")
+    en = base + path + "?lang=en" + (("&" + extra) if extra else "")
+    return ('<link rel="alternate" hreflang="ar" href="%s">\n<link rel="alternate" hreflang="en" href="%s">\n'
+            '<link rel="alternate" hreflang="x-default" href="%s">' % (esc(ar), esc(en), esc(ar)))
 
 
 # ---------- the home page: the same file, with the tags only the server can know ----------
@@ -138,17 +134,14 @@ def _home_template(frontend_dir: str, ui: str) -> str:
                                                      if m.group(1) in t else ""), html)
         html = _DATA_IARL.sub(lambda m: ' data-iarl="%s" aria-label="%s"' % (m.group(1), esc(t.get(m.group(1), ""))), html)
         html = re.sub(r'(id="filtBtn"[^>]*>)(</button>)', lambda m: m.group(1) + esc(t.get("filters", "")) + m.group(2), html)
-    if ui != "ar":
-        s = S.get(ui, S["en"])
-        dir_ = T[ui]["dir"] if ui in T else "ltr"
-        html = html.replace('<html lang="ar" dir="rtl">', '<html lang="%s" dir="%s">' % (ui, dir_), 1)
-        if "home_t" in s:
-            html = re.sub(r"<title>[^<]*</title>", lambda m: "<title>%s</title>" % esc(s["home_t"]), html, count=1)
-        if "home_d" in s:
-            for attr, value in (('name="description"', s["home_d"]), ('property="og:description"', s["home_d"]),
-                                ('property="og:title"', s.get("home_og", s["home_d"])), ('name="twitter:title"', s.get("home_og", s["home_d"]))):
-                html = re.sub(r'<meta %s content="[^"]*">' % attr, lambda m, a=attr, v=value: '<meta %s content="%s">' % (a, esc(v)), html, count=1)
-        html = _LHREF.sub(lambda m, u=ui: ' href="%s?lang=%s" data-lhref="%s"' % (m.group(2), u, m.group(2)), html)
+    if ui == "en":
+        s = S["en"]
+        html = html.replace('<html lang="ar" dir="rtl">', '<html lang="en" dir="ltr">', 1)
+        html = re.sub(r"<title>[^<]*</title>", lambda m: "<title>%s</title>" % esc(s["home_t"]), html, count=1)
+        for attr, value in (('name="description"', s["home_d"]), ('property="og:description"', s["home_d"]),
+                            ('property="og:title"', s["home_og"]), ('name="twitter:title"', s["home_og"])):
+            html = re.sub(r'<meta %s content="[^"]*">' % attr, lambda m: '<meta %s content="%s">' % (attr, esc(value)), html, count=1)
+        html = _LHREF.sub(lambda m: ' href="%s?lang=en" data-lhref="%s"' % (m.group(2), m.group(2)), html)
         html = html.replace('id="langBtn" type="button" aria-label="Language">EN<', 'id="langBtn" type="button" aria-label="العربية">ع<', 1)
     _home[ui] = (key, html)
     return html
@@ -161,32 +154,30 @@ def with_nonce(page: str, nonce: str) -> str:
 
 def _home_intro(ui: str) -> str:
     """What the library is (its own words) and its latest articles, for the home page."""
-    s = S.get(ui, S["en"])
-    q = ("?lang=" + ui) if ui != "ar" else ""
-    paras = content.home(ui) or content.home("en")
+    s, q = S[ui], ("?lang=en" if ui == "en" else "")
+    paras = content.home(ui)
     arts = content.articles()[:6]
     if not paras and not arts:
         return ""
     out = '<div class="intro" data-srv-lang="%s">' % ui
     if paras:
-        out += "<h2>%s</h2>%s" % (esc(s.get("intro_h", "")), content.paragraphs(paras))
+        out += "<h2>%s</h2>%s" % (esc(s["intro_h"]), content.paragraphs(paras))
     if arts:
         out += '<div class="intro-arts"><h3>%s</h3><ul>%s</ul><a class="intro-all" href="/articles%s">%s</a></div>' % (
-            esc(s.get("arts_h", "")), "".join('<li><a href="/articles/%s" lang="ar">%s</a></li>' % (esc(a["slug"]), esc(a["title"])) for a in arts),
-            q, esc(s.get("arts_all", "")))
+            esc(s["arts_h"]), "".join('<li><a href="/articles/%s" lang="ar">%s</a></li>' % (esc(a["slug"]), esc(a["title"])) for a in arts),
+            q, esc(s["arts_all"]))
     return out + "</div>"
 
 
 def home_html(frontend_dir: str, base: str, ui: str = "ar", nonce: str = "", search: bool = False) -> str:
-    canon = base + ("/?lang=" + ui if ui != "ar" else "/")
-    og_locale = {"ar": "ar_AR", "en": "en_US", "fr": "fr_FR", "es": "es_ES", "pt": "pt_BR", "zh": "zh_CN", "ja": "ja_JP"}.get(ui, "en_US")
+    canon = base + ("/?lang=en" if ui == "en" else "/")
     head = "\n".join([
         '<link rel="canonical" href="%s">' % esc(canon),
         _alternates(base, "/"),
         '<meta property="og:url" content="%s">' % esc(canon),
         '<meta property="og:image" content="%s/og-image.png">' % esc(base),
         '<meta property="og:image:width" content="1200">\n<meta property="og:image:height" content="630">',
-        '<meta property="og:locale" content="%s">' % og_locale,
+        '<meta property="og:locale" content="%s">' % ("en_US" if ui == "en" else "ar_AR"),
         '<meta name="twitter:image" content="%s/og-image.png">' % esc(base),
         verification_meta(),
         analytics_head(),
@@ -194,15 +185,14 @@ def home_html(frontend_dir: str, base: str, ui: str = "ar", nonce: str = "", sea
         infeed_meta() if nonce else "",
         _ld({"@context": "https://schema.org", "@graph": [
             {"@type": "WebSite", "@id": base + "/#site", "url": base + "/", "name": BRAND["ar"], "alternateName": BRAND["en"],
-             "inLanguage": list(UI_LANGS), "publisher": {"@id": base + "/#org"},
+             "inLanguage": ["ar", "en"], "publisher": {"@id": base + "/#org"},
              "potentialAction": {"@type": "SearchAction", "target": base + "/?q={search_term_string}",
                                  "query-input": "required name=search_term_string"}},
             {"@type": "Organization", "@id": base + "/#org", "name": BRAND["ar"], "alternateName": BRAND["en"], "url": base + "/",
              "logo": base + "/icon-512.png"},
         ]}),
     ])
-    lang_q = ("?lang=" + ui) if ui != "ar" else ""
-    links = " ".join('<a href="/category/%s%s">%s</a>' % (k, lang_q, esc(v.get(ui, v["en"]))) for k, v in CATEGORIES.items())
+    links = " ".join('<a href="/category/%s%s">%s</a>' % (k, "?lang=en" if ui == "en" else "", esc(v[ui])) for k, v in CATEGORIES.items())
     ad = '<div class="wrap">%s</div>' % ad_unit(ui) if nonce and ad_unit(ui) else ""
     page = (_home_template(frontend_dir, ui).replace("<!--SEO:HEAD-->", head).replace("<!--SEO:CATS-->", links)
             .replace("<!--SEO:AD-->", ad).replace("<!--SEO:INTRO-->", _home_intro(ui)))
@@ -216,13 +206,9 @@ def home_html(frontend_dir: str, base: str, ui: str = "ar", nonce: str = "", sea
 def _shell(ui, base, path, title, desc, body, ld, page=1, extra_q="", extra_css="", nonce="", robots="", canonical="",
            alternates=True):
     t = T[ui]
-    q_parts = []
-    if ui != "ar":
-        q_parts.append("lang=" + ui)
-    if page > 1:
-        q_parts.append("page=%d" % page)
-    canon = base + path + ("?" + "&".join(q_parts) if q_parts else "")
-    canon = canonical or canon
+    canon = base + path + "?" + "&".join(x for x in (("lang=en" if ui == "en" else ""), ("page=%d" % page if page > 1 else "")) if x)
+    canon = canonical or canon.rstrip("?")
+    other = "en" if ui == "ar" else "ar"
     return """<!doctype html>
 <html lang="{ui}" dir="{dir}">
 <head>
@@ -252,7 +238,7 @@ def _shell(ui, base, path, title, desc, body, ld, page=1, extra_q="", extra_css=
 <body>
 <header class="bar"><div class="wrap"><a class="brand" href="/">{logo}<span>{brand}</span></a>
 <form class="sbox" action="/#browse" method="get" role="search">{icon}<input type="search" name="q" placeholder="{ph}" aria-label="{ph}"><button type="submit">{search}</button></form>
-<nav><a href="/#browse">{all}</a>{sw}</nav></div></header>
+<nav><a href="/#browse">{all}</a><a href="{toggle}" hreflang="{other}">{other_lang}</a></nav></div></header>
 <main class="wrap">
 {body}
 <footer>{legal}<p>{note}</p></footer>
@@ -261,8 +247,9 @@ def _shell(ui, base, path, title, desc, body, ld, page=1, extra_q="", extra_css=
 </html>
 """.format(ui=ui, dir=t["dir"], title=esc(title), desc=esc(desc), canon=esc(canon), alts=_alternates(base, path) if alternates else "",
            robots=('<meta name="robots" content="%s">\n' % esc(robots)) if robots else "",
-           brand=esc(BRAND.get(ui, BRAND["en"])), base=esc(base), ld=ld, css=CSS, extra=EXTRA_CSS + extra_css, logo=LOGO_SVG, icon=SEARCH_ICON,
-           ph=esc(t["ph"]), search=esc(t["search"]), all=esc(t["all"]), sw=lang_switcher(ui),
+           brand=esc(BRAND[ui]), base=esc(base), ld=ld, css=CSS, extra=EXTRA_CSS + extra_css, logo=LOGO_SVG, icon=SEARCH_ICON,
+           ph=esc(t["ph"]), search=esc(t["search"]), all=esc(t["all"]), other=other, other_lang=esc(t["other_lang"]),
+           toggle=esc(path + ("?lang=en" if other == "en" else "")),
            body=body.replace("<!--SEO:AD-->", ad_unit(ui) if nonce else "").replace("<!--SEO:FEED-->", infeed_unit(ui) if nonce else ""),
            note=esc(t["note"]), legal=legal_links(ui), adsense=site_head(), ad_head=ad_head() if nonce else "")
 
@@ -279,7 +266,7 @@ def _book_list(conn, rows, ui) -> str:
 
 
 def _pager(path, ui, page, pages) -> str:
-    s, lang = S.get(ui, S["en"]), (("lang=%s&" % ui) if ui != "ar" else "")
+    s, lang = S[ui], ("lang=en&" if ui == "en" else "")
     prev = '<a rel="prev" href="%s?%spage=%d">%s</a>' % (path, lang, page - 1, s["prev"]) if page > 1 else "<span></span>"
     nxt = '<a rel="next" href="%s?%spage=%d">%s</a>' % (path, lang, page + 1, s["next"]) if page < pages else "<span></span>"
     return '<nav class="pager">%s%s</nav>' % (prev, nxt)

@@ -542,9 +542,7 @@ def test_home_page_words_are_in_its_html(client):
 def test_pages_open_in_the_visitors_language(client):
     from app.pages import browser_ui
     assert browser_ui("ar-IQ,ar;q=0.9,en-US;q=0.8") == "ar" and browser_ui("en-US,en;q=0.9,ar;q=0.8") == "en"
-    assert browser_ui("ku-IQ,ar;q=0.8") == "ar" and browser_ui("fr-FR,fr;q=0.9") == "fr" and browser_ui("") == ""
-    assert browser_ui("es-MX,es;q=0.9") == "es" and browser_ui("zh-CN,zh;q=0.9") == "zh" and browser_ui("ja-JP") == "ja"
-    assert browser_ui("de-DE,de;q=0.9") == "en"  # unsupported lang -> en fallback (browser sent tags)
+    assert browser_ui("ku-IQ,ar;q=0.8") == "ar" and browser_ui("fr-FR,fr;q=0.9") == "en" and browser_ui("") == ""
     chrome = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0 Safari/537.36"
 
     def lang_of(url, **headers):
