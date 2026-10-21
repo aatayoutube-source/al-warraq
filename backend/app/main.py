@@ -96,7 +96,7 @@ def create_app() -> FastAPI:
                 lang = request.query_params.get("lang", "")
                 # moving to the other language inside the site (its language links) is a choice to keep;
                 # arriving from elsewhere on a ?lang= address (a search result, a shared link) is not
-                if (lang in ("ar", "en") and request.headers.get("sec-fetch-site") == "same-origin"
+                if (lang in pages.UI_LANGS and request.headers.get("sec-fetch-site") == "same-origin"
                         and request.cookies.get(pages.LANG_COOKIE) != lang):
                     response.set_cookie(pages.LANG_COOKIE, lang, max_age=365 * 86400, samesite="lax",
                                         secure=request.url.scheme == "https")

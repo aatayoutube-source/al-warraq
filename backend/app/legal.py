@@ -88,8 +88,18 @@ for _ui in L:
     L[_ui].update(dict(LEGAL[_ui]))  # the page titles
 
 
+def _L(ui: str) -> dict:
+    """L for ui, falling back to English for non-ar/en UIs."""
+    return L.get(ui, L["en"])
+
+
+def _T(ui: str) -> dict:
+    """T for ui, falling back to English."""
+    return T.get(ui, T["en"])
+
+
 def link(page: str, ui: str) -> str:
-    return "/" + page + ("?lang=en" if ui == "en" else "")
+    return "/" + page + (("?lang=" + ui) if ui != "ar" else "")
 
 
 def contact_email() -> str:
@@ -328,18 +338,18 @@ def token_ok(conn, token: str, now=None) -> bool:
 
 
 def _contact(conn, ui, values=None, error="", sent=False):
-    l, v = L[ui], values or {}
+    l, v = _L(ui), values or {}
     if sent:
-        return '<p class="notice ok" role="status">%s</p><p><a href="%s">%s</a></p>' % (esc(l["sent"]), "/" + ("?lang=en" if ui == "en" else ""), esc(T[ui]["home"]))
+        return '<p class="notice ok" role="status">%s</p><p><a href="%s">%s</a></p>' % (esc(l["sent"]), "/" + (("?lang=" + ui) if ui != "ar" else ""), esc(_T(ui)["home"]))
     intro = ("<p class=\"lead\">يسعدنا أن نسمع منك: اقترح كتاباً لم تجده، أو أبلغ عن خطأ أو رابط معطّل، أو اسأل عن حقوق النشر والإعلانات.</p>"
              if ui == "ar" else
              "<p class=\"lead\">We would love to hear from you: suggest a book you could not find, report an error or a broken link, or ask about copyright and advertising.</p>")
     mail = contact_email()
     if mail:
         intro += '<p class="mail">%s <a href="mailto:%s">%s</a></p>' % (esc(l["mail"]), esc(mail), esc(mail))
-    topics = "".join('<option value="%s"%s>%s</option>' % (k, " selected" if v.get("topic") == k else "", esc(n)) for k, n in TOPICS[ui])
+    topics = "".join('<option value="%s"%s>%s</option>' % (k, " selected" if v.get("topic") == k else "", esc(n)) for k, n in TOPICS.get(ui, TOPICS["en"]))
     err = '<p class="notice err" role="alert">%s</p>' % esc(error) if error else ""
-    note = l["f_note"].format(p='<a href="%s">%s</a>' % (link("privacy", ui), esc(L[ui]["privacy"])))
+    note = l["f_note"].format(p='<a href="%s">%s</a>' % (link("privacy", ui), esc(_L(ui)["privacy"])))
     return """%s%s
 <form class="contact" method="post" action="%s">
 <label>%s<input name="name" maxlength="%d" required autocomplete="name" value="%s"></label>
@@ -356,11 +366,11 @@ def _contact(conn, ui, values=None, error="", sent=False):
 
 
 def _takedown(conn, ui, values=None, error="", sent=False):
-    l, v = L[ui], values or {}
+    l, v = _L(ui), values or {}
     if sent:
-        return '<p class="notice ok" role="status">%s</p><p><a href="%s">%s</a></p>' % (esc(l["sent_t"]), "/" + ("?lang=en" if ui == "en" else ""), esc(T[ui]["home"]))
+        return '<p class="notice ok" role="status">%s</p><p><a href="%s">%s</a></p>' % (esc(l["sent_t"]), "/" + (("?lang=" + ui) if ui != "ar" else ""), esc(_T(ui)["home"]))
     err = '<p class="notice err" role="alert">%s</p>' % esc(error) if error else ""
-    note = l["f_note"].format(p='<a href="%s">%s</a>' % (link("privacy", ui), esc(L[ui]["privacy"])))
+    note = l["f_note"].format(p='<a href="%s">%s</a>' % (link("privacy", ui), esc(_L(ui)["privacy"])))
     mail = contact_email()
     mail_html = '<p class="mail">%s <a href="mailto:%s">%s</a></p>' % (esc(l["mail"]), esc(mail), esc(mail)) if mail else ""
     return """<p class="lead">%s</p><p>%s</p>%s%s
@@ -387,7 +397,7 @@ def parse_form(body: bytes) -> dict:
 def submit(conn, request, form: dict, ui: str, kind: str = "contact"):
     """Returns (ok, error message, cleaned values). A filled honeypot is accepted silently and dropped.
     kind "takedown": a removal request (the page's address and the reason), kept with the messages."""
-    l = L[ui]
+    l = _L(ui)
     v = {
         "name": " ".join(form.get("name", "").split())[:LIMITS["name"]],
         "email": form.get("email", "").strip()[:LIMITS["email"]],
@@ -455,13 +465,13 @@ EXTRA_CSS = """
 
 def page_html(kind: str, base: str, ui: str, conn=None, numbers=None, values=None, error="", sent=False) -> str:
     from .seo import _ld, _shell
-    l = L[ui]
+    l = _L(ui)
     body_html = {"about": lambda: _about(ui, numbers or {}), "privacy": lambda: _privacy(ui), "terms": lambda: _terms(ui),
                  "contact": lambda: _contact(conn, ui, values, error, sent),
                  "takedown": lambda: _takedown(conn, ui, values, error, sent)}[kind]()
     updated = '<p class="updated">%s</p>' % esc(l["updated"].format(d=UPDATED[kind][ui])) if kind in ("privacy", "terms") else ""
     body = '<article class="page"><p class="crumbs"><a href="/%s">%s</a> / %s</p><h1>%s</h1>%s%s</article>' % (
-        "?lang=en" if ui == "en" else "", esc(T[ui]["home"]), esc(l[kind]), esc(l[kind]), updated, body_html)
+        ("?lang=" + ui) if ui != "ar" else "", esc(_T(ui)["home"]), esc(l[kind]), esc(l[kind]), updated, body_html)
     types = {"about": "AboutPage", "contact": "ContactPage"}
     ld = _ld({"@context": "https://schema.org", "@type": types.get(kind, "WebPage"), "name": l[kind] + " | " + BRAND[ui],
               "url": base + "/" + kind, "inLanguage": ui, "isPartOf": {"@id": base + "/#site"}})
