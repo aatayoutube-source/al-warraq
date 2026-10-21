@@ -17,7 +17,7 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from urllib.parse import quote, unquote
 
-from . import covers, db, legal, modern, pages, ranking, research, security, seo, stats, wikisource
+from . import content, covers, db, legal, modern, pages, ranking, research, security, seo, stats, wikisource
 from .catalog import ARABIC_CAT, CATEGORIES
 from .textnorm import norm
 
@@ -29,6 +29,7 @@ COUNT_CAP = 10000  # counts stop here; the site shows "more than 10,000"
 DENSE = COUNT_CAP  # a search matching more books than this is answered by an ordered scan, not the index
 MAX_OFFSET = 100_000  # deeper pages cost a long scan and no reader scrolls that far
 MAX_WORDS = 8  # words of a search that are used
+STATIC_TYPES = (".css", ".js", ".png", ".svg", ".ico", ".webmanifest", ".jpg", ".webp", ".woff2")
 
 
 def _fts_on(conn) -> bool:
@@ -83,6 +84,10 @@ def create_app() -> FastAPI:
     async def revalidate_site_files(request: Request, call_next):
         response = await call_next(request)
         if not request.url.path.startswith("/api/"):
+            path = request.url.path
+            if path.endswith(STATIC_TYPES) and response.status_code == 200:
+                response.headers.setdefault("Cache-Control", "public, max-age=31536000, immutable" if request.query_params.get("v")
+                                            else "public, max-age=604800")
             response.headers.setdefault("Cache-Control", "no-cache")
             if response.headers.get("content-type", "").startswith("text/html"):
                 # a page's language follows the visitor (pages.visitor_ui): say so to any cache on the way
@@ -364,7 +369,8 @@ def create_app() -> FastAPI:
         if not os.path.isfile(os.path.join(frontend, "index.html")):
             raise HTTPException(404, "not found")
         nonce = _ad_nonce()
-        return HTMLResponse(seo.home_html(frontend, pages.site_base(request), pages.visitor_ui(request, lang), nonce),
+        return HTMLResponse(seo.home_html(frontend, pages.site_base(request), pages.visitor_ui(request, lang), nonce,
+                                          search=bool(request.query_params.get("q", "").strip())),
                             headers=_ad_headers(nonce))
 
     @app.get("/category/{key}", include_in_schema=False)
@@ -418,6 +424,39 @@ def create_app() -> FastAPI:
         return HTMLResponse(legal.page_html("contact", pages.site_base(request), ui, conn=conn, values=values, error=err),
                             status_code=400)
 
+    @app.get("/takedown", include_in_schema=False)
+    def takedown(request: Request, lang: str = Query("", max_length=5), sent: int = Query(0, ge=0, le=1),
+                 u: str = Query("", max_length=300), conn=Depends(get_conn)):
+        """A rights holder asks for a page to be removed; ?u= names the page (the book pages link here)."""
+        return HTMLResponse(legal.page_html("takedown", pages.site_base(request), _ui(request, lang), conn=conn, sent=bool(sent),
+                                            values={"url": pages.site_base(request) + u if u.startswith("/") else ""}))
+
+    @app.post("/takedown", include_in_schema=False)
+    async def takedown_send(request: Request, lang: str = Query("", max_length=5), conn=Depends(get_conn)):
+        ui = _ui(request, lang)
+        if int(request.headers.get("content-length") or 0) > 20000:
+            return PlainTextResponse("message too large", status_code=413)
+        ok, err, values = legal.submit(conn, request, legal.parse_form(await request.body()), ui, kind="takedown")
+        if ok:
+            return RedirectResponse(legal.link("takedown", ui) + ("&" if ui == "en" else "?") + "sent=1", status_code=303)
+        return HTMLResponse(legal.page_html("takedown", pages.site_base(request), ui, conn=conn, values=values, error=err),
+                            status_code=400)
+
+    # ---------- the library's articles ----------
+    @app.get("/articles", include_in_schema=False)
+    def articles(request: Request, lang: str = Query("", max_length=5)):
+        nonce = _ad_nonce()
+        return HTMLResponse(seo.articles_page(pages.site_base(request), pages.visitor_ui(request, lang), nonce), headers=_ad_headers(nonce))
+
+    @app.get("/articles/{slug}", include_in_schema=False)
+    def article(slug: str, request: Request, lang: str = Query("", max_length=5)):
+        ui = pages.visitor_ui(request, lang)
+        nonce = _ad_nonce()
+        body = seo.article_page(slug, pages.site_base(request), ui, nonce)
+        if not body:
+            return HTMLResponse(pages.not_found_html(ui), status_code=404)
+        return HTMLResponse(body, headers=_ad_headers(nonce))
+
     @app.get("/admin/messages", include_in_schema=False)
     def admin_messages(request: Request, conn=Depends(get_conn)):
         if not legal.admin_password():  # no password set: the page does not exist
@@ -460,9 +499,10 @@ def create_app() -> FastAPI:
         stats.track_visitor(conn, request)
         stats.add_view(conn, request, book_id)
         nonce = secrets.token_urlsafe(16)  # only this page's own scripts may run
+        ads = pages.ads_on() and pages.book_indexable(row)  # a thin page (THIN_NOINDEX) shows no ads
         return HTMLResponse(pages.render_book(conn, row, pages.site_base(request), pages.visitor_ui(request, lang, pages.default_ui(row)),
-                                              stats.book_numbers(conn, book_id), stats.has_liked(conn, request, book_id), nonce),
-                            headers={"Content-Security-Policy": (security.AD_CSP if pages.ads_on() else security.BOOK_CSP).format(nonce=nonce)})
+                                              stats.book_numbers(conn, book_id), stats.has_liked(conn, request, book_id), nonce, ads),
+                            headers={"Content-Security-Policy": (security.AD_CSP if ads else security.BOOK_CSP).format(nonce=nonce)})
 
     @app.get("/book/{book_id}", include_in_schema=False)
     def book_short(book_id: int, request: Request, lang: str = "", conn=Depends(get_conn)):

@@ -11,6 +11,7 @@ import re
 import time
 from urllib.parse import quote
 
+from . import content
 from .catalog import CATEGORIES
 from .textnorm import norm
 from .modern import OL_KIND, SAFAHAT_KIND, ol_url, safahat_url
@@ -20,8 +21,11 @@ BRAND = {"ar": "مكتبة الوراق", "en": "Al-Warraq Library"}
 # the site's Google AdSense account: its tag goes in the head of every page (ADSENSE_ACCOUNT replaces it)
 ADSENSE_ACCOUNT = os.environ.get("ADSENSE_ACCOUNT", "").strip() or "ca-pub-7058063023261152"
 # the about / privacy / terms / contact pages (legal.py), linked from every footer
-LEGAL = {"ar": (("about", "عن المكتبة"), ("privacy", "سياسة الخصوصية"), ("terms", "شروط الاستخدام"), ("contact", "اتصل بنا")),
-         "en": (("about", "About us"), ("privacy", "Privacy policy"), ("terms", "Terms of use"), ("contact", "Contact us"))}
+LEGAL = {"ar": (("about", "عن المكتبة"), ("privacy", "سياسة الخصوصية"), ("terms", "شروط الاستخدام"), ("contact", "اتصل بنا"),
+                ("takedown", "طلب إزالة محتوى")),
+         "en": (("about", "About us"), ("privacy", "Privacy policy"), ("terms", "Terms of use"), ("contact", "Contact us"),
+                ("takedown", "Content removal"))}
+ARTICLES_NAME = {"ar": "مقالات", "en": "Articles"}
 SITEMAP_PAGE = 40000  # URLs per sitemap file (Google allows 50,000)
 
 LANG_NAMES = {
@@ -60,6 +64,14 @@ T = {
         "about": "نبذة عن الكتاب", "about_author": "نبذة عن المؤلف", "wiki": "المصدر: ويكيبيديا",
         "about_txt": "«{t}» كتاب {a}ضمن تصنيف «{c}»، مكتوب باللغة {l}. هو من الكتب الموجودة في الملكية العامة، فيمكنك قراءته مجاناً من المصدر المفتوح عبر الأزرار أعلاه، وإن أعجبك فاضغط «أعجبني» لتساعد غيرك على اكتشافه. وفي الأسفل كتب مشابهة قد تعجبك.",
         "about_by": "للمؤلف {a} ",
+        "facts_h": "معلومات الفهرسة", "context": "سياق الكتاب وأهميته", "bio_more": "كل كتب المؤلف",
+        "legal_pd": "مكتبة الوراق لا تستضيف ملفات الكتب، بل توصلك إلى نسختها في مصدرها الأصلي. ووضع «الملك العام» يختلف من بلد إلى آخر، فتحقّق من قانون بلدك قبل تنزيل الكتاب أو إعادة نشره.",
+        "takedown_q": "صاحب حق في هذا العمل؟", "takedown_a": "اطلب إزالته",
+        "title_by": "{t} لـ{a}",
+        "d_pd": "«{t}»{by}: {kind} في الملك العام{y}، ضمن تصنيف «{c}» باللغة {l}. اقرأه كاملاً ومجاناً من مصدره الأصلي على {s}.",
+        "d_saf": "«{t}»{by}{y}، ضمن تصنيف «{c}» باللغة {l}. اقرأه كاملاً ومجاناً على {s} بإذن أصحاب حقوقه.",
+        "d_ol": "«{t}»{by}{y}{p}، ضمن تصنيف «{c}» باللغة {l}. اطّلع على بيانات الكتاب وانتقل إلى صفحته في {s}.",
+        "d_by": " لـ{a}", "d_y": "، صدر عام {y}", "d_p": " عن {p}", "k_book": "كتاب", "k_poem": "قصيدة",
         "desc": "{t} {a}— كتاب مجاني ({l}، {c}). اقرأه أو ابحث عن نسخه المجانية من المصادر المفتوحة.",
     },
     "en": {
@@ -85,6 +97,14 @@ T = {
         "about": "About this book", "about_author": "About the author", "wiki": "Source: Wikipedia",
         "about_txt": "\u201c{t}\u201d is a book {a}in the \u201c{c}\u201d category, written in {l}. It is in the public domain, so you can read it for free from the open source using the buttons above. If you enjoyed it, press Like to help others find it. Similar books are listed below.",
         "about_by": "by {a} ",
+        "facts_h": "Catalogue details", "context": "Context and significance", "bio_more": "All books by this author",
+        "legal_pd": "Al-Warraq Library does not host book files; it takes you to the copy at the original source. Public-domain status differs from country to country, so check the law where you live before downloading or republishing the book.",
+        "takedown_q": "Do you hold rights in this work?", "takedown_a": "Request its removal",
+        "title_by": "{t} by {a}",
+        "d_pd": "\u201c{t}\u201d{by}: a public-domain {kind}{y} in \u201c{c}\u201d, written in {l}. Read it in full and free at its original source, {s}.",
+        "d_saf": "\u201c{t}\u201d{by}{y}, in \u201c{c}\u201d, written in {l}. Read it in full and free on {s}, with its rights holders' permission.",
+        "d_ol": "\u201c{t}\u201d{by}{y}{p}, in \u201c{c}\u201d, written in {l}. See its catalogue record and go to its page on {s}.",
+        "d_by": " by {a}", "d_y": ", published {y}", "d_p": " by {p}", "k_book": "book", "k_poem": "poem",
         "desc": "{t} {a}— free public-domain book ({l}, {c}). Read it online or find free editions from open sources.",
     },
 }
@@ -156,6 +176,7 @@ footer p{margin:0}
 @media (max-width:640px){.book{grid-template-columns:1fr;justify-items:center}.cover{width:200px}.book>div{width:100%}dl{grid-template-columns:1fr}}
 .ad{margin:28px 0;text-align:center}.ad .ad-l{display:none;font-size:11px;letter-spacing:.04em;color:var(--muted);margin-bottom:6px}.ad:has(ins[data-ad-status=filled]) .ad-l{display:block}.ad:has(ins[data-ad-status=unfilled]){display:none}ins.adsbygoogle[data-ad-status=unfilled]{display:none!important}
 .rel li.infeed{grid-column:1/-1;background:none;border:0;transform:none;text-align:center}.infeed .ad-l{display:none;font-size:11px;letter-spacing:.04em;color:var(--muted);margin-bottom:6px}.infeed:has(ins[data-ad-status=filled]) .ad-l{display:block}.infeed:has(ins[data-ad-status=unfilled]){display:none}
+.book h2.facts-h{font-size:1rem;margin:18px 0 6px;color:var(--muted);font-weight:600}.rights.pd{background:var(--soft);color:var(--ink)}.rights a{font-weight:600}.crumbs span{color:var(--muted)}.about p+p{margin-top:.6em}.about small a{font-weight:600}
 """
 
 LIKE_JS = r'''<script>(function(){var b=document.getElementById('likeBtn');if(!b)return;var heart=function(f){return '<svg width="18" height="18" viewBox="0 0 24 24" fill="'+f+'" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-4.4-9.3-9A5.4 5.4 0 0 1 12 6.2 5.4 5.4 0 0 1 21.3 12C19 16.6 12 21 12 21z"/></svg>';};
@@ -259,7 +280,7 @@ def adsense_meta() -> str:
 # The AdSense display unit ("Dhdj"). Only on pages with real content (home, categories, authors, books): never
 # on the 404, contact or legal pages. ADS=0 turns ads off (a test copy); ADSENSE_SLOT replaces the unit.
 AD_SLOT = os.environ.get("ADSENSE_SLOT", "").strip() or "1844690351"
-AD_LABEL = {"ar": "إعلان", "en": "Advertisement"}
+AD_LABEL = {"ar": "إعلانات", "en": "Advertisements"}  # Google permits "Advertisements" or "Sponsored links" only
 
 
 def ads_on() -> bool:
@@ -337,8 +358,9 @@ def ads_txt() -> str:
 
 
 def legal_links(ui: str) -> str:
-    return '<nav class="legal" aria-label="%s">%s</nav>' % (
-        esc(BRAND[ui]), "".join('<a href="/%s%s">%s</a>' % (k, "?lang=en" if ui == "en" else "", esc(n)) for k, n in LEGAL[ui]))
+    q = "?lang=en" if ui == "en" else ""
+    return '<nav class="legal" aria-label="%s"><a href="/articles%s">%s</a>%s</nav>' % (
+        esc(BRAND[ui]), q, esc(ARTICLES_NAME[ui]), "".join('<a href="/%s%s">%s</a>' % (k, q, esc(n)) for k, n in LEGAL[ui]))
 
 
 def site_base(request) -> str:
@@ -422,19 +444,44 @@ def _authors(conn) -> dict:
     return _cached("authors", 600, lambda: {r["key"]: {"en": r["en"], "ar": r["ar"]} for r in conn.execute("SELECT key, en, ar FROM authors")})
 
 
+RELATED_MIN, RELATED_MAX = 5, 8
+
+
 def related(conn, row):
-    """Similar books: same author first, then neighbours in the same category (same language preferred)."""
+    """5 to 8 similar books: the author's best known first, then neighbours in the same category (same language
+    preferred), then the category's best known."""
     out, seen = [], {row["id"]}
-    if row["author_key"]:
-        for r in conn.execute("SELECT * FROM books WHERE author_key=? AND id!=? ORDER BY ord LIMIT 8", (row["author_key"], row["id"])):
-            out.append(r); seen.add(r["id"])
-    if len(out) < 12:
-        for r in conn.execute(
-                "SELECT * FROM books WHERE id BETWEEN ? AND ? AND cat=? AND lang=? AND id!=? LIMIT 24",
-                (row["id"] - 600, row["id"] + 600, row["cat"], row["lang"], row["id"])):
-            if r["id"] not in seen and len(out) < 12:
+
+    def add(rows):
+        for r in rows:
+            if r["id"] not in seen and len(out) < RELATED_MAX:
                 out.append(r); seen.add(r["id"])
+    if row["author_key"]:
+        add(conn.execute("SELECT * FROM books WHERE author_key=? AND id!=? ORDER BY ord LIMIT 4", (row["author_key"], row["id"])))
+    add(conn.execute("SELECT * FROM books WHERE id BETWEEN ? AND ? AND cat=? AND lang=? AND id!=? LIMIT 24",
+                     (row["id"] - 600, row["id"] + 600, row["cat"], row["lang"], row["id"])))
+    if len(out) < RELATED_MIN:
+        add(conn.execute("SELECT * FROM books WHERE cat=? AND lang=? ORDER BY ord LIMIT 16", (row["cat"], row["lang"])))
+    if len(out) < RELATED_MIN:
+        add(conn.execute("SELECT * FROM books WHERE cat=? ORDER BY ord LIMIT 16", (row["cat"],)))
     return "similar", out
+
+
+def book_indexable(row) -> bool:
+    """In search results and with ads: a book page with a text of its own (in its default language). With
+    THIN_NOINDEX off, every book page."""
+    return not content.thin_noindex() or bool(content.book(row, default_ui(row)))
+
+
+def _cut(text: str, n: int = 158) -> str:
+    """At most n characters, ending on a whole word."""
+    text = " ".join(text.split())
+    return text if len(text) <= n else text[:n].rsplit(" ", 1)[0].rstrip("،,.؛:") + "…"
+
+
+def _plain(text: str) -> str:
+    """A paragraph without its Markdown: link texts and bold words only."""
+    return re.sub(r"\*\*([^*]+)\*\*", r"\1", re.sub(r"\[([^\]]+)\]\([^)]*\)", r"\1", text))
 
 
 LOGO_SVG = ('<svg viewBox="4 0 40 48" width="32" height="38" aria-hidden="true"><defs><linearGradient id="gL" x1="0" y1="0" x2="1" y2="1">'
@@ -505,7 +552,7 @@ var a=document.getElementById('aaL'),u=(j.content_urls&&j.content_urls.desktop&&
 next();})();</script>"""
 
 
-def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool = False, nonce: str = "") -> str:
+def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool = False, nonce: str = "", ads: bool = True) -> str:
     d_ui = default_ui(row)
     ui = ui if ui in T else d_ui
     t = T[ui]
@@ -521,13 +568,23 @@ def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool 
     modern = row["curated"] in (SAFAHAT_KIND, OL_KIND) and bool(row["ext"])
     source = source_name(row, ui)
     facts_x = json.loads(row["info"]) if row["info"] else {}
-    if modern:
-        desc = t["desc_mod"].format(t=title, a=(("— %s " % author) if author else ""), l=lang, c=cat_name, s=source)
-    else:
-        desc = t["desc"].format(t=title, a=(("— %s " % author) if author else ""), l=lang, c=cat_name)
-    page_title = ("%s — %s | %s" % (title, author, BRAND[ui])) if author else ("%s | %s" % (title, BRAND[ui]))
-
     poem = row["cat"] == "poe" and row["curated"] == WS_KIND  # one poem from Wikisource, not a whole book
+    note = content.book(row, ui)  # the library's own text about this book, when one is written
+    indexable = book_indexable(row)
+    if note.get("about"):
+        desc = _cut(_plain(note["about"][0]))
+    else:
+        parts = dict(t=title, by=t["d_by"].format(a=author) if author else "", c=cat_name, l=lang, s=source,
+                     y=t["d_y"].format(y=facts_x["year"]) if facts_x.get("year") else "",
+                     p=t["d_p"].format(p=facts_x["pub"]) if facts_x.get("pub") else "",
+                     kind=t["k_poem"] if poem else t["k_book"])
+        form = t["d_saf" if modern and row["curated"] == SAFAHAT_KIND else "d_ol" if modern else "d_pd"]
+        desc = form.format(**parts)
+        if len(desc) > 158 and parts["p"]:  # too long to show whole: the publisher stays in the details below
+            desc = form.format(**dict(parts, p=""))
+        desc = _cut(desc)
+    page_title = (t["title_by"].format(t=title, a=author) if author else title) + " | " + BRAND[ui]
+
     book = {"@type": "CreativeWork" if poem else "Book", "@id": canon + "#book", "name": title, "url": canon,
             "mainEntityOfPage": {"@id": canon}, "description": desc, "genre": cat_name, "isAccessibleForFree": True,
             "sameAs": main_url, "potentialAction": {"@type": "ReadAction", "target": {"@type": "EntryPoint", "urlTemplate": main_url}}}
@@ -571,8 +628,8 @@ def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool 
     og_img = '<meta property="og:image" content="%s">' % esc(covers[0] if covers else base + "/og-image.png")
     other_ui = "en" if ui == "ar" else "ar"
 
-    btns = '<a class="btn" href="%s" target="_blank" rel="noopener">%s</a>' % (esc(main_url), esc(read_label(row, ui, direct)))
-    btns += "".join('<a class="btn alt" href="%s" target="_blank" rel="noopener">%s</a>' % (esc(u), esc(n)) for u, n in extra)
+    btns = '<a class="btn" href="%s" target="_blank" rel="nofollow noopener">%s</a>' % (esc(main_url), esc(read_label(row, ui, direct)))
+    btns += "".join('<a class="btn alt" href="%s" target="_blank" rel="nofollow noopener">%s</a>' % (esc(u), esc(n)) for u, n in extra)
 
     msg = t["share_txt"].format(t=title)
     share = ('<div class="share"><span>%s</span>'
@@ -584,8 +641,11 @@ def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool 
                 quote(canon, safe=""), quote(msg, safe=""), SHARE_ICONS["tg"], esc(t["tg"]),
                 quote(canon, safe=""), SHARE_ICONS["fb"], esc(t["fb"]),
                 esc(canon), esc(t["copied"]), SHARE_ICONS["link"], esc(t["copy"])))
+    takedown = '<a href="/takedown?%su=%s">%s</a>' % ("lang=en&amp;" if ui == "en" else "", quote(canonical_path(row), safe=""), esc(t["takedown_a"]))
     if modern:  # whose book it is, and why there is no text here
-        share = '<p class="rights">%s</p>' % esc(t["note_saf" if row["curated"] == SAFAHAT_KIND else "note_ol"]) + share
+        share = '<p class="rights">%s %s %s</p>' % (esc(t["note_saf" if row["curated"] == SAFAHAT_KIND else "note_ol"]), esc(t["takedown_q"]), takedown) + share
+    else:  # no file here, and the public domain is not the same everywhere
+        share = '<p class="rights pd">%s %s %s</p>' % (esc(t["legal_pd"]), esc(t["takedown_q"]), takedown) + share
 
     tags = '<a class="tag" href="/category/%s">%s</a>' % (esc(row["cat"]), esc(cat_name))
     tags += '<span class="tag">%s</span>' % esc(lang)
@@ -618,10 +678,19 @@ def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool 
             items.append('<li><a href="/book/%d">%s%s</a></li>' % (r["id"], esc(rt), ("<small>%s</small>" % esc(ra)) if ra else ""))
         rel_html = "<h2>%s</h2><ul class=\"rel\">%s</ul>" % (esc(t[key]), "".join(items))
 
-    about_html = '<section class="about"><h2>%s</h2><p>%s</p></section>' % (
-        esc(t["about"]), esc(t["about_saf" if modern and row["curated"] == SAFAHAT_KIND else "about_ol" if modern else "about_txt"].format(
-            t=title, a=(t["about_by"].format(a=author) if author else ""), c=cat_name, l=lang, s=source)))
-    if author:
+    if note.get("about"):
+        about_html = '<section class="about"><h2>%s</h2>%s</section>' % (esc(t["about"]), content.paragraphs(note["about"]))
+        if note.get("context"):
+            about_html += '<section class="about"><h2>%s</h2>%s</section>' % (esc(t["context"]), content.paragraphs(note["context"]))
+    else:
+        about_html = '<section class="about"><h2>%s</h2><p>%s</p></section>' % (
+            esc(t["about"]), esc(t["about_saf" if modern and row["curated"] == SAFAHAT_KIND else "about_ol" if modern else "about_txt"].format(
+                t=title, a=(t["about_by"].format(a=author) if author else ""), c=cat_name, l=lang, s=source)))
+    bio = content.author(row["author_key"], ui)
+    if bio:  # written for this site; Wikipedia's summary is only fetched for the others
+        about_html += '<section class="about"><h2>%s</h2>%s<small><a href="/author/%s%s">%s</a></small></section>' % (
+            esc(t["about_author"]), content.paragraphs(bio), esc(quote(row["author_key"])), "?lang=en" if ui == "en" else "", esc(t["bio_more"]))
+    elif author:
         about_html += ('<section class="about" id="aa" hidden data-name="%s" data-alt="%s" data-ui="%s" data-src="%s"><h2>%s</h2><p id="aaT"></p>'
                        '<small><a id="aaL" href="#" target="_blank" rel="noopener">%s</a></small></section>'
                        % (esc(author), esc(row["author_en"] or ""), ui, esc(t["wiki"]), esc(t["about_author"]), esc(t["wiki"])))
@@ -652,7 +721,7 @@ def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool 
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="{page_title}">
 <meta name="twitter:description" content="{desc}">
-<meta name="robots" content="index,follow,max-image-preview:large">
+<meta name="robots" content="{robots}">
 {adsense}
 {ad_head}
 <link rel="icon" href="/favicon.ico" sizes="any">
@@ -668,7 +737,7 @@ def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool 
 <form class="sbox" action="/#browse" method="get" role="search">{search_icon}<input type="search" name="q" placeholder="{ph}" aria-label="{ph}"><button type="submit">{search}</button></form>
 <nav><a href="/#browse">{all}</a><a href="{toggle}" hreflang="{other_ui}" rel="nofollow">{other_lang}</a></nav></div></header>
 <main class="wrap">
-<p class="crumbs"><a href="/">{home}</a> / <a href="/category/{catkey}">{cat_name}</a></p>
+<p class="crumbs"><a href="/">{home}</a> / <a href="/category/{catkey}">{cat_name}</a> / <span>{title}</span></p>
 <article class="book">
 <div class="cover" style="--h:{hue}"><span class="cv-fb"><span class="cv-cat">{cat_name}</span><span class="cv-title">{title}</span><span class="cv-auth">{author}</span></span><img id="cvimg" alt="{alt}" decoding="async" referrerpolicy="no-referrer"></div>
 <div>
@@ -679,6 +748,7 @@ def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool 
 <div class="btns">{btns}</div>
 {share}
 <p class="desc">{desc}</p>
+<h2 class="facts-h">{facts_h}</h2>
 <dl>{facts}</dl>
 </div>
 </article>
@@ -701,7 +771,8 @@ def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool 
            logo=LOGO_SVG, search_icon=SEARCH_ICON, ph=esc(t["ph"]), search=esc(t["search"]),
            locale="ar_AR" if ui == "ar" else "en_US", adsense=site_head(),
            # far from the read buttons (an ad must not invite a mistaken click); only with a nonce to run it
-           ad_head=ad_head() if nonce else "", ad=ad_unit(ui) if nonce else "")
+           ad_head=ad_head() if nonce and ads and indexable else "", ad=ad_unit(ui) if nonce and ads and indexable else "",
+           robots="index,follow,max-image-preview:large" if indexable else "noindex,follow", facts_h=esc(t["facts_h"]))
     # the Content-Security-Policy of this response only lets scripts carrying its nonce run
     return page.replace("<script", '<script nonce="%s"' % esc(nonce)) if nonce else page
 
@@ -712,8 +783,18 @@ def _total(conn) -> int:
     return _cached("total", 300, lambda: conn.execute("SELECT COUNT(*) FROM books").fetchone()[0])
 
 
+def _sitemap_rows(conn):
+    """With THIN_NOINDEX, the book pages that may be listed: those with a text of their own."""
+    gids = sorted(content.described_gids())
+    if not gids:
+        return []
+    rows = conn.execute("SELECT id, gid, curated, title, title_ar, lang, origin FROM books WHERE curated=1 AND gid IN (%s) ORDER BY id"
+                        % ",".join("?" * len(gids)), gids).fetchall()
+    return [r for r in rows if book_indexable(r)]
+
+
 def sitemap_index(conn, base: str) -> str:
-    n = max(1, math.ceil(_total(conn) / SITEMAP_PAGE))
+    n = 1 if content.thin_noindex() else max(1, math.ceil(_total(conn) / SITEMAP_PAGE))
     items = ["<sitemap><loc>%s/sitemap-main.xml</loc></sitemap>" % base]
     items += ["<sitemap><loc>%s/sitemap-books-%d.xml</loc></sitemap>" % (base, i) for i in range(1, n + 1)]
     return '<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n%s\n</sitemapindex>\n' % "\n".join(items)
@@ -725,8 +806,13 @@ def sitemap_main(base: str) -> str:
 
 
 def sitemap_books(conn, base: str, page: int):
-    rows = conn.execute("SELECT id, title, title_ar, lang, origin FROM books ORDER BY id LIMIT ? OFFSET ?",
-                        (SITEMAP_PAGE, (page - 1) * SITEMAP_PAGE)).fetchall()
+    if content.thin_noindex():
+        rows = _sitemap_rows(conn) if page == 1 else []
+        if not rows:
+            return None if page != 1 else '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n</urlset>\n'
+    else:
+        rows = conn.execute("SELECT id, title, title_ar, lang, origin FROM books ORDER BY id LIMIT ? OFFSET ?",
+                            (SITEMAP_PAGE, (page - 1) * SITEMAP_PAGE)).fetchall()
     if not rows:
         return None
     out = []

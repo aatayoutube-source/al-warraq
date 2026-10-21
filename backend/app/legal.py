@@ -1,4 +1,5 @@
-"""The pages every site needs before it shows ads (AdSense reviews them): about, privacy, terms, contact.
+"""The pages every site needs before it shows ads (AdSense reviews them): about, privacy, terms, contact, and
+the takedown form for rights holders.
 
 Contact messages go to the statistics database (table contact_messages, deleted after a year) and are
 read at /admin/messages, behind HTTP Basic auth with the password in ADMIN_PASSWORD; without that
@@ -19,13 +20,14 @@ from . import stats
 from .pages import BRAND, LEGAL, T, esc
 
 # each page its own date: the privacy policy changed with the language cookie, the terms did not
-UPDATED = {"privacy": {"ar": "19 أكتوبر 2026", "en": "19 October 2026"}, "terms": {"ar": "16 أكتوبر 2026", "en": "16 October 2026"}}
+UPDATED = {"privacy": {"ar": "21 أكتوبر 2026", "en": "21 October 2026"}, "terms": {"ar": "21 أكتوبر 2026", "en": "21 October 2026"}}
 EMAIL_DEFAULT = "alwarraqibrary@gmail.com"  # the library's mailbox
-PAGES = ("about", "privacy", "terms", "contact")
+PAGES = ("about", "privacy", "terms", "contact", "takedown")
+THIN_PAGES = ("contact", "takedown")  # forms with a few lines around them: reachable from every page, not search results
 KEEP_SECONDS = 365 * 86400  # contact messages are deleted after a year
 PER_DAY = 5  # messages one visitor may send per day
 MIN_AGE, MAX_AGE = 3, 2 * 86400  # seconds between showing the form and sending it
-LIMITS = {"name": 80, "email": 120, "message": 3000}
+LIMITS = {"name": 80, "email": 120, "message": 3000, "url": 300}
 EMAIL = re.compile(r"^[^@\s<>\"']{1,64}@[^@\s<>\"']+\.[^@\s<>\"']{2,}$")
 
 TOPICS = {
@@ -34,6 +36,7 @@ TOPICS = {
     "en": [("general", "General question"), ("suggest", "Suggest a book or an improvement"), ("error", "Report an error or a broken link"),
            ("copyright", "Copyright"), ("ads", "Advertising and partnerships")],
 }
+TOPIC_NAMES = dict(TOPICS["ar"], takedown="طلب إزالة محتوى")  # as the messages page shows them
 
 L = {
     "ar": {
@@ -50,6 +53,12 @@ L = {
         "e_name": "اكتب اسمك من فضلك.", "e_email": "عنوان البريد الإلكتروني غير صحيح.",
         "e_msg": "اكتب رسالة من 10 أحرف على الأقل و3000 حرف على الأكثر.",
         "e_form": "انتهت صلاحية النموذج. أعد إرسال الرسالة من فضلك.", "e_many": "أرسلت رسائل كثيرة اليوم. حاول مرة أخرى غداً.",
+        "takedown_d": "إن كنت صاحب حق في عمل تعرضه مكتبة الوراق، اطلب إزالته من هنا: اذكر الصفحة وسبب الطلب، ونراجعه ونرد عليك.",
+        "t_lead": "إن كنت صاحب حق في عمل تعرضه مكتبة الوراق، أو تمثّل صاحب الحق، فاملأ هذا النموذج. نراجع كل طلب، ونزيل الرابط أو بيانات الكتاب إن ثبت أنها تخالف حقاً، ونرد عليك على بريدك.",
+        "t_what": "تذكّر أن المكتبة لا تستضيف ملفات الكتب، بل تعرض بيانات الفهرسة ورابطاً إلى المصدر. فإن كان الملف نفسه منشوراً على موقع آخر، فراسل ذلك الموقع أيضاً.",
+        "f_url": "رابط الصفحة في المكتبة", "f_reason": "سبب الطلب: ما حقك في العمل، ولماذا تطلب إزالته؟", "f_send_t": "إرسال طلب الإزالة",
+        "sent_t": "وصل طلبك. سنراجعه ونرد عليك على بريدك في أقرب وقت.",
+        "e_url": "اكتب رابط الصفحة المقصودة في المكتبة.", "e_reason": "اشرح سبب الطلب في 20 حرفاً على الأقل.",
     },
     "en": {
         "updated": "Last updated: {d}",
@@ -65,6 +74,12 @@ L = {
         "e_name": "Please write your name.", "e_email": "That email address does not look right.",
         "e_msg": "Please write a message of 10 to 3,000 characters.",
         "e_form": "This form has expired. Please send your message again.", "e_many": "You have sent many messages today. Please try again tomorrow.",
+        "takedown_d": "If you hold rights in a work shown by Al-Warraq Library, ask for its removal here: name the page and the reason, and we will review it and reply.",
+        "t_lead": "If you hold rights in a work shown by Al-Warraq Library, or act for the rights holder, fill in this form. We review every request, remove the link or the record if it infringes a right, and reply to your email.",
+        "t_what": "Remember that the library hosts no book files: it shows catalogue records and a link to the source. If the file itself is published on another site, write to that site as well.",
+        "f_url": "Address of the page in the library", "f_reason": "Reason: what right do you hold in the work, and why should it be removed?", "f_send_t": "Send the removal request",
+        "sent_t": "Your request has arrived. We will review it and reply to your email soon.",
+        "e_url": "Please give the address of the page in the library.", "e_reason": "Please explain the reason in at least 20 characters.",
     },
 }
 
@@ -157,7 +172,7 @@ def _privacy(ui):
 <ul>
 <li>يستخدم موردو الجهات الخارجية، ومنهم Google، ملفات تعريف الارتباط لعرض الإعلانات استناداً إلى زياراتك السابقة لهذا الموقع أو لمواقع أخرى على الإنترنت.</li>
 <li>يتيح استخدام Google لملفات تعريف ارتباط الإعلانات لها ولشركائها عرض إعلانات لك استناداً إلى زيارتك لهذا الموقع و/أو لمواقع أخرى على الإنترنت.</li>
-<li>يمكنك إيقاف الإعلانات المخصّصة من <a href="https://adssettings.google.com" rel="noopener" target="_blank">إعدادات الإعلانات في Google</a>، كما يمكنك إيقاف استخدام موردين آخرين لملفات تعريف الارتباط للإعلانات المخصّصة عبر <a href="https://www.aboutads.info/choices/" rel="noopener" target="_blank">www.aboutads.info</a>.</li>
+<li>يمكنك إيقاف الإعلانات المخصّصة من <a href="https://www.google.com/settings/ads" rel="noopener" target="_blank">إعدادات الإعلانات في Google</a>، كما يمكنك إيقاف استخدام موردين آخرين لملفات تعريف الارتباط للإعلانات المخصّصة عبر <a href="https://www.aboutads.info/choices/" rel="noopener" target="_blank">www.aboutads.info</a>.</li>
 <li>لمعرفة المزيد عن طريقة استخدام Google للبيانات، راجع <a href="https://policies.google.com/technologies/partner-sites" rel="noopener" target="_blank">كيف تستخدم Google المعلومات من المواقع التي تستخدم خدماتها</a> و<a href="https://policies.google.com/technologies/ads" rel="noopener" target="_blank">طريقة استخدام Google للكوكيز في الإعلانات</a>.</li>
 <li>للزوار من المنطقة الاقتصادية الأوروبية والمملكة المتحدة وسويسرا: نطلب موافقتك قبل استخدام الكوكيز في الإعلانات المخصّصة وفي الإحصاءات، كما تفرض القوانين هناك.</li>
 </ul>
@@ -181,7 +196,7 @@ def _privacy(ui):
 <h2>9. التعديلات</h2>
 <p>قد نحدّث هذه السياسة من وقت لآخر، وننشر تاريخ آخر تحديث في أعلى الصفحة.</p>
 <h2>10. اتصل بنا</h2>
-<p>لأي سؤال عن الخصوصية، <a href="{link("contact", ui)}">راسلنا من هنا</a>.</p>"""
+<p>لأي سؤال عن الخصوصية، أو لطلب حذف رسالة أرسلتها إلينا، راسلنا على <a href="mailto:{contact_email()}">{contact_email()}</a> أو <a href="{link("contact", ui)}">من صفحة الاتصال</a>.</p>"""
     return f"""
 <p class="lead">This policy explains what information Al-Warraq Library (“the site”, “we”) collects when you use the site, how we use it and the choices you have. By using the site you agree to this policy.</p>
 <h2>1. Information we collect</h2>
@@ -200,7 +215,7 @@ def _privacy(ui):
 <ul>
 <li>Third-party vendors, including Google, use cookies to serve ads based on your prior visits to this website or other websites.</li>
 <li>Google's use of advertising cookies enables it and its partners to serve ads to you based on your visit to this site and/or other sites on the Internet.</li>
-<li>You may opt out of personalised advertising by visiting <a href="https://adssettings.google.com" rel="noopener" target="_blank">Google Ads Settings</a>. You can also opt out of a third-party vendor's use of cookies for personalised advertising at <a href="https://www.aboutads.info/choices/" rel="noopener" target="_blank">www.aboutads.info</a>.</li>
+<li>You may opt out of personalised advertising by visiting <a href="https://www.google.com/settings/ads" rel="noopener" target="_blank">Google Ads Settings</a>. You can also opt out of a third-party vendor's use of cookies for personalised advertising at <a href="https://www.aboutads.info/choices/" rel="noopener" target="_blank">www.aboutads.info</a>.</li>
 <li>To learn more, see <a href="https://policies.google.com/technologies/partner-sites" rel="noopener" target="_blank">how Google uses information from sites that use its services</a> and <a href="https://policies.google.com/technologies/ads" rel="noopener" target="_blank">how Google uses cookies in advertising</a>.</li>
 <li>Visitors from the European Economic Area, the United Kingdom and Switzerland are asked for consent before cookies are used for personalised ads and for statistics, as the law there requires.</li>
 </ul>
@@ -224,7 +239,7 @@ def _privacy(ui):
 <h2>9. Changes</h2>
 <p>We may update this policy from time to time and will show the date of the latest update at the top of this page.</p>
 <h2>10. Contact</h2>
-<p>For any privacy question, <a href="{link("contact", ui)}">write to us here</a>.</p>"""
+<p>For any privacy question, or to have a message you sent us deleted, email <a href="mailto:{contact_email()}">{contact_email()}</a> or <a href="{link("contact", ui)}">use the contact page</a>.</p>"""
 
 
 def _terms(ui):
@@ -249,9 +264,9 @@ def _terms(ui):
 <li>أي استخدام يخالف القانون أو يضر بالآخرين.</li>
 </ul>
 <h2>6. الملكية الفكرية</h2>
-<p>تصميم الموقع وشعاره وشيفرته البرمجية ونصوصه التعريفية ملك لمكتبة الوراق. أما نصوص الكتب فهي في الملك العام، وأسماء المصادر وعلاماتها التجارية ملك أصحابها.</p>
+<p>تصميم الموقع وشعاره وشيفرته البرمجية ونصوصه التعريفية ملك لمكتبة الوراق. أما الكتب فهي ملك لأصحاب حقوقها أو في الملك العام، بحسب كل عمل وقانون كل بلد، وأسماء المصادر وعلاماتها التجارية ملك أصحابها.</p>
 <h2>7. بلاغات حقوق النشر</h2>
-<p>إن رأيت أن رابطاً في المكتبة يخالف حقوقك، <a href="{link("contact", ui)}">راسلنا</a> واذكر اسم العمل ورابطه وصفتك، وسنراجع البلاغ ونزيل الرابط إن ثبتت المخالفة.</p>
+<p>إن رأيت أن رابطاً في المكتبة يخالف حقوقك، <a href="{link("takedown", ui)}">املأ نموذج طلب الإزالة</a> واذكر اسم العمل ورابطه وصفتك، وسنراجع البلاغ ونزيل الرابط إن ثبتت المخالفة.</p>
 <h2>8. الإعلانات</h2>
 <p>قد يعرض الموقع إعلانات من Google وشركائها. ظهور إعلان لا يعني أننا نؤيد المعلن أو منتجه، وأي تعامل بينك وبين المعلن شأن بينكما وحدكما.</p>
 <h2>9. حدود المسؤولية</h2>
@@ -280,9 +295,9 @@ def _terms(ui):
 <li>use the site in any way that breaks the law or harms others.</li>
 </ul>
 <h2>6. Intellectual property</h2>
-<p>The site's design, logo, code and descriptive texts belong to Al-Warraq Library. Book texts are in the public domain; the names and trademarks of the sources belong to their owners.</p>
+<p>The site's design, logo, code and descriptive texts belong to Al-Warraq Library. The books belong to their rights holders or are in the public domain, depending on each work and the law of each country; the names and trademarks of the sources belong to their owners.</p>
 <h2>7. Copyright reports</h2>
-<p>If you believe a link in the library infringes your rights, <a href="{link("contact", ui)}">contact us</a> with the title of the work, its link and your capacity, and we will review the report and remove the link if it infringes.</p>
+<p>If you believe a link in the library infringes your rights, <a href="{link("takedown", ui)}">send a removal request</a> with the title of the work, its link and your capacity, and we will review the report and remove the link if it infringes.</p>
 <h2>8. Advertising</h2>
 <p>The site may show ads from Google and its partners. An ad does not mean that we endorse the advertiser or the product, and any dealings between you and an advertiser are between you and the advertiser alone.</p>
 <h2>9. Limitation of liability</h2>
@@ -340,19 +355,46 @@ def _contact(conn, ui, values=None, error="", sent=False):
               esc(l["f_msg"]), LIMITS["message"], esc(v.get("message", "")), esc(l["f_hp"]), form_token(conn), esc(l["f_send"]), note)
 
 
+def _takedown(conn, ui, values=None, error="", sent=False):
+    l, v = L[ui], values or {}
+    if sent:
+        return '<p class="notice ok" role="status">%s</p><p><a href="%s">%s</a></p>' % (esc(l["sent_t"]), "/" + ("?lang=en" if ui == "en" else ""), esc(T[ui]["home"]))
+    err = '<p class="notice err" role="alert">%s</p>' % esc(error) if error else ""
+    note = l["f_note"].format(p='<a href="%s">%s</a>' % (link("privacy", ui), esc(L[ui]["privacy"])))
+    mail = contact_email()
+    mail_html = '<p class="mail">%s <a href="mailto:%s">%s</a></p>' % (esc(l["mail"]), esc(mail), esc(mail)) if mail else ""
+    return """<p class="lead">%s</p><p>%s</p>%s%s
+<form class="contact" method="post" action="%s">
+<label>%s<input name="name" maxlength="%d" required autocomplete="name" value="%s"></label>
+<label>%s<input type="email" name="email" maxlength="%d" required autocomplete="email" dir="ltr" value="%s"></label>
+<label>%s<input name="url" maxlength="%d" required dir="ltr" value="%s"></label>
+<label>%s<textarea name="reason" rows="7" minlength="20" maxlength="%d" required>%s</textarea></label>
+<label class="hp" aria-hidden="true">%s<input name="website" tabindex="-1" autocomplete="off"></label>
+<input type="hidden" name="t" value="%s">
+<button type="submit">%s</button>
+<p class="fine">%s</p>
+</form>""" % (esc(l["t_lead"]), esc(l["t_what"]), mail_html, err, link("takedown", ui),
+              esc(l["f_name"]), LIMITS["name"], esc(v.get("name", "")), esc(l["f_email"]), LIMITS["email"], esc(v.get("email", "")),
+              esc(l["f_url"]), LIMITS["url"], esc(v.get("url", "")), esc(l["f_reason"]), LIMITS["message"], esc(v.get("reason", "")),
+              esc(l["f_hp"]), form_token(conn), esc(l["f_send_t"]), note)
+
+
 def parse_form(body: bytes) -> dict:
     data = parse_qs(body[:20000].decode("utf-8", "replace"), keep_blank_values=True)
-    return {k: (data.get(k) or [""])[0] for k in ("name", "email", "topic", "message", "website", "t")}
+    return {k: (data.get(k) or [""])[0] for k in ("name", "email", "topic", "message", "url", "reason", "website", "t")}
 
 
-def submit(conn, request, form: dict, ui: str):
-    """Returns (ok, error message, cleaned values). A filled honeypot is accepted silently and dropped."""
+def submit(conn, request, form: dict, ui: str, kind: str = "contact"):
+    """Returns (ok, error message, cleaned values). A filled honeypot is accepted silently and dropped.
+    kind "takedown": a removal request (the page's address and the reason), kept with the messages."""
     l = L[ui]
     v = {
         "name": " ".join(form.get("name", "").split())[:LIMITS["name"]],
         "email": form.get("email", "").strip()[:LIMITS["email"]],
         "topic": form.get("topic", "") if form.get("topic", "") in dict(TOPICS["en"]) else "general",
         "message": form.get("message", "").replace("\r\n", "\n").strip()[:LIMITS["message"]],
+        "url": " ".join(form.get("url", "").split())[:LIMITS["url"]],
+        "reason": form.get("reason", "").replace("\r\n", "\n").strip()[:LIMITS["message"]],
     }
     if form.get("website"):  # only bots fill a field nobody can see
         return True, "", v
@@ -362,14 +404,22 @@ def submit(conn, request, form: dict, ui: str):
         return False, l["e_name"], v
     if not EMAIL.match(v["email"]):
         return False, l["e_email"], v
-    if not 10 <= len(v["message"]) <= LIMITS["message"]:
-        return False, l["e_msg"], v
+    if kind == "takedown":
+        if not v["url"]:
+            return False, l["e_url"], v
+        if len(v["reason"]) < 20:
+            return False, l["e_reason"], v
+        topic, message = "takedown", ("رابط الصفحة: %s\n\n%s" % (v["url"], v["reason"]))[:LIMITS["message"] + LIMITS["url"]]
+    else:
+        if not 10 <= len(v["message"]) <= LIMITS["message"]:
+            return False, l["e_msg"], v
+        topic, message = v["topic"], v["message"]
     who = stats.visitor_id(conn, request)
     now = int(time.time())
     if conn.execute("SELECT COUNT(*) FROM contact_messages WHERE visitor=? AND ts>?", (who, now - 86400)).fetchone()[0] >= PER_DAY:
         return False, l["e_many"], v
     conn.execute("INSERT INTO contact_messages(ts, name, email, topic, message, lang, visitor) VALUES(?,?,?,?,?,?,?)",
-                 (now, v["name"], v["email"], v["topic"], v["message"], ui, who))
+                 (now, v["name"], v["email"], topic, message, ui, who))
     conn.execute("DELETE FROM contact_messages WHERE ts<?", (now - KEEP_SECONDS,))
     conn.commit()
     return True, "", v
@@ -407,14 +457,16 @@ def page_html(kind: str, base: str, ui: str, conn=None, numbers=None, values=Non
     from .seo import _ld, _shell
     l = L[ui]
     body_html = {"about": lambda: _about(ui, numbers or {}), "privacy": lambda: _privacy(ui), "terms": lambda: _terms(ui),
-                 "contact": lambda: _contact(conn, ui, values, error, sent)}[kind]()
+                 "contact": lambda: _contact(conn, ui, values, error, sent),
+                 "takedown": lambda: _takedown(conn, ui, values, error, sent)}[kind]()
     updated = '<p class="updated">%s</p>' % esc(l["updated"].format(d=UPDATED[kind][ui])) if kind in ("privacy", "terms") else ""
     body = '<article class="page"><p class="crumbs"><a href="/%s">%s</a> / %s</p><h1>%s</h1>%s%s</article>' % (
         "?lang=en" if ui == "en" else "", esc(T[ui]["home"]), esc(l[kind]), esc(l[kind]), updated, body_html)
     types = {"about": "AboutPage", "contact": "ContactPage"}
     ld = _ld({"@context": "https://schema.org", "@type": types.get(kind, "WebPage"), "name": l[kind] + " | " + BRAND[ui],
               "url": base + "/" + kind, "inLanguage": ui, "isPartOf": {"@id": base + "/#site"}})
-    return _shell(ui, base, "/" + kind, l[kind] + " | " + BRAND[ui], l[kind + "_d"], body, ld, extra_css=EXTRA_CSS)
+    return _shell(ui, base, "/" + kind, l[kind] + " | " + BRAND[ui], l[kind + "_d"], body, ld, extra_css=EXTRA_CSS,
+                  robots="noindex,follow" if kind in THIN_PAGES else "")
 
 
 # ---------- reading the messages ----------
@@ -438,7 +490,7 @@ def admin_ok(request) -> bool:
 
 def admin_html(conn) -> str:
     rows = conn.execute("SELECT * FROM contact_messages ORDER BY id DESC LIMIT 300").fetchall()
-    topics = dict(TOPICS["ar"])
+    topics = TOPIC_NAMES
     items = "".join(
         '<article><header><b>%s</b> &lt;<a href="mailto:%s">%s</a>&gt; · %s · %s</header><pre>%s</pre></article>'
         % (esc(r["name"]), esc(r["email"]), esc(r["email"]), esc(topics.get(r["topic"], r["topic"])),

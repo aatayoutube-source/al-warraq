@@ -6,6 +6,7 @@ With STATS_DB set, the numbers go to their own small file, attached as "st": the
 re-downloaded on every start (DB_URL) while the counters stay on a small persistent disk.
 """
 import gzip
+import json
 import os
 import shutil
 import sqlite3
@@ -54,6 +55,13 @@ CREATE TABLE IF NOT EXISTS books(
 CREATE TABLE IF NOT EXISTS cover_cache(
   book_id INTEGER PRIMARY KEY,
   url     TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS book_descriptions(
+  gid    INTEGER PRIMARY KEY,
+  ar     TEXT NOT NULL DEFAULT '[]',
+  ar_ctx TEXT NOT NULL DEFAULT '[]',
+  en     TEXT NOT NULL DEFAULT '[]',
+  en_ctx TEXT NOT NULL DEFAULT '[]'
 );
 CREATE INDEX IF NOT EXISTS ix_books_cat_ord ON books(cat, ord);   -- a category page comes out already in order
 CREATE INDEX IF NOT EXISTS ix_books_lang_ord ON books(lang, ord);
@@ -202,11 +210,24 @@ def init_db(conn: sqlite3.Connection) -> None:
     conn.execute("DROP INDEX IF EXISTS ix_books_curated")  # (curated, cat) above serves it
     conn.execute("DROP INDEX IF EXISTS ix_books_cat")
     conn.execute("DROP INDEX IF EXISTS ix_books_lang")
+    # migrate old book_descriptions table (had book_id key; new schema uses gid)
+    cols = {r[1] for r in conn.execute("PRAGMA table_info(book_descriptions)")}
+    if "book_id" in cols and "gid" not in cols:
+        conn.execute("DROP TABLE book_descriptions")
+        conn.execute("""CREATE TABLE IF NOT EXISTS book_descriptions(
+          gid    INTEGER PRIMARY KEY,
+          ar     TEXT NOT NULL DEFAULT '[]',
+          ar_ctx TEXT NOT NULL DEFAULT '[]',
+          en     TEXT NOT NULL DEFAULT '[]',
+          en_ctx TEXT NOT NULL DEFAULT '[]'
+        )""")
+        conn.execute("DELETE FROM meta WHERE key='descs_version'")
     conn.commit()
     fix_author_names(conn)
     seed_period_visitors(conn)
     ensure_fts(conn)
     renorm_search(conn)
+    seed_descriptions(conn)
 
 
 def renorm_search(conn: sqlite3.Connection) -> int:
@@ -366,6 +387,42 @@ def seed_curated(conn: sqlite3.Connection) -> int:
             )
             n += 1
     conn.execute("INSERT OR REPLACE INTO meta(key,value) VALUES('seed_version',?)", (SEED_VERSION,))
+    conn.commit()
+    return n
+
+
+DESCS_FILE = os.path.join(DATA_DIR, "book_descriptions.json")
+DESCS_VERSION = "1"  # bump when book_descriptions.json changes significantly
+
+
+def seed_descriptions(conn: sqlite3.Connection) -> int:
+    """Load hand-written book descriptions from book_descriptions.json into book_descriptions table.
+    Keyed by gid so it survives DB rebuilds. Idempotent."""
+    ver = conn.execute("SELECT value FROM meta WHERE key='descs_version'").fetchone()
+    if ver and ver["value"] == DESCS_VERSION:
+        return 0
+    if not os.path.exists(DESCS_FILE):
+        return 0
+    with open(DESCS_FILE, encoding="utf-8") as f:
+        data = json.load(f)
+    n = 0
+    for gid_str, langs in data.items():
+        try:
+            gid = int(gid_str)
+        except ValueError:
+            continue
+        ar = json.dumps(langs.get("ar", {}).get("about", []), ensure_ascii=False)
+        ar_ctx = json.dumps(langs.get("ar", {}).get("context", []), ensure_ascii=False)
+        en = json.dumps(langs.get("en", {}).get("about", []), ensure_ascii=False)
+        en_ctx = json.dumps(langs.get("en", {}).get("context", []), ensure_ascii=False)
+        conn.execute(
+            "INSERT INTO book_descriptions(gid,ar,ar_ctx,en,en_ctx) VALUES(?,?,?,?,?)"
+            " ON CONFLICT(gid) DO UPDATE SET ar=excluded.ar, ar_ctx=excluded.ar_ctx,"
+            " en=excluded.en, en_ctx=excluded.en_ctx",
+            (gid, ar, ar_ctx, en, en_ctx)
+        )
+        n += 1
+    conn.execute("INSERT OR REPLACE INTO meta(key,value) VALUES('descs_version',?)", (DESCS_VERSION,))
     conn.commit()
     return n
 

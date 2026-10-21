@@ -566,10 +566,10 @@ def test_pages_open_in_the_visitors_language(client):
     assert "set-cookie" not in client.get("/?lang=en", headers={"sec-fetch-site": "cross-site"}).headers
     client.cookies.clear()  # the test client kept that choice, as a browser would: start again without one
     privacy = client.get("/privacy").text  # and the privacy policy says so, dated
-    assert "warraq_lang" in privacy and "اختيارك للغة والمظهر" not in privacy and "آخر تحديث: 19 أكتوبر 2026" in privacy
+    assert "warraq_lang" in privacy and "اختيارك للغة والمظهر" not in privacy and "آخر تحديث: 21 أكتوبر 2026" in privacy
     assert "<p>نعرض إعلانات من خلال Google AdSense" in privacy and "قد نعرض إعلانات" not in privacy
     assert "Our site sets the language cookie above" in client.get("/privacy?lang=en").text
-    assert "آخر تحديث: 16 أكتوبر 2026" in client.get("/terms").text  # the terms did not change
+    assert "آخر تحديث: 21 أكتوبر 2026" in client.get("/terms").text  # the terms changed with the takedown form
 
 
 def test_seo_pages(client, monkeypatch):
@@ -715,6 +715,7 @@ def test_links_use_the_public_https_address(client, monkeypatch):
     assert "Sitemap: %s/sitemap.xml" % base in client.get("/robots.txt").text
     assert "<loc>%s/sitemap-main.xml</loc>" % base in client.get("/sitemap.xml").text
     assert "<loc>%s/category/his</loc>" % base in client.get("/sitemap-main.xml").text
+    monkeypatch.setenv("THIN_NOINDEX", "0")  # every book page indexed: all of them in the book sitemaps
     assert "<loc>%s/book/" % base in client.get("/sitemap-books-1.xml").text
     assert '<link rel="canonical" href="%s/">' % base in client.get("/").text
     monkeypatch.setenv("SITE_URL", "https://library.example.com/")  # an explicit address wins
@@ -738,7 +739,8 @@ def test_about_privacy_terms_contact(tmp_path, monkeypatch):
         # every footer links to the four pages, and the sitemap lists them
         assert 'href="/terms"' in c.get("/").text and 'href="/privacy"' in c.get("/category/poe").text
         assert 'href="/contact' in c.get("/book/1").text  # an English book's page links to /contact?lang=en
-        assert "/contact?lang=en</loc>" in c.get("/sitemap-main.xml").text
+        main_map = c.get("/sitemap-main.xml").text
+        assert "/about?lang=en</loc>" in main_map and "/contact</loc>" not in main_map and "/takedown</loc>" not in main_map
         assert "Disallow: /admin/" in c.get("/robots.txt").text
 
         conn = db.connect()
@@ -964,6 +966,7 @@ def test_adsense_tag_on_every_page_and_ads_txt(client):
 
 
 def test_ad_units_on_content_pages_only(client, monkeypatch):
+    monkeypatch.setenv("THIN_NOINDEX", "0")  # every book page shows its ad (the thin rule has its own test)
     unit = 'data-ad-slot="1844690351"'
     loader = "pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7058063023261152"
     for url, n in (("/", 2), ("/?lang=en", 2), ("/category/poe", 1), ("/author/shakespeare", 1), ("/book/1", 1)):
@@ -991,6 +994,100 @@ def test_ad_units_on_content_pages_only(client, monkeypatch):
     assert "warraq-infeed" not in r.text and "6915772378" not in client.get("/category/nov").text
     r = client.get("/book/1", follow_redirects=True)
     assert unit not in r.text and "'strict-dynamic'" not in r.headers["content-security-policy"]
+
+
+def test_thin_pages_stay_out_of_search_sitemaps_and_ads(client, monkeypatch, tmp_path):
+    """THIN_NOINDEX (on by default): a catalogue record with no words of its own is noindex, unlisted and ad-free;
+    the library's own texts make a page whole: book texts, author biographies, category texts, articles."""
+    import json as _json
+    from app import content, db
+    d = tmp_path / "content"
+    (d / "articles").mkdir(parents=True)
+    conn = db.connect()
+    conn.execute("UPDATE books SET gid=1122 WHERE id=1")  # Hamlet, linked to its Gutenberg number as the import does
+    # Seed test description directly into book_descriptions (DB takes precedence over books.json)
+    _en_about = _json.dumps(["Hamlet, the prince of Denmark, returns home. " * 3])
+    _en_ctx   = _json.dumps(["See also [Macbeth](/book/2?lang=en)."])
+    _ar_about = _json.dumps(["هاملت أمير الدنمارك يعود إلى بلده."])
+    _ar_ctx   = _json.dumps(["سياقها."])
+    conn.execute("INSERT OR REPLACE INTO book_descriptions(gid,en,en_ctx,ar,ar_ctx) VALUES(1122,?,?,?,?)",
+                 (_en_about, _en_ctx, _ar_about, _ar_ctx))
+    # Make sure Macbeth (gid=1533) has no description so it stays thin
+    conn.execute("DELETE FROM book_descriptions WHERE gid=1533")
+    conn.commit()
+    conn.close()
+    (d / "books.json").write_text(_json.dumps({}), encoding="utf-8")  # DB is authoritative now
+    (d / "authors.json").write_text(_json.dumps({"plato": {"ar": ["سيرة أفلاطون الفيلسوف اليوناني."], "en": ["Plato's life."]}}), encoding="utf-8")
+    (d / "categories.json").write_text(_json.dumps({"nov": {"ar": ["نص تصنيف الروايات."], "en": ["The novels text."]}}), encoding="utf-8")
+    (d / "home.json").write_text(_json.dumps({"ar": ["المكتبة بكلماتها."], "en": ["The library in its words."]}), encoding="utf-8")
+    (d / "articles" / "01-test.md").write_text(
+        "---\nslug: test-article\ntitle: مقال تجريبي\ndescription: وصف المقال\ndate: 2026-10-21\n---\nمقدمة.\n\n## أول\n\n"
+        "فقرة فيها [رابط](/book/1) و**كلمة بارزة**.\n\n## ثان\n\n- بند\n- بند آخر\n\n## ثالث\n\n> شطر ... شطر\n\n## رابع\n\n"
+        "خاتمة <script>alert(1)</script> [سيئ](javascript:alert(1)).", encoding="utf-8")
+    monkeypatch.setattr(content, "DIR", str(d))
+    content._cache.clear()
+    unit = 'data-ad-slot="1844690351"'
+
+    # a book with a text of its own: indexed, with its ad, its text, and a description taken from it
+    hamlet = client.get("/book/1", follow_redirects=True).text
+    assert 'name="robots" content="index,follow' in hamlet and unit in hamlet
+    assert "Context and significance" in hamlet and '<meta name="description" content="Hamlet, the prince of Denmark' in hamlet
+    assert '<a href="/book/2?lang=en">Macbeth</a>' in hamlet and "<title>Hamlet by William Shakespeare | Al-Warraq Library</title>" in hamlet
+    # a catalogue record alone: out of search results and ads, under the strict policy
+    macbeth = client.get("/book/2", follow_redirects=True)
+    assert 'name="robots" content="noindex,follow"' in macbeth.text and unit not in macbeth.text
+    assert "'strict-dynamic'" not in macbeth.headers["content-security-policy"] and "Catalogue details" in macbeth.text
+    books_map = client.get("/sitemap-books-1.xml").text
+    assert "/book/1/" in books_map and "/book/2/" not in books_map and client.get("/sitemap-books-2.xml").status_code == 404
+    # authors: a biography makes the page whole; a short list of titles does not
+    plato = client.get("/author/plato").text
+    assert "سيرة أفلاطون" in plato and 'name="robots"' not in plato and unit in plato
+    kafka = client.get("/author/kafka").text
+    assert 'name="robots" content="noindex,follow"' in kafka and unit not in kafka
+    main_map = client.get("/sitemap-main.xml").text
+    assert "/author/plato</loc>" in main_map and "/author/kafka</loc>" not in main_map and "/articles/test-article</loc>" in main_map
+    # a category's own text, the home page's own words and articles; a search result page is not indexed
+    assert "نص تصنيف الروايات" in client.get("/category/nov").text and "The novels text" in client.get("/category/nov?lang=en").text
+    home = client.get("/").text
+    assert "المكتبة بكلماتها" in home and 'href="/articles/test-article"' in home and 'name="robots" content="index,follow"' in home
+    assert 'name="robots" content="noindex,follow"' in client.get("/?q=hamlet").text
+    # the articles: written in Arabic, Article data, two ads, nothing unsafe passes from the text
+    page = client.get("/articles/test-article")
+    a = page.text
+    assert page.status_code == 200 and "<h1>مقال تجريبي</h1>" in a and '"Article"' in a and a.count(unit) == 2
+    assert '<a href="/book/1">رابط</a>' in a and "<strong>كلمة بارزة</strong>" in a and "<li>بند آخر</li>" in a and 'class="verse"' in a
+    assert "<script>alert" not in a and 'href="javascript' not in a
+    assert '<link rel="canonical" href="http://testserver/articles/test-article">' in client.get("/articles/test-article?lang=en").text
+    assert client.get("/articles/nope").status_code == 404 and 'href="/articles/test-article"' in client.get("/articles").text
+    # THIN_NOINDEX off: every book page indexed and with ads, as before
+    monkeypatch.setenv("THIN_NOINDEX", "0")
+    assert unit in client.get("/book/2", follow_redirects=True).text
+
+
+def test_takedown_requests(client):
+    from app import db, legal
+    r = client.get("/takedown?u=/book/1")
+    assert r.status_code == 200 and 'name="robots" content="noindex,follow"' in r.text and 'value="http://testserver/book/1"' in r.text
+    assert 'href="/takedown' in client.get("/book/1", follow_redirects=True).text  # every book page links to it
+    assert 'href="/takedown"' in client.get("/terms").text and 'href="/articles"' in client.get("/about").text  # and the footer
+    conn = db.connect()
+    form = {"name": "Rights Holder", "email": "owner@example.com", "url": "http://testserver/book/1",
+            "reason": "I hold the translation rights to this edition.", "t": legal.form_token(conn, time.time() - 60)}
+    r = client.post("/takedown", data=form, follow_redirects=False)
+    assert r.status_code == 303 and r.headers["location"] == "/takedown?sent=1"
+    row = conn.execute("SELECT * FROM contact_messages ORDER BY id DESC LIMIT 1").fetchone()
+    assert row["topic"] == "takedown" and "http://testserver/book/1" in row["message"] and "translation rights" in row["message"]
+    bad = client.post("/takedown", data={**form, "reason": "short", "url": "<b>x</b>"})
+    assert bad.status_code == 400 and "20" in bad.text and "&lt;b&gt;x&lt;/b&gt;" in bad.text
+    conn.close()
+    privacy = client.get("/privacy").text
+    assert "warraq_lang" in privacy and 'href="https://www.google.com/settings/ads"' in privacy and 'href="mailto:alwarraqibrary@gmail.com"' in privacy
+
+
+def test_static_files_are_cached(client):
+    assert client.get("/style.css?v=21").headers["cache-control"] == "public, max-age=31536000, immutable"
+    assert client.get("/logo.svg").headers["cache-control"] == "public, max-age=604800"
+    assert client.get("/").headers["cache-control"] == "no-cache" and client.get("/about").headers["cache-control"] == "no-cache"
 
 
 def test_google_analytics_on_every_page(client, monkeypatch):

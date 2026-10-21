@@ -41,6 +41,8 @@
             pg_privacy: 'سياسة الخصوصية',
             pg_terms: 'شروط الاستخدام',
             pg_contact: 'اتصل بنا',
+            pg_articles: 'مقالات',
+            pg_takedown: 'طلب إزالة محتوى',
             ws_name: 'ويكي مصدر',
             pop_h: 'الأكثر مشاهدة',
             pop_s: 'الأكثر بحثاً',
@@ -65,7 +67,7 @@
             filters: 'تصفية',
             results: '{n} كتاب',
             results_more: 'أكثر من {n} كتاب',
-            ad: 'إعلان',
+            ad: 'إعلانات', // the labels Google permits: "Advertisements" or "Sponsored links"
             near_all: 'لا يوجد تطابق تام لـ«{q}»، وهذه {n} نتيجة قريبة منه',
             near_some: 'منها {n} بتهجئة قريبة',
             loading: 'جارٍ التحميل…',
@@ -144,6 +146,8 @@
             pg_privacy: 'Privacy policy',
             pg_terms: 'Terms of use',
             pg_contact: 'Contact us',
+            pg_articles: 'Articles',
+            pg_takedown: 'Content removal',
             ws_name: 'Wikisource (Arabic)',
             pop_h: 'Most viewed',
             pop_s: 'Popular searches',
@@ -168,7 +172,7 @@
             filters: 'Filters',
             results: '{n} books',
             results_more: 'More than {n} books',
-            ad: 'Advertisement',
+            ad: 'Advertisements',
             near_all: 'No exact match for “{q}”: {n} close results',
             near_some: '{n} of them spelled a little differently',
             loading: 'Loading…',
@@ -518,6 +522,7 @@
         $('#langBtn').textContent = S.ui === 'ar' ? 'EN' : 'ع';
         $('#langBtn').setAttribute('aria-label', S.ui === 'ar' ? 'English' : 'العربية');
         $('#filtBtn').textContent = tr('filters');
+        document.querySelectorAll('[data-srv-lang]').forEach((e) => { e.hidden = e.dataset.srvLang !== S.ui; });
     }
 
     function renderHero() {

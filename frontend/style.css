@@ -3649,3 +3649,72 @@ ins.adsbygoogle[data-ad-status=unfilled] {
 .infeed:has(ins[data-ad-status=unfilled]) {
     display: none
 }
+
+/* the library's own words on the home page (written by the server) and its latest articles */
+.intro-sec {
+    padding: 8px 0 18px
+}
+
+.intro {
+    display: grid;
+    gap: 6px 36px;
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+    align-items: start;
+    background: var(--card, #fff);
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    padding: 22px 26px
+}
+
+.intro > h2,
+.intro > p {
+    grid-column: 1;
+    margin: 0
+}
+
+.intro > h2 {
+    font-size: 1.35rem;
+    margin-bottom: 4px
+}
+
+.intro > p {
+    line-height: 1.95;
+    color: var(--ink)
+}
+
+.intro-arts {
+    grid-column: 2;
+    grid-row: 1 / span 9
+}
+
+.intro-arts h3 {
+    margin: 0 0 8px;
+    font-size: 1.05rem
+}
+
+.intro-arts ul {
+    margin: 0 0 10px;
+    padding-inline-start: 18px
+}
+
+.intro-arts li {
+    margin: 6px 0;
+    line-height: 1.6
+}
+
+.intro-all {
+    font-weight: 700
+}
+
+@media (max-width:820px) {
+    .intro {
+        grid-template-columns: minmax(0, 1fr);
+        padding: 18px
+    }
+
+    .intro-arts {
+        grid-column: 1;
+        grid-row: auto
+    }
+}
+
