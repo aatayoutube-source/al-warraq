@@ -17,27 +17,84 @@ from .textnorm import norm
 from .modern import OL_KIND, SAFAHAT_KIND, ol_url, safahat_url
 from .wikisource import WS_KIND
 
-BRAND = {"ar": "مكتبة الوراق", "en": "Al-Warraq Library"}
+# ---------- the interface languages ----------
+# Arabic is the site's own language (addresses without ?lang=); every other one is ?lang=<code>. A word missing
+# from a language's table below is shown in English, never an error.
+UI_LANGS = ("ar", "en", "zh", "fr", "es", "pt", "ja", "de")
+UI_LANG_NAMES = {"ar": "العربية", "en": "English", "zh": "中文", "fr": "Français", "es": "Español", "pt": "Português",
+                 "ja": "日本語", "de": "Deutsch"}  # each in its own language, as the language menu lists them
+UI_LANG_SHORT = {"ar": "ع", "en": "EN", "zh": "中", "fr": "FR", "es": "ES", "pt": "PT", "ja": "日", "de": "DE"}
+OG_LOCALE = {"ar": "ar_AR", "en": "en_US", "zh": "zh_CN", "fr": "fr_FR", "es": "es_ES", "pt": "pt_BR", "ja": "ja_JP", "de": "de_DE"}
+
+
+def lang_q(ui: str, amp: bool = False) -> str:
+    """The language part of an address: "" for Arabic, else "?lang=fr" (or "lang=fr&" to go before more parameters)."""
+    if ui == "ar" or ui not in UI_LANGS:
+        return ""
+    return ("lang=%s&" if amp else "?lang=%s") % ui
+
+
+def own_text(html_: str, ui: str) -> str:
+    """The library's own texts (written in Arabic and English) as this interface shows them: in English, marked
+    as such, for the other languages (content.text_ui)."""
+    return html_ if not html_ or content.text_ui(ui) == ui else '<div lang="en">%s</div>' % html_
+
+
+BRAND = {"ar": "مكتبة الوراق", "en": "Al-Warraq Library", "zh": "Al-Warraq 图书馆", "fr": "Bibliothèque Al-Warraq",
+         "es": "Biblioteca Al-Warraq", "pt": "Biblioteca Al-Warraq", "ja": "アル・ワッラーク図書館", "de": "Bibliothek Al-Warraq"}
 # the site's Google AdSense account: its tag goes in the head of every page (ADSENSE_ACCOUNT replaces it)
 ADSENSE_ACCOUNT = os.environ.get("ADSENSE_ACCOUNT", "").strip() or "ca-pub-7058063023261152"
 # the about / privacy / terms / contact pages (legal.py), linked from every footer
 LEGAL = {"ar": (("about", "عن المكتبة"), ("privacy", "سياسة الخصوصية"), ("terms", "شروط الاستخدام"), ("contact", "اتصل بنا"),
                 ("takedown", "طلب إزالة محتوى")),
          "en": (("about", "About us"), ("privacy", "Privacy policy"), ("terms", "Terms of use"), ("contact", "Contact us"),
-                ("takedown", "Content removal"))}
-ARTICLES_NAME = {"ar": "مقالات", "en": "Articles"}
+                ("takedown", "Content removal")),
+         "zh": (("about", "关于我们"), ("privacy", "隐私政策"), ("terms", "使用条款"), ("contact", "联系我们"),
+                ("takedown", "内容移除申请")),
+         "fr": (("about", "À propos"), ("privacy", "Politique de confidentialité"), ("terms", "Conditions d’utilisation"),
+                ("contact", "Nous contacter"), ("takedown", "Demande de retrait")),
+         "es": (("about", "Quiénes somos"), ("privacy", "Política de privacidad"), ("terms", "Términos de uso"),
+                ("contact", "Contacto"), ("takedown", "Solicitud de retirada")),
+         "pt": (("about", "Sobre nós"), ("privacy", "Política de privacidade"), ("terms", "Termos de uso"),
+                ("contact", "Fale conosco"), ("takedown", "Pedido de remoção")),
+         "ja": (("about", "私たちについて"), ("privacy", "プライバシーポリシー"), ("terms", "利用規約"), ("contact", "お問い合わせ"),
+                ("takedown", "削除依頼")),
+         "de": (("about", "Über uns"), ("privacy", "Datenschutzerklärung"), ("terms", "Nutzungsbedingungen"),
+                ("contact", "Kontakt"), ("takedown", "Antrag auf Entfernung"))}
+ARTICLES_NAME = {"ar": "مقالات", "en": "Articles", "zh": "文章", "fr": "Articles", "es": "Artículos", "pt": "Artigos",
+                 "ja": "記事", "de": "Artikel"}
 SITEMAP_PAGE = 40000  # URLs per sitemap file (Google allows 50,000)
 
+# a book's language, named in each interface language (in this order)
+_LANG_NAME_UIS = ("en", "ar", "zh", "fr", "es", "pt", "ja", "de")
 LANG_NAMES = {
-    "en": ("English", "الإنجليزية"), "ar": ("Arabic", "العربية"), "fr": ("French", "الفرنسية"),
-    "de": ("German", "الألمانية"), "es": ("Spanish", "الإسبانية"), "it": ("Italian", "الإيطالية"),
-    "pt": ("Portuguese", "البرتغالية"), "ru": ("Russian", "الروسية"), "nl": ("Dutch", "الهولندية"),
-    "la": ("Latin", "اللاتينية"), "fi": ("Finnish", "الفنلندية"), "sv": ("Swedish", "السويدية"),
-    "da": ("Danish", "الدنماركية"), "no": ("Norwegian", "النرويجية"), "pl": ("Polish", "البولندية"),
-    "hu": ("Hungarian", "المجرية"), "cs": ("Czech", "التشيكية"), "zh": ("Chinese", "الصينية"),
-    "ja": ("Japanese", "اليابانية"), "tr": ("Turkish", "التركية"), "el": ("Greek", "اليونانية"),
-    "he": ("Hebrew", "العبرية"), "fa": ("Persian", "الفارسية"), "sa": ("Sanskrit", "السنسكريتية"),
-    "ko": ("Korean", "الكورية"), "ro": ("Romanian", "الرومانية"), "ca": ("Catalan", "الكتالانية"),
+    "en": ("English", "الإنجليزية", "英语", "anglais", "inglés", "inglês", "英語", "Englisch"),
+    "ar": ("Arabic", "العربية", "阿拉伯语", "arabe", "árabe", "árabe", "アラビア語", "Arabisch"),
+    "fr": ("French", "الفرنسية", "法语", "français", "francés", "francês", "フランス語", "Französisch"),
+    "de": ("German", "الألمانية", "德语", "allemand", "alemán", "alemão", "ドイツ語", "Deutsch"),
+    "es": ("Spanish", "الإسبانية", "西班牙语", "espagnol", "español", "espanhol", "スペイン語", "Spanisch"),
+    "it": ("Italian", "الإيطالية", "意大利语", "italien", "italiano", "italiano", "イタリア語", "Italienisch"),
+    "pt": ("Portuguese", "البرتغالية", "葡萄牙语", "portugais", "portugués", "português", "ポルトガル語", "Portugiesisch"),
+    "ru": ("Russian", "الروسية", "俄语", "russe", "ruso", "russo", "ロシア語", "Russisch"),
+    "nl": ("Dutch", "الهولندية", "荷兰语", "néerlandais", "neerlandés", "neerlandês", "オランダ語", "Niederländisch"),
+    "la": ("Latin", "اللاتينية", "拉丁语", "latin", "latín", "latim", "ラテン語", "Latein"),
+    "fi": ("Finnish", "الفنلندية", "芬兰语", "finnois", "finés", "finlandês", "フィンランド語", "Finnisch"),
+    "sv": ("Swedish", "السويدية", "瑞典语", "suédois", "sueco", "sueco", "スウェーデン語", "Schwedisch"),
+    "da": ("Danish", "الدنماركية", "丹麦语", "danois", "danés", "dinamarquês", "デンマーク語", "Dänisch"),
+    "no": ("Norwegian", "النرويجية", "挪威语", "norvégien", "noruego", "norueguês", "ノルウェー語", "Norwegisch"),
+    "pl": ("Polish", "البولندية", "波兰语", "polonais", "polaco", "polonês", "ポーランド語", "Polnisch"),
+    "hu": ("Hungarian", "المجرية", "匈牙利语", "hongrois", "húngaro", "húngaro", "ハンガリー語", "Ungarisch"),
+    "cs": ("Czech", "التشيكية", "捷克语", "tchèque", "checo", "tcheco", "チェコ語", "Tschechisch"),
+    "zh": ("Chinese", "الصينية", "中文", "chinois", "chino", "chinês", "中国語", "Chinesisch"),
+    "ja": ("Japanese", "اليابانية", "日语", "japonais", "japonés", "japonês", "日本語", "Japanisch"),
+    "tr": ("Turkish", "التركية", "土耳其语", "turc", "turco", "turco", "トルコ語", "Türkisch"),
+    "el": ("Greek", "اليونانية", "希腊语", "grec", "griego", "grego", "ギリシャ語", "Griechisch"),
+    "he": ("Hebrew", "العبرية", "希伯来语", "hébreu", "hebreo", "hebraico", "ヘブライ語", "Hebräisch"),
+    "fa": ("Persian", "الفارسية", "波斯语", "persan", "persa", "persa", "ペルシア語", "Persisch"),
+    "sa": ("Sanskrit", "السنسكريتية", "梵语", "sanskrit", "sánscrito", "sânscrito", "サンスクリット語", "Sanskrit"),
+    "ko": ("Korean", "الكورية", "韩语", "coréen", "coreano", "coreano", "韓国語", "Koreanisch"),
+    "ro": ("Romanian", "الرومانية", "罗马尼亚语", "roumain", "rumano", "romeno", "ルーマニア語", "Rumänisch"),
+    "ca": ("Catalan", "الكتالانية", "加泰罗尼亚语", "catalan", "catalán", "catalão", "カタルーニャ語", "Katalanisch"),
 }
 
 T = {
@@ -48,7 +105,7 @@ T = {
         "home": "الرئيسية", "all": "كل الكتب", "views": "مشاهدة", "likes": "إعجاب", "like": "أعجبني", "liked": "أعجبك", "similar": "كتب تشبه هذا الكتاب", "free": "كتاب مجاني ومسقط عنه حق النشر",
         "note": "الموقع فهرس يدلّك على المصادر المفتوحة والقانونية ولا يستضيف الكتب. كتب الملك العام هنا في الملكية العامة في الولايات المتحدة وقد يختلف وضعها في بلدك، أما الكتب العربية الحديثة فحقوقها لأصحابها ونعرض بيانات فهرستها فقط.",
         "page_gut": "صفحة الكتاب في Gutenberg", "page_ht": "HathiTrust", "arch": "Internet Archive", "ol": "Open Library",
-        "other_lang": "English", "other_code": "en", "notfound": "الصفحة غير موجودة", "dir": "rtl",
+        "menu_lang": "اللغة", "notfound": "الصفحة غير موجودة", "dir": "rtl",
         "nf_p": "ربما نُقلت الصفحة التي تبحث عنها أو كُتب الرابط بشكل خاطئ. ابحث في المكتبة أو عد إلى الصفحة الرئيسية.",
         "nf_home": "العودة إلى الرئيسية", "nf_try": "أو تصفّح أحد التصنيفات:",
         "share": "شارك:", "wa": "واتساب", "tg": "تيليجرام", "fb": "فيسبوك", "copy": "نسخ الرابط", "copied": "تم النسخ ✓",
@@ -81,7 +138,7 @@ T = {
         "home": "Home", "all": "All books", "views": "views", "likes": "likes", "like": "Like", "liked": "Liked", "similar": "Similar books", "free": "Free public-domain book",
         "note": "This site is an index that points to open and legal sources; it does not host the books. Public-domain books here are free in the United States and may be protected in your country; modern Arabic books belong to their rights holders, and we only show their catalogue records.",
         "page_gut": "Gutenberg book page", "page_ht": "HathiTrust", "arch": "Internet Archive", "ol": "Open Library",
-        "other_lang": "العربية", "other_code": "ar", "notfound": "Page not found", "dir": "ltr",
+        "menu_lang": "Language", "notfound": "Page not found", "dir": "ltr",
         "nf_p": "The page you are looking for may have moved, or the link is mistyped. Search the library or go back home.",
         "nf_home": "Back to home", "nf_try": "Or browse a category:",
         "share": "Share:", "wa": "WhatsApp", "tg": "Telegram", "fb": "Facebook", "copy": "Copy link", "copied": "Copied ✓",
@@ -107,7 +164,189 @@ T = {
         "d_by": " by {a}", "d_y": ", published {y}", "d_p": " by {p}", "k_book": "book", "k_poem": "poem",
         "desc": "{t} {a}— free public-domain book ({l}, {c}). Read it online or find free editions from open sources.",
     },
+    "zh": {
+        "by": "作者", "cat": "分类", "lang": "语言", "src": "来源", "read": "阅读本书", "find": "查找本书",
+        "ph": "搜索书名或作者", "search": "搜索",
+        "home": "首页", "all": "全部图书", "views": "次浏览", "like": "点赞", "liked": "已点赞", "similar": "相似图书",
+        "note": "本站是一个指向开放、合法来源的索引，并不存放图书。这里的公有领域图书在美国属于公有领域，在你所在的国家可能仍受保护；现代阿拉伯语图书的版权归权利人所有，我们只展示其书目信息。",
+        "page_gut": "古腾堡图书页面", "page_ht": "HathiTrust", "arch": "互联网档案馆", "ol": "Open Library",
+        "menu_lang": "语言", "notfound": "页面不存在", "dir": "ltr",
+        "nf_p": "你要找的页面可能已被移动，或者链接输入有误。请在图书馆中搜索，或返回首页。",
+        "nf_home": "返回首页", "nf_try": "或者浏览一个分类：",
+        "share": "分享：", "wa": "WhatsApp", "tg": "Telegram", "fb": "Facebook", "copy": "复制链接", "copied": "已复制 ✓",
+        "share_txt": "在 Al-Warraq 图书馆免费阅读《{t}》",
+        "read_saf": "在 Safahat（Hindawi）上阅读", "view_ol": "在 Open Library 上查看",
+        "src_saf": "Safahat（Hindawi 基金会）", "src_ol": "Open Library", "pub": "出版者", "year": "出版年份", "pages": "页数",
+        "note_saf": "本书经权利人同意，可在 Safahat（Hindawi 基金会）上免费阅读。我们这里只展示其书目信息，按钮会带你前往它在那里的页面。",
+        "note_ol": "本书受版权保护。我们这里只展示其书目信息，按钮会带你前往它在 Open Library 上的页面。",
+        "about_saf": "《{t}》是一部{a}作品，属于“{c}”类别，以{l}写成。根据与权利人的协议，你可以通过上方按钮在{s}上免费阅读全文。下方列出了相似的图书。",
+        "about_ol": "《{t}》是一部{a}作品，属于“{c}”类别，以{l}写成。本书受版权保护，你可以通过上方按钮在{s}上找到它的页面和各个版本。下方列出了相似的图书。",
+        "src_gut": "古腾堡计划", "src_ht": "HathiTrust", "src_ws": "维基文库", "src_idx": "Al-Warraq 索引",
+        "about": "关于本书", "about_author": "关于作者", "wiki": "来源：维基百科",
+        "about_txt": "《{t}》是一部{a}作品，属于“{c}”类别，以{l}写成。本书属于公有领域，你可以通过上方按钮从开放来源免费阅读。如果你喜欢这本书，请点击“点赞”，帮助更多人发现它。下方列出了相似的图书。",
+        "about_by": "由{a}创作的",
+        "facts_h": "书目信息", "context": "背景与意义", "bio_more": "该作者的全部图书",
+        "legal_pd": "Al-Warraq 图书馆不存放图书文件，而是带你前往原始来源中的副本。公有领域的认定因国家而异，下载或转载本书前，请先了解你所在地的法律。",
+        "takedown_q": "你是这部作品的权利人吗？", "takedown_a": "申请移除",
+        "title_by": "{t}（{a} 著）",
+        "d_pd": "《{t}》{by}{y}：公有领域{kind}，属于“{c}”类别，以{l}写成。可在原始来源{s}免费阅读全文。",
+        "d_saf": "《{t}》{by}{y}，属于“{c}”类别，以{l}写成。经权利人许可，可在{s}上免费阅读全文。",
+        "d_ol": "《{t}》{by}{y}{p}，属于“{c}”类别，以{l}写成。查看书目信息，并前往它在{s}上的页面。",
+        "d_by": "，{a}著", "d_y": "（{y}年）", "d_p": "，{p}出版", "k_book": "图书", "k_poem": "诗歌",
+    },
+    "fr": {
+        "by": "Auteur", "cat": "Catégorie", "lang": "Langue", "src": "Source", "read": "Lire le livre", "find": "Trouver le livre",
+        "ph": "Rechercher un titre ou un auteur", "search": "Rechercher",
+        "home": "Accueil", "all": "Tous les livres", "views": "vues", "like": "J’aime", "liked": "Aimé", "similar": "Livres similaires",
+        "note": "Ce site est un index qui renvoie vers des sources ouvertes et légales ; il n’héberge pas les livres. Les livres du domaine public présentés ici sont libres aux États-Unis et peuvent être protégés dans votre pays ; les livres arabes modernes appartiennent à leurs ayants droit, et nous n’en montrons que la notice.",
+        "page_gut": "Page du livre sur Gutenberg", "page_ht": "HathiTrust", "arch": "Internet Archive", "ol": "Open Library",
+        "menu_lang": "Langue", "notfound": "Page introuvable", "dir": "ltr",
+        "nf_p": "La page que vous cherchez a peut-être été déplacée, ou le lien est mal saisi. Cherchez dans la bibliothèque ou revenez à l’accueil.",
+        "nf_home": "Retour à l’accueil", "nf_try": "Ou parcourez une catégorie :",
+        "share": "Partager :", "wa": "WhatsApp", "tg": "Telegram", "fb": "Facebook", "copy": "Copier le lien", "copied": "Copié ✓",
+        "share_txt": "Lisez « {t} » gratuitement sur la Bibliothèque Al-Warraq",
+        "read_saf": "Lire sur Safahat (Hindawi)", "view_ol": "Voir sur Open Library",
+        "src_saf": "Safahat (Fondation Hindawi)", "src_ol": "Open Library", "pub": "Éditeur", "year": "Publication", "pages": "Pages",
+        "note_saf": "Ce livre se lit gratuitement sur Safahat (Fondation Hindawi), en vertu d’un accord avec ses ayants droit. Nous n’affichons que sa notice ; le bouton vous mène à sa page là-bas.",
+        "note_ol": "Ce livre est protégé par le droit d’auteur. Nous n’affichons que sa notice ; le bouton vous mène à sa page sur Open Library.",
+        "about_saf": "« {t} » est un livre {a}classé dans la catégorie « {c} » et écrit en {l}. Vous pouvez le lire en entier et gratuitement sur {s}, en vertu d’un accord avec ses ayants droit, grâce au bouton ci-dessus. Des livres similaires figurent plus bas.",
+        "about_ol": "« {t} » est un livre {a}classé dans la catégorie « {c} » et écrit en {l}. Il est protégé par le droit d’auteur ; sa page et ses éditions se trouvent sur {s}, via le bouton ci-dessus. Des livres similaires figurent plus bas.",
+        "src_gut": "Projet Gutenberg", "src_ht": "HathiTrust", "src_ws": "Wikisource", "src_idx": "Index d’Al-Warraq",
+        "about": "À propos de ce livre", "about_author": "À propos de l’auteur", "wiki": "Source : Wikipédia",
+        "about_txt": "« {t} » est un livre {a}classé dans la catégorie « {c} » et écrit en {l}. Il appartient au domaine public : vous pouvez le lire gratuitement à sa source ouverte grâce aux boutons ci-dessus. S’il vous a plu, cliquez sur « J’aime » pour aider d’autres lecteurs à le découvrir. Des livres similaires figurent plus bas.",
+        "about_by": "de {a}, ",
+        "facts_h": "Notice du catalogue", "context": "Contexte et portée", "bio_more": "Tous les livres de cet auteur",
+        "legal_pd": "La Bibliothèque Al-Warraq n’héberge aucun fichier : elle vous conduit à l’exemplaire de la source d’origine. Le statut de domaine public varie d’un pays à l’autre ; vérifiez la loi de votre pays avant de télécharger ou de republier ce livre.",
+        "takedown_q": "Vous détenez des droits sur cette œuvre ?", "takedown_a": "Demander son retrait",
+        "title_by": "{t} de {a}",
+        "d_pd": "« {t} »{by} : {kind} du domaine public{y}, dans la catégorie « {c} », écrit en {l}. Lisez-le en entier et gratuitement à sa source d’origine, {s}.",
+        "d_saf": "« {t} »{by}{y}, dans la catégorie « {c} », écrit en {l}. Lisez-le en entier et gratuitement sur {s}, avec l’accord de ses ayants droit.",
+        "d_ol": "« {t} »{by}{y}{p}, dans la catégorie « {c} », écrit en {l}. Consultez sa notice et rendez-vous sur sa page sur {s}.",
+        "d_by": " de {a}", "d_y": ", publié en {y}", "d_p": " chez {p}", "k_book": "un livre", "k_poem": "un poème",
+    },
+    "es": {
+        "by": "Autor", "cat": "Categoría", "lang": "Idioma", "src": "Fuente", "read": "Leer el libro", "find": "Buscar el libro",
+        "ph": "Busca un título o un autor", "search": "Buscar",
+        "home": "Inicio", "all": "Todos los libros", "views": "vistas", "like": "Me gusta", "liked": "Te gusta", "similar": "Libros similares",
+        "note": "Este sitio es un índice que remite a fuentes abiertas y legales; no aloja los libros. Los libros de dominio público que aparecen aquí son libres en Estados Unidos y pueden estar protegidos en tu país; los libros árabes modernos pertenecen a sus titulares de derechos, y solo mostramos su ficha de catálogo.",
+        "page_gut": "Página del libro en Gutenberg", "page_ht": "HathiTrust", "arch": "Internet Archive", "ol": "Open Library",
+        "menu_lang": "Idioma", "notfound": "Página no encontrada", "dir": "ltr",
+        "nf_p": "Puede que la página que buscas se haya movido o que el enlace esté mal escrito. Busca en la biblioteca o vuelve al inicio.",
+        "nf_home": "Volver al inicio", "nf_try": "O explora una categoría:",
+        "share": "Compartir:", "wa": "WhatsApp", "tg": "Telegram", "fb": "Facebook", "copy": "Copiar enlace", "copied": "Copiado ✓",
+        "share_txt": "Lee «{t}» gratis en la Biblioteca Al-Warraq",
+        "read_saf": "Leer en Safahat (Hindawi)", "view_ol": "Ver en Open Library",
+        "src_saf": "Safahat (Fundación Hindawi)", "src_ol": "Open Library", "pub": "Editorial", "year": "Publicación", "pages": "Páginas",
+        "note_saf": "Este libro se puede leer gratis en Safahat (Fundación Hindawi) gracias a un acuerdo con sus titulares de derechos. Aquí solo mostramos su ficha; el botón te lleva a su página allí.",
+        "note_ol": "Este libro está protegido por derechos de autor. Aquí solo mostramos su ficha; el botón te lleva a su página en Open Library.",
+        "about_saf": "«{t}» es un libro {a}de la categoría «{c}», escrito en {l}. Puedes leerlo completo y gratis en {s}, gracias a un acuerdo con sus titulares de derechos, con el botón de arriba. Más abajo hay libros similares.",
+        "about_ol": "«{t}» es un libro {a}de la categoría «{c}», escrito en {l}. Está protegido por derechos de autor; su página y sus ediciones están en {s}, a través del botón de arriba. Más abajo hay libros similares.",
+        "src_gut": "Proyecto Gutenberg", "src_ht": "HathiTrust", "src_ws": "Wikisource", "src_idx": "Índice de Al-Warraq",
+        "about": "Sobre este libro", "about_author": "Sobre el autor", "wiki": "Fuente: Wikipedia",
+        "about_txt": "«{t}» es un libro {a}de la categoría «{c}», escrito en {l}. Es de dominio público, así que puedes leerlo gratis en su fuente abierta con los botones de arriba. Si te gustó, pulsa «Me gusta» para ayudar a otros a descubrirlo. Más abajo hay libros similares.",
+        "about_by": "de {a}, ",
+        "facts_h": "Datos de catálogo", "context": "Contexto e importancia", "bio_more": "Todos los libros de este autor",
+        "legal_pd": "La Biblioteca Al-Warraq no aloja archivos de libros: te lleva a la copia de la fuente original. La condición de dominio público cambia de un país a otro, así que consulta la ley de tu país antes de descargar o volver a publicar el libro.",
+        "takedown_q": "¿Tienes derechos sobre esta obra?", "takedown_a": "Solicita su retirada",
+        "title_by": "{t}, de {a}",
+        "d_pd": "«{t}»{by}: {kind} de dominio público{y}, en la categoría «{c}», escrito en {l}. Léelo completo y gratis en su fuente original, {s}.",
+        "d_saf": "«{t}»{by}{y}, en la categoría «{c}», escrito en {l}. Léelo completo y gratis en {s}, con permiso de sus titulares de derechos.",
+        "d_ol": "«{t}»{by}{y}{p}, en la categoría «{c}», escrito en {l}. Consulta su ficha de catálogo y ve a su página en {s}.",
+        "d_by": ", de {a}", "d_y": ", publicado en {y}", "d_p": ", editorial {p}", "k_book": "un libro", "k_poem": "un poema",
+    },
+    "pt": {
+        "by": "Autor", "cat": "Categoria", "lang": "Idioma", "src": "Fonte", "read": "Ler o livro", "find": "Encontrar o livro",
+        "ph": "Pesquise um título ou um autor", "search": "Pesquisar",
+        "home": "Início", "all": "Todos os livros", "views": "visualizações", "like": "Curtir", "liked": "Curtido", "similar": "Livros semelhantes",
+        "note": "Este site é um índice que aponta para fontes abertas e legais; ele não hospeda os livros. Os livros em domínio público aqui são livres nos Estados Unidos e podem estar protegidos no seu país; os livros árabes modernos pertencem aos detentores dos direitos, e mostramos apenas a ficha catalográfica.",
+        "page_gut": "Página do livro no Gutenberg", "page_ht": "HathiTrust", "arch": "Internet Archive", "ol": "Open Library",
+        "menu_lang": "Idioma", "notfound": "Página não encontrada", "dir": "ltr",
+        "nf_p": "A página que você procura pode ter sido movida, ou o link foi digitado errado. Pesquise na biblioteca ou volte ao início.",
+        "nf_home": "Voltar ao início", "nf_try": "Ou navegue por uma categoria:",
+        "share": "Compartilhar:", "wa": "WhatsApp", "tg": "Telegram", "fb": "Facebook", "copy": "Copiar link", "copied": "Copiado ✓",
+        "share_txt": "Leia “{t}” de graça na Biblioteca Al-Warraq",
+        "read_saf": "Ler no Safahat (Hindawi)", "view_ol": "Ver no Open Library",
+        "src_saf": "Safahat (Fundação Hindawi)", "src_ol": "Open Library", "pub": "Editora", "year": "Publicação", "pages": "Páginas",
+        "note_saf": "Este livro pode ser lido de graça no Safahat (Fundação Hindawi), graças a um acordo com os detentores dos direitos. Aqui mostramos apenas a ficha catalográfica; o botão leva você à página dele lá.",
+        "note_ol": "Este livro está protegido por direitos autorais. Aqui mostramos apenas a ficha catalográfica; o botão leva você à página dele no Open Library.",
+        "about_saf": "“{t}” é um livro {a}da categoria “{c}”, escrito em {l}. Você pode lê-lo na íntegra e de graça em {s}, graças a um acordo com os detentores dos direitos, pelo botão acima. Abaixo há livros semelhantes.",
+        "about_ol": "“{t}” é um livro {a}da categoria “{c}”, escrito em {l}. Ele está protegido por direitos autorais; a página e as edições dele estão em {s}, pelo botão acima. Abaixo há livros semelhantes.",
+        "src_gut": "Projeto Gutenberg", "src_ht": "HathiTrust", "src_ws": "Wikisource", "src_idx": "Índice da Al-Warraq",
+        "about": "Sobre este livro", "about_author": "Sobre o autor", "wiki": "Fonte: Wikipédia",
+        "about_txt": "“{t}” é um livro {a}da categoria “{c}”, escrito em {l}. Ele está em domínio público, então você pode lê-lo de graça na fonte aberta pelos botões acima. Se gostou, toque em “Curtir” para ajudar outras pessoas a descobri-lo. Abaixo há livros semelhantes.",
+        "about_by": "de {a}, ",
+        "facts_h": "Dados de catálogo", "context": "Contexto e importância", "bio_more": "Todos os livros deste autor",
+        "legal_pd": "A Biblioteca Al-Warraq não hospeda arquivos de livros: ela leva você ao exemplar na fonte original. A condição de domínio público varia de país para país, então confira a lei do seu país antes de baixar ou republicar o livro.",
+        "takedown_q": "Você detém direitos sobre esta obra?", "takedown_a": "Peça a remoção",
+        "title_by": "{t}, de {a}",
+        "d_pd": "“{t}”{by}: {kind} em domínio público{y}, na categoria “{c}”, escrito em {l}. Leia na íntegra e de graça na fonte original, {s}.",
+        "d_saf": "“{t}”{by}{y}, na categoria “{c}”, escrito em {l}. Leia na íntegra e de graça em {s}, com permissão dos detentores dos direitos.",
+        "d_ol": "“{t}”{by}{y}{p}, na categoria “{c}”, escrito em {l}. Veja a ficha catalográfica e acesse a página dele em {s}.",
+        "d_by": ", de {a}", "d_y": ", publicado em {y}", "d_p": ", editora {p}", "k_book": "um livro", "k_poem": "um poema",
+    },
+    "ja": {
+        "by": "著者", "cat": "カテゴリー", "lang": "言語", "src": "出典", "read": "本を読む", "find": "本を探す",
+        "ph": "書名や著者名で検索", "search": "検索",
+        "home": "ホーム", "all": "すべての本", "views": "回閲覧", "like": "いいね", "liked": "いいね済み", "similar": "似ている本",
+        "note": "このサイトはオープンで合法的な情報源へ案内する索引であり、本そのものは掲載していません。ここにあるパブリックドメインの本は米国で自由に利用できますが、お住まいの国では保護されている場合があります。現代アラビア語の本の権利は権利者に帰属し、当サイトでは書誌情報のみを表示しています。",
+        "page_gut": "Gutenberg の書籍ページ", "page_ht": "HathiTrust", "arch": "インターネット・アーカイブ", "ol": "Open Library",
+        "menu_lang": "言語", "notfound": "ページが見つかりません", "dir": "ltr",
+        "nf_p": "お探しのページは移動したか、リンクが間違っている可能性があります。図書館内を検索するか、ホームに戻ってください。",
+        "nf_home": "ホームに戻る", "nf_try": "またはカテゴリーから探す：",
+        "share": "共有：", "wa": "WhatsApp", "tg": "Telegram", "fb": "Facebook", "copy": "リンクをコピー", "copied": "コピーしました ✓",
+        "share_txt": "アル・ワッラーク図書館で『{t}』を無料で読む",
+        "read_saf": "Safahat（Hindawi）で読む", "view_ol": "Open Library で見る",
+        "src_saf": "Safahat（Hindawi 財団）", "src_ol": "Open Library", "pub": "出版社", "year": "刊行年", "pages": "ページ数",
+        "note_saf": "この本は権利者との合意により Safahat（Hindawi 財団）で無料で読めます。ここでは書誌情報のみを表示しており、ボタンから同サイトのページへ移動できます。",
+        "note_ol": "この本は著作権で保護されています。ここでは書誌情報のみを表示しており、ボタンから Open Library のページへ移動できます。",
+        "about_saf": "『{t}』は{a}「{c}」カテゴリーの本で、{l}で書かれています。権利者との合意により、上のボタンから{s}で全文を無料で読めます。下に似ている本を紹介しています。",
+        "about_ol": "『{t}』は{a}「{c}」カテゴリーの本で、{l}で書かれています。著作権で保護されているため、上のボタンから{s}でページと各版を確認できます。下に似ている本を紹介しています。",
+        "src_gut": "プロジェクト・グーテンベルク", "src_ht": "HathiTrust", "src_ws": "ウィキソース", "src_idx": "アル・ワッラーク索引",
+        "about": "この本について", "about_author": "著者について", "wiki": "出典：ウィキペディア",
+        "about_txt": "『{t}』は{a}「{c}」カテゴリーの本で、{l}で書かれています。パブリックドメインの作品なので、上のボタンから公開されている情報源で無料で読めます。気に入ったら「いいね」を押して、ほかの人がこの本を見つけられるようにしてください。下に似ている本を紹介しています。",
+        "about_by": "{a}による",
+        "facts_h": "書誌情報", "context": "背景と意義", "bio_more": "この著者のすべての本",
+        "legal_pd": "アル・ワッラーク図書館は本のファイルを掲載せず、元の情報源にある本へ案内します。パブリックドメインかどうかは国によって異なるため、本をダウンロードしたり再公開したりする前に、お住まいの国の法律を確認してください。",
+        "takedown_q": "この作品の権利をお持ちですか？", "takedown_a": "削除を依頼する",
+        "title_by": "{t}（{a}）",
+        "d_pd": "『{t}』{by}{y}：パブリックドメインの{kind}。「{c}」カテゴリー、{l}の作品です。元の情報源である{s}で全文を無料で読めます。",
+        "d_saf": "『{t}』{by}{y}：「{c}」カテゴリー、{l}の作品です。権利者の許可により、{s}で全文を無料で読めます。",
+        "d_ol": "『{t}』{by}{y}{p}：「{c}」カテゴリー、{l}の作品です。書誌情報を確認し、{s}のページへ移動できます。",
+        "d_by": "／{a}", "d_y": "（{y}年）", "d_p": "、{p}刊", "k_book": "本", "k_poem": "詩",
+    },
+    "de": {
+        "by": "Autor", "cat": "Kategorie", "lang": "Sprache", "src": "Quelle", "read": "Buch lesen", "find": "Buch finden",
+        "ph": "Titel oder Autor suchen", "search": "Suchen",
+        "home": "Startseite", "all": "Alle Bücher", "views": "Aufrufe", "like": "Gefällt mir", "liked": "Gefällt Ihnen", "similar": "Ähnliche Bücher",
+        "note": "Diese Website ist ein Verzeichnis, das auf offene und legale Quellen verweist; die Bücher selbst liegen nicht hier. Gemeinfreie Bücher sind in den USA frei und können in Ihrem Land noch geschützt sein; moderne arabische Bücher gehören ihren Rechteinhabern, und wir zeigen nur ihre Katalogdaten.",
+        "page_gut": "Buchseite bei Gutenberg", "page_ht": "HathiTrust", "arch": "Internet Archive", "ol": "Open Library",
+        "menu_lang": "Sprache", "notfound": "Seite nicht gefunden", "dir": "ltr",
+        "nf_p": "Die gesuchte Seite wurde vielleicht verschoben, oder der Link ist falsch geschrieben. Durchsuchen Sie die Bibliothek oder kehren Sie zur Startseite zurück.",
+        "nf_home": "Zur Startseite", "nf_try": "Oder stöbern Sie in einer Kategorie:",
+        "share": "Teilen:", "wa": "WhatsApp", "tg": "Telegram", "fb": "Facebook", "copy": "Link kopieren", "copied": "Kopiert ✓",
+        "share_txt": "Lesen Sie „{t}“ kostenlos in der Bibliothek Al-Warraq",
+        "read_saf": "Bei Safahat (Hindawi) lesen", "view_ol": "Bei Open Library ansehen",
+        "src_saf": "Safahat (Hindawi-Stiftung)", "src_ol": "Open Library", "pub": "Verlag", "year": "Erschienen", "pages": "Seiten",
+        "note_saf": "Dieses Buch ist dank einer Vereinbarung mit den Rechteinhabern kostenlos bei Safahat (Hindawi-Stiftung) zu lesen. Wir zeigen hier nur die Katalogdaten; die Schaltfläche führt Sie zur Seite dort.",
+        "note_ol": "Dieses Buch ist urheberrechtlich geschützt. Wir zeigen hier nur die Katalogdaten; die Schaltfläche führt Sie zur Seite bei Open Library.",
+        "about_saf": "„{t}“ ist ein Buch {a}aus der Kategorie „{c}“, geschrieben auf {l}. Dank einer Vereinbarung mit den Rechteinhabern können Sie es über die Schaltfläche oben vollständig und kostenlos bei {s} lesen. Ähnliche Bücher finden Sie weiter unten.",
+        "about_ol": "„{t}“ ist ein Buch {a}aus der Kategorie „{c}“, geschrieben auf {l}. Es ist urheberrechtlich geschützt; seine Seite und Ausgaben finden Sie über die Schaltfläche oben bei {s}. Ähnliche Bücher finden Sie weiter unten.",
+        "src_gut": "Projekt Gutenberg", "src_ht": "HathiTrust", "src_ws": "Wikisource", "src_idx": "Verzeichnis von Al-Warraq",
+        "about": "Über dieses Buch", "about_author": "Über den Autor", "wiki": "Quelle: Wikipedia",
+        "about_txt": "„{t}“ ist ein Buch {a}aus der Kategorie „{c}“, geschrieben auf {l}. Es ist gemeinfrei, daher können Sie es über die Schaltflächen oben kostenlos an der offenen Quelle lesen. Wenn es Ihnen gefallen hat, klicken Sie auf „Gefällt mir“, damit andere es entdecken. Ähnliche Bücher finden Sie weiter unten.",
+        "about_by": "von {a} ",
+        "facts_h": "Katalogdaten", "context": "Hintergrund und Bedeutung", "bio_more": "Alle Bücher dieses Autors",
+        "legal_pd": "Die Bibliothek Al-Warraq speichert keine Buchdateien, sondern führt Sie zum Exemplar an der Originalquelle. Ob ein Werk gemeinfrei ist, ist von Land zu Land verschieden; prüfen Sie daher das Recht Ihres Landes, bevor Sie das Buch herunterladen oder neu veröffentlichen.",
+        "takedown_q": "Haben Sie Rechte an diesem Werk?", "takedown_a": "Entfernung beantragen",
+        "title_by": "{t} von {a}",
+        "d_pd": "„{t}“{by}: {kind}{y} in der Kategorie „{c}“, auf {l}. Vollständig und kostenlos an der Originalquelle lesbar: {s}.",
+        "d_saf": "„{t}“{by}{y}, in der Kategorie „{c}“, auf {l}. Mit Erlaubnis der Rechteinhaber vollständig und kostenlos bei {s} lesbar.",
+        "d_ol": "„{t}“{by}{y}{p}, in der Kategorie „{c}“, auf {l}. Katalogdaten ansehen und zur Seite bei {s} wechseln.",
+        "d_by": " von {a}", "d_y": ", erschienen {y}", "d_p": ", Verlag {p}", "k_book": "ein gemeinfreies Buch", "k_poem": "ein gemeinfreies Gedicht",
+    },
 }
+for _ui in UI_LANGS:  # a word a language lacks is shown in English
+    T[_ui] = dict(T["en"], **T.get(_ui, {}))
 
 CSS = """
 :root{--bg:#F2F0EA;--card:#fff;--ink:#13201C;--muted:#5A6762;--line:#E1DCD0;--brand:#0E6B5A;--brand-2:#18A086;--brand-ink:#fff;--soft:#DDEEE8;--rose:#A35F08;--rose-soft:#FBEFD5;--btn:linear-gradient(140deg,#139477,#0B5546);--grad:linear-gradient(140deg,#18A086,#0E6B5A 58%,#0A4A3E);--shadow:0 1px 2px rgba(19,32,28,.05),0 14px 32px -18px rgba(10,74,62,.32)}
@@ -125,7 +364,11 @@ a{color:var(--brand)}
 .sbox svg{flex:none;color:var(--muted)}.sbox input{flex:1 1 auto;min-width:0;border:0;background:transparent;outline:0;font:inherit;color:inherit;height:100%}
 .sbox button{flex:none;height:34px;padding-inline:16px;border:0;border-radius:11px;background:var(--btn);color:var(--brand-ink);font:600 .92rem "IBM Plex Sans Arabic",sans-serif;cursor:pointer}
 .bar nav{display:flex;gap:14px;align-items:center;font-size:.92rem;flex:none}
-@media (max-width:640px){.brand span{display:none}.sbox button{display:none}.bar nav a:first-child{display:none}}
+.lmenu{position:relative}.lmenu summary{display:inline-flex;align-items:center;gap:6px;height:38px;padding-inline:10px 12px;border:1.5px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);font-weight:600;cursor:pointer;list-style:none}
+.lmenu summary::-webkit-details-marker{display:none}.lmenu summary:hover,.lmenu[open] summary{border-color:var(--brand-2)}.lmenu summary svg{color:var(--brand)}
+.lmenu-list{position:absolute;inset-inline-end:0;top:calc(100% + 6px);z-index:20;display:grid;min-width:170px;padding:6px;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}
+.lmenu-list a{padding:7px 12px;border-radius:9px;color:var(--ink);text-decoration:none}.lmenu-list a:hover{background:var(--soft);color:var(--brand)}.lmenu-list a[aria-current]{background:var(--soft);color:var(--brand);font-weight:600}
+@media (max-width:640px){.brand span{display:none}.sbox button{display:none}.bar nav>a:first-child{display:none}}
 .crumbs{font-size:.88rem;color:var(--muted);margin:18px 0 6px}.crumbs a{color:var(--muted)}
 .book{display:grid;grid-template-columns:240px 1fr;gap:28px;margin:12px 0 28px;align-items:start}
 .cover{position:relative;aspect-ratio:2/3;border-radius:14px;overflow:hidden;box-shadow:0 22px 44px -22px rgba(10,74,62,.5);background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 26 26'%3E%3Cpath d='M13 1.5l3.2 8.3 8.3 3.2-8.3 3.2L13 24.5l-3.2-8.3L1.5 13l8.3-3.2z' fill='none' stroke='%23fff' stroke-opacity='.09'/%3E%3C/svg%3E"),linear-gradient(160deg,hsl(var(--h) 42% 27%),hsl(var(--h) 46% 17%));color:#F6F2E8}
@@ -220,8 +463,9 @@ _CRAWLER = re.compile(r"bot|crawl|spider|slurp|google|bing|yandex|baidu|lighthou
 
 
 def browser_ui(accept_language: str) -> str:
-    """Whichever of Arabic and English comes first in the browser's languages ("en-US,en;q=0.9,ar;q=0.8" -> en,
-    "ku,ar;q=0.8" -> ar); English when it lists neither (fr-FR); "" when the browser sends no list."""
+    """Whichever of the site's languages comes first in the browser's languages ("en-US,en;q=0.9,ar;q=0.8" -> en,
+    "ku,ar;q=0.8" -> ar, "fr-CA" -> fr, "zh-TW" -> zh, "pt-BR" -> pt); English when it lists none of them (ru-RU);
+    "" when the browser sends no list."""
     tags = []
     for i, part in enumerate((accept_language or "").split(",")):
         tag, _, params = part.strip().partition(";")
@@ -237,20 +481,19 @@ def browser_ui(accept_language: str) -> str:
         if tag and tag != "*" and q > 0:
             tags.append((-q, i, tag))
     for _, _, tag in sorted(tags):
-        if tag == "ar" or tag.startswith("ar-"):
-            return "ar"
-        if tag == "en" or tag.startswith("en-"):
-            return "en"
+        base = re.split(r"[-_]", tag, 1)[0]  # zh-Hant-TW -> zh
+        if base in UI_LANGS:
+            return base
     return "en" if tags else ""
 
 
 def visitor_ui(request, lang: str = "", default: str = "ar") -> str:
     """The language a page opens in: ?lang= when the address has it; else the visitor's saved choice; else their
     browser's language; else the page's own, which crawlers always get (search engines see every page as before)."""
-    if lang in ("ar", "en"):
+    if lang in UI_LANGS:
         return lang
     saved = request.cookies.get(LANG_COOKIE, "")
-    if saved in ("ar", "en"):
+    if saved in UI_LANGS:
         return saved
     if _CRAWLER.search(request.headers.get("user-agent", "") or ""):
         return default
@@ -280,7 +523,9 @@ def adsense_meta() -> str:
 # The AdSense display unit ("Dhdj"). Only on pages with real content (home, categories, authors, books): never
 # on the 404, contact or legal pages. ADS=0 turns ads off (a test copy); ADSENSE_SLOT replaces the unit.
 AD_SLOT = os.environ.get("ADSENSE_SLOT", "").strip() or "1844690351"
-AD_LABEL = {"ar": "إعلانات", "en": "Advertisements"}  # Google permits "Advertisements" or "Sponsored links" only
+# Google permits "Advertisements" or "Sponsored links" only (or the same word in the page's language)
+AD_LABEL = {"ar": "إعلانات", "en": "Advertisements", "zh": "广告", "fr": "Publicités", "es": "Anuncios", "pt": "Anúncios",
+            "ja": "広告", "de": "Anzeigen"}
 
 
 def ads_on() -> bool:
@@ -299,7 +544,7 @@ def ad_unit(ui: str = "ar") -> str:
     """One responsive ad, labelled as such once Google fills it (an unfilled one takes no room)."""
     if not ads_on():
         return ""
-    label = AD_LABEL["en" if ui == "en" else "ar"]
+    label = AD_LABEL.get(ui, AD_LABEL["ar"])
     return ('<aside class="ad" aria-label="%s"><span class="ad-l">%s</span>'
             '<ins class="adsbygoogle" style="display:block" data-ad-client="%s" data-ad-slot="%s" data-ad-format="auto" '
             'data-full-width-responsive="true"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script></aside>'
@@ -317,7 +562,7 @@ def infeed_unit(ui: str = "ar") -> str:
     """The in-feed ad as an item of a server-rendered list (its script gets the page's nonce)."""
     if not ads_on():
         return ""
-    label = AD_LABEL["en" if ui == "en" else "ar"]
+    label = AD_LABEL.get(ui, AD_LABEL["ar"])
     return ('<li class="infeed" aria-label="%s"><span class="ad-l">%s</span><ins class="adsbygoogle" style="display:block" '
             'data-ad-format="fluid" data-ad-layout-key="%s" data-ad-client="%s" data-ad-slot="%s"></ins>'
             '<script>(adsbygoogle = window.adsbygoogle || []).push({});</script></li>'
@@ -358,7 +603,7 @@ def ads_txt() -> str:
 
 
 def legal_links(ui: str) -> str:
-    q = "?lang=en" if ui == "en" else ""
+    q = lang_q(ui)
     return '<nav class="legal" aria-label="%s"><a href="/articles%s">%s</a>%s</nav>' % (
         esc(BRAND[ui]), q, esc(ARTICLES_NAME[ui]), "".join('<a href="/%s%s">%s</a>' % (k, q, esc(n)) for k, n in LEGAL[ui]))
 
@@ -377,7 +622,7 @@ def site_base(request) -> str:
 
 def lang_name(code: str, ui: str) -> str:
     n = LANG_NAMES.get((code or "").lower())
-    return (n[1] if ui == "ar" else n[0]) if n else (code or "").upper()
+    return n[_LANG_NAME_UIS.index(ui) if ui in _LANG_NAME_UIS else 0] if n else (code or "").upper()
 
 
 def read_links(row, ui: str):
@@ -490,14 +735,25 @@ LOGO_SVG = ('<svg viewBox="4 0 40 48" width="32" height="38" aria-hidden="true">
             '<path d="M25.08 25.17Q26.8 20.46 28.87 20.5Q30.42 20.54 31.65 22.53Q32.8 24.43 33.02 26.89Q33.24 29.32 32.23 33.38Q31.26 37.39 28.39 40.83Q25.52 44.27 23.58 44.44Q22 44.67 18.91 44Q17.41 43.7 16.24 43.36Q15.07 43.03 14.32 42.73Q13.84 42.5 13.97 41.98Q14.1 41.4 14.81 41.53Q17.45 41.93 21.11 41.09Q22.92 40.7 26.4 37.65Q28.17 36.11 29.25 34.9Q30.33 33.69 30.64 32.72Q30.59 32.49 30.48 32.16Q30.37 31.83 30.24 31.44Q28.39 33.82 25.79 32.63Q22.83 31.3 25.08 25.17ZM29.27 27.25Q27.99 25.17 26.54 27.07Q27.64 28.31 29.27 27.25Z" fill="#FBF8F1"/></svg>')
 SEARCH_ICON = ('<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">'
                '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>')
+GLOBE_ICON = ('<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">'
+              '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.8 3 2.8 15 0 18M12 3c-2.8 3-2.8 15 0 18"/></svg>')
+
+
+def lang_menu(ui: str, href, nofollow: bool = False) -> str:
+    """The language menu of the server's pages: a plain link per language, so it needs no script. href(code) gives
+    each one's address; Arabic's carries ?lang=ar too, so that it replaces a saved choice of another language."""
+    links = "".join('<a href="%s" hreflang="%s" lang="%s"%s%s>%s</a>' % (
+        esc(href(code)), code, code, ' rel="nofollow"' if nofollow else "", ' aria-current="true"' if code == ui else "",
+        esc(UI_LANG_NAMES[code])) for code in UI_LANGS)
+    return ('<details class="lmenu"><summary aria-label="%s">%s<span>%s</span></summary><div class="lmenu-list">%s</div></details>'
+            % (esc(T[ui]["menu_lang"]), GLOBE_ICON, esc(UI_LANG_SHORT[ui]), links))
 
 
 def not_found_html(ui="ar") -> str:
     """The 404 page: the site's header, a search box, a way home and the categories (never indexed)."""
     ui = ui if ui in T else "ar"
     t = T[ui]
-    q = "?lang=en" if ui == "en" else ""
-    other = "en" if ui == "ar" else "ar"
+    q = lang_q(ui)
     cats = "".join('<a href="/category/%s%s">%s</a>' % (k, q, esc(v[ui])) for k, v in CATEGORIES.items())
     return """<!doctype html>
 <html lang="{ui}" dir="{dir}">
@@ -514,7 +770,7 @@ def not_found_html(ui="ar") -> str:
 </head>
 <body>
 <header class="bar"><div class="wrap"><a class="brand" href="/{q}">{logo}<span>{brand}</span></a>
-<nav><a href="/{q}#browse">{all}</a><a href="/{oq}" hreflang="{other}">{other_lang}</a></nav></div></header>
+<nav><a href="/{q}#browse">{all}</a>{menu}</nav></div></header>
 <main class="wrap nf">
 <div class="nf-door" aria-hidden="true"><div class="nf-arch">404</div></div>
 <h1>{h}</h1>
@@ -527,8 +783,8 @@ def not_found_html(ui="ar") -> str:
 </main>
 </body>
 </html>
-""".format(ui=ui, dir=t["dir"], h=esc(t["notfound"]), brand=esc(BRAND[ui]), css=CSS, q=q, oq="?lang=en" if other == "en" else "",
-           logo=LOGO_SVG, all=esc(t["all"]), other=other, other_lang=esc(t["other_lang"]), p=esc(t["nf_p"]), icon=SEARCH_ICON,
+""".format(ui=ui, dir=t["dir"], h=esc(t["notfound"]), brand=esc(BRAND[ui]), css=CSS, q=q,
+           logo=LOGO_SVG, all=esc(t["all"]), menu=lang_menu(ui, lambda c: "/?lang=" + c), p=esc(t["nf_p"]), icon=SEARCH_ICON,
            ph=esc(t["ph"]), search=esc(t["search"]), home=esc(t["nf_home"]), try_=esc(t["nf_try"]), cats=cats,
            legal=legal_links(ui), note=esc(t["note"]), adsense=site_head())
 
@@ -542,12 +798,13 @@ SHARE_JS = """<script>(function(){var b=document.getElementById('copyBtn');if(!b
 b.addEventListener('click',function(){var u=b.dataset.url;function ok(){l.textContent=b.dataset.done;setTimeout(function(){l.textContent=o},1800)}
 if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(u).then(ok,function(){window.prompt('',u)})}else{window.prompt('',u)}});})();</script>"""
 
-WIKI_JS = """<script>(function(){var s=document.getElementById('aa');if(!s)return;
-var cand=[[s.dataset.ui,s.dataset.name],[s.dataset.ui==='ar'?'en':'ar',s.dataset.alt],['en',s.dataset.alt||s.dataset.name]];var i=0;
+# the author's summary from Wikipedia in the page's language; the other interfaces fall back to English, not Arabic
+WIKI_JS = """<script>(function(){var s=document.getElementById('aa');if(!s)return;var ui=s.dataset.ui;
+var cand=ui==='ar'||ui==='en'?[[ui,s.dataset.name],[ui==='ar'?'en':'ar',s.dataset.alt],['en',s.dataset.alt||s.dataset.name]]:[[ui,s.dataset.name],['en',s.dataset.name]];var i=0;
 function next(){if(i>=cand.length)return;var c=cand[i++];if(!c[1])return next();
 fetch('https://'+c[0]+'.wikipedia.org/api/rest_v1/page/summary/'+encodeURIComponent(c[1].replace(/ /g,'_'))+'?redirect=true').then(function(r){return r.ok?r.json():null}).then(function(j){
 if(!j||j.type!=='standard'||!j.extract||j.extract.length<60)return next();
-document.getElementById('aaT').textContent=j.extract.length>600?j.extract.slice(0,600).replace(/\\s+\\S*$/,'')+'\u2026':j.extract;
+var p=document.getElementById('aaT');p.lang=c[0];p.textContent=j.extract.length>600?j.extract.slice(0,600).replace(/\\s+\\S*$/,'')+'\u2026':j.extract;
 var a=document.getElementById('aaL'),u=(j.content_urls&&j.content_urls.desktop&&j.content_urls.desktop.page)||'';a.href=/^https:\\/\\/[a-z-]+\\.wikipedia\\.org\\//.test(u)?u:'#';s.hidden=false;}).catch(next);}
 next();})();</script>"""
 
@@ -626,7 +883,6 @@ def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool 
     ld_json = json.dumps(ld, ensure_ascii=False).replace("</", "<\\/")
 
     og_img = '<meta property="og:image" content="%s">' % esc(covers[0] if covers else base + "/og-image.png")
-    other_ui = "en" if ui == "ar" else "ar"
 
     btns = '<a class="btn" href="%s" target="_blank" rel="nofollow noopener">%s</a>' % (esc(main_url), esc(read_label(row, ui, direct)))
     btns += "".join('<a class="btn alt" href="%s" target="_blank" rel="nofollow noopener">%s</a>' % (esc(u), esc(n)) for u, n in extra)
@@ -641,7 +897,7 @@ def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool 
                 quote(canon, safe=""), quote(msg, safe=""), SHARE_ICONS["tg"], esc(t["tg"]),
                 quote(canon, safe=""), SHARE_ICONS["fb"], esc(t["fb"]),
                 esc(canon), esc(t["copied"]), SHARE_ICONS["link"], esc(t["copy"])))
-    takedown = '<a href="/takedown?%su=%s">%s</a>' % ("lang=en&amp;" if ui == "en" else "", quote(canonical_path(row), safe=""), esc(t["takedown_a"]))
+    takedown = '<a href="/takedown?%su=%s">%s</a>' % (esc(lang_q(ui, amp=True)), quote(canonical_path(row), safe=""), esc(t["takedown_a"]))
     if modern:  # whose book it is, and why there is no text here
         share = '<p class="rights">%s %s %s</p>' % (esc(t["note_saf" if row["curated"] == SAFAHAT_KIND else "note_ol"]), esc(t["takedown_q"]), takedown) + share
     else:  # no file here, and the public domain is not the same everywhere
@@ -679,9 +935,9 @@ def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool 
         rel_html = "<h2>%s</h2><ul class=\"rel\">%s</ul>" % (esc(t[key]), "".join(items))
 
     if note.get("about"):
-        about_html = '<section class="about"><h2>%s</h2>%s</section>' % (esc(t["about"]), content.paragraphs(note["about"]))
+        about_html = '<section class="about"><h2>%s</h2>%s</section>' % (esc(t["about"]), own_text(content.paragraphs(note["about"]), ui))
         if note.get("context"):
-            about_html += '<section class="about"><h2>%s</h2>%s</section>' % (esc(t["context"]), content.paragraphs(note["context"]))
+            about_html += '<section class="about"><h2>%s</h2>%s</section>' % (esc(t["context"]), own_text(content.paragraphs(note["context"]), ui))
     else:
         about_html = '<section class="about"><h2>%s</h2><p>%s</p></section>' % (
             esc(t["about"]), esc(t["about_saf" if modern and row["curated"] == SAFAHAT_KIND else "about_ol" if modern else "about_txt"].format(
@@ -689,12 +945,11 @@ def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool 
     bio = content.author(row["author_key"], ui)
     if bio:  # written for this site; Wikipedia's summary is only fetched for the others
         about_html += '<section class="about"><h2>%s</h2>%s<small><a href="/author/%s%s">%s</a></small></section>' % (
-            esc(t["about_author"]), content.paragraphs(bio), esc(quote(row["author_key"])), "?lang=en" if ui == "en" else "", esc(t["bio_more"]))
+            esc(t["about_author"]), own_text(content.paragraphs(bio), ui), esc(quote(row["author_key"])), lang_q(ui), esc(t["bio_more"]))
     elif author:
         about_html += ('<section class="about" id="aa" hidden data-name="%s" data-alt="%s" data-ui="%s" data-src="%s"><h2>%s</h2><p id="aaT"></p>'
                        '<small><a id="aaL" href="#" target="_blank" rel="noopener">%s</a></small></section>'
                        % (esc(author), esc(row["author_en"] or ""), ui, esc(t["wiki"]), esc(t["about_author"]), esc(t["wiki"])))
-    toggle = "?lang=" + other_ui
     cv_script = (
         "<script>(function(){var im=document.getElementById('cvimg');if(!im)return;var src=%s;var i=0;"
             "function done(ok){if(ok){im.classList.add('ok');}else next();}"
@@ -735,7 +990,7 @@ def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool 
 <body>
 <header class="bar"><div class="wrap"><a class="brand" href="/">{logo}<span>{brand}</span></a>
 <form class="sbox" action="/#browse" method="get" role="search">{search_icon}<input type="search" name="q" placeholder="{ph}" aria-label="{ph}"><button type="submit">{search}</button></form>
-<nav><a href="/#browse">{all}</a><a href="{toggle}" hreflang="{other_ui}" rel="nofollow">{other_lang}</a></nav></div></header>
+<nav><a href="/#browse">{all}</a>{menu}</nav></div></header>
 <main class="wrap">
 <p class="crumbs"><a href="/">{home}</a> / <a href="/category/{catkey}">{cat_name}</a> / <span>{title}</span></p>
 <article class="book">
@@ -764,12 +1019,12 @@ def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool 
 </body>
 </html>
 """.format(ui=ui, dir=t["dir"], page_title=esc(page_title), desc=esc(desc), canon=esc(canon), brand=esc(BRAND[ui]), og_img=og_img,
-           ld=ld_json, css=CSS, all=esc(t["all"]), toggle=toggle, other_ui=other_ui, other_lang=esc(t["other_lang"]),
+           ld=ld_json, css=CSS, all=esc(t["all"]), menu=lang_menu(ui, lambda c: "?lang=" + c, nofollow=True),
            home=esc(t["home"]), catkey=esc(row["cat"]), cat_name=esc(cat_name), hue=int(cat["hue"]), title=esc(title), author=esc(author),
            alt=esc(title), by=('<p class="by">%s</p>' % esc(author)) if author else "", tags=tags, numbers_html=numbers_html, btns=btns, share=share, share_js=SHARE_JS, facts=facts, rel=rel_html, about=about_html,
            note=esc(t["note"]), legal=legal_links(ui), cv_script=cv_script, like_js=LIKE_JS, wiki_js=WIKI_JS,
            logo=LOGO_SVG, search_icon=SEARCH_ICON, ph=esc(t["ph"]), search=esc(t["search"]),
-           locale="ar_AR" if ui == "ar" else "en_US", adsense=site_head(),
+           locale=OG_LOCALE[ui], adsense=site_head(),
            # far from the read buttons (an ad must not invite a mistaken click); only with a nonce to run it
            ad_head=ad_head() if nonce and ads and indexable else "", ad=ad_unit(ui) if nonce and ads and indexable else "",
            robots="index,follow,max-image-preview:large" if indexable else "noindex,follow", facts_h=esc(t["facts_h"]))

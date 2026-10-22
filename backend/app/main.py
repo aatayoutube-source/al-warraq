@@ -96,7 +96,7 @@ def create_app() -> FastAPI:
                 lang = request.query_params.get("lang", "")
                 # moving to the other language inside the site (its language links) is a choice to keep;
                 # arriving from elsewhere on a ?lang= address (a search result, a shared link) is not
-                if (lang in ("ar", "en") and request.headers.get("sec-fetch-site") == "same-origin"
+                if (lang in pages.UI_LANGS and request.headers.get("sec-fetch-site") == "same-origin"
                         and request.cookies.get(pages.LANG_COOKIE) != lang):
                     response.set_cookie(pages.LANG_COOKIE, lang, max_age=365 * 86400, samesite="lax",
                                         secure=request.url.scheme == "https")
@@ -133,7 +133,7 @@ def create_app() -> FastAPI:
         all_poems = sum(poems.values())
         poems[ARABIC_CAT] = all_poems  # every one of them is Arabic
         counts[ARABIC_CAT] = conn.execute("SELECT COUNT(*) FROM books WHERE lang='ar'").fetchone()[0] - all_poems
-        cats = [{"key": k, "hue": v["hue"], "en": v["en"], "ar": v["ar"], "count": counts.get(k, 0), "poems": poems.get(k, 0)}
+        cats = [dict({ui: v[ui] for ui in pages.UI_LANGS}, key=k, hue=v["hue"], count=counts.get(k, 0), poems=poems.get(k, 0))
                 for k, v in CATEGORIES.items()]
         authors = [
             {"key": r["key"], "en": r["en"], "ar": r["ar"], "years": r["years"], "origin": r["origin"],
@@ -420,7 +420,7 @@ def create_app() -> FastAPI:
             return PlainTextResponse("message too large", status_code=413)
         ok, err, values = legal.submit(conn, request, legal.parse_form(await request.body()), ui)
         if ok:  # post/redirect/get: reloading the thank-you page does not send the message again
-            return RedirectResponse(legal.link("contact", ui) + ("&" if ui == "en" else "?") + "sent=1", status_code=303)
+            return RedirectResponse(legal.link("contact", ui, "sent=1"), status_code=303)
         return HTMLResponse(legal.page_html("contact", pages.site_base(request), ui, conn=conn, values=values, error=err),
                             status_code=400)
 
@@ -438,7 +438,7 @@ def create_app() -> FastAPI:
             return PlainTextResponse("message too large", status_code=413)
         ok, err, values = legal.submit(conn, request, legal.parse_form(await request.body()), ui, kind="takedown")
         if ok:
-            return RedirectResponse(legal.link("takedown", ui) + ("&" if ui == "en" else "?") + "sent=1", status_code=303)
+            return RedirectResponse(legal.link("takedown", ui, "sent=1"), status_code=303)
         return HTMLResponse(legal.page_html("takedown", pages.site_base(request), ui, conn=conn, values=values, error=err),
                             status_code=400)
 
@@ -494,7 +494,7 @@ def create_app() -> FastAPI:
             return HTMLResponse(pages.not_found_html(pages.visitor_ui(request, lang)), status_code=404)
         canon = pages.canonical_path(row)
         if "/book/%d/%s" % (book_id, quote(unquote(slug))) != canon if slug else True:
-            target = canon + (("?lang=" + lang) if lang in ("ar", "en") else "")
+            target = canon + (("?lang=" + lang) if lang in pages.UI_LANGS else "")
             return RedirectResponse(target, status_code=301)
         stats.track_visitor(conn, request)
         stats.add_view(conn, request, book_id)

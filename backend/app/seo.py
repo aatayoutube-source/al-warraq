@@ -18,8 +18,9 @@ from urllib.parse import quote
 from . import content, legal, modern
 from .wikisource import WS_KIND
 from .catalog import ARABIC_CAT, CATEGORIES
-from .pages import (ARTICLES_NAME, BRAND, CSS, INFEED_AT, INFEED_MIN, LOGO_SVG, SEARCH_ICON, T, _authors, ad_head, ad_unit,
-                    analytics_head, book_author, book_title, canonical_path, esc, infeed_meta, infeed_unit, legal_links, site_head)
+from .pages import (ARTICLES_NAME, BRAND, CSS, INFEED_AT, INFEED_MIN, LOGO_SVG, OG_LOCALE, SEARCH_ICON, T, UI_LANG_SHORT, UI_LANGS,
+                    _authors, ad_head, ad_unit, analytics_head, book_author, book_title, canonical_path, esc, infeed_meta, infeed_unit,
+                    lang_menu, lang_q, legal_links, own_text, site_head)
 
 PER_PAGE = 60
 MAX_PAGES = 200  # category pages go this deep; the sitemaps list every single book anyway
@@ -56,7 +57,110 @@ S = {
         "home_d": "Al-Warraq Library (مكتبة الوراق): over a million free public-domain books, Arabic poetry and modern Arabic "
                   "books, with covers and categories, linked to their legal sources.",
     },
+    "zh": {
+        "cat_h": "{c}：免费图书", "cat_d": "“{c}”类别中的{n}，均为免费的公有领域作品，可在开放来源阅读全文。",
+        "n_books": "{n} 本图书", "n_poems": "和 {p} 首诗歌",
+        "auth_h": "{a}的作品", "auth_d": "{a}的 {n} 部公有领域作品，可在开放来源免费阅读。",
+        "cat_hm": "{c}：图书", "cat_dm": "“{c}”类别中的{n}：既有可免费阅读的公有领域图书，也有现代阿拉伯语图书，并附上它们在合法来源上的页面链接。",
+        "auth_dm": "Al-Warraq 图书馆收录的{a}的 {n} 部作品，并附上它们在开放、合法来源上的链接。",
+        "cats": "分类", "authors": "著名作者", "prev": "上一页", "next": "下一页", "page": "第 {p} 页",
+        "open": "在图书馆中浏览", "home_t": "Al-Warraq 图书馆 | 免费的公有领域图书与阿拉伯语诗歌",
+        "intro_h": "什么是 Al-Warraq 图书馆？", "arts_h": "图书馆文章精选", "arts_all": "全部文章",
+        "cat_about": "关于这个分类", "auth_about": "关于作者",
+        "arts_t": "Al-Warraq 图书馆文章：阅读指南、图书与诗人", "arts_d": "Al-Warraq 图书馆的原创文章（阿拉伯语）：公有领域图书阅读指南、阿拉伯诗歌、经典小说与图书馆的历史。",
+        "arts_lead": "我们撰写这些文章，帮助你挑选和阅读：实用指南、作家与作品介绍，以及阿拉伯图书史上的篇章。",
+        "minutes": "阅读约 {n} 分钟", "more_arts": "更多文章", "arts_lang": "这些文章以阿拉伯语撰写。",
+        "home_og": "Al-Warraq 图书馆 | مكتبة الوراق",
+        "home_d": "Al-Warraq 图书馆（مكتبة الوراق）：超过一百万本免费的公有领域图书、阿拉伯语诗歌和现代阿拉伯语图书，附封面和分类，并链接到它们的合法来源。",
+    },
+    "fr": {
+        "cat_h": "{c} : livres gratuits", "cat_d": "{n} dans « {c} », gratuits et du domaine public, à lire en entier à leurs sources ouvertes.",
+        "n_books": "{n} livres", "n_poems": " et {p} poèmes",
+        "auth_h": "Livres de {a}", "auth_d": "{n} œuvres de {a} du domaine public, à lire gratuitement à leurs sources ouvertes.",
+        "cat_hm": "{c} : livres", "cat_dm": "{n} dans « {c} » : des livres du domaine public à lire gratuitement, et des livres arabes modernes avec des liens vers leurs pages chez des sources légales.",
+        "auth_dm": "{n} œuvres de {a} à la Bibliothèque Al-Warraq, avec des liens vers leurs sources ouvertes et légales.",
+        "cats": "Catégories", "authors": "Auteurs célèbres", "prev": "Précédent", "next": "Suivant", "page": "page {p}",
+        "open": "Parcourir dans la bibliothèque", "home_t": "Bibliothèque Al-Warraq | Livres gratuits du domaine public et poésie arabe",
+        "intro_h": "Qu’est-ce que la Bibliothèque Al-Warraq ?", "arts_h": "Articles de la bibliothèque", "arts_all": "Tous les articles",
+        "cat_about": "À propos de cette catégorie", "auth_about": "À propos de l’auteur",
+        "arts_t": "Articles de la Bibliothèque Al-Warraq : guides de lecture, livres et poètes", "arts_d": "Articles originaux de la Bibliothèque Al-Warraq (en arabe) : guides des livres du domaine public, poésie arabe, romans classiques et histoire des bibliothèques.",
+        "arts_lead": "Des articles que nous écrivons pour vous aider à choisir et à lire : guides pratiques, présentations d’auteurs et d’œuvres, et pages d’histoire du livre arabe.",
+        "minutes": "{n} min de lecture", "more_arts": "Autres articles", "arts_lang": "Les articles sont rédigés en arabe.",
+        "home_og": "Bibliothèque Al-Warraq | مكتبة الوراق",
+        "home_d": "Bibliothèque Al-Warraq (مكتبة الوراق) : plus d’un million de livres gratuits du domaine public, de la poésie arabe et des "
+                  "livres arabes modernes, avec couvertures et catégories, reliés à leurs sources légales.",
+    },
+    "es": {
+        "cat_h": "{c}: libros gratis", "cat_d": "{n} en «{c}», gratis y de dominio público, para leer completos en sus fuentes abiertas.",
+        "n_books": "{n} libros", "n_poems": " y {p} poemas",
+        "auth_h": "Libros de {a}", "auth_d": "{n} obras de dominio público de {a}, para leer gratis en sus fuentes abiertas.",
+        "cat_hm": "{c}: libros", "cat_dm": "{n} en «{c}»: libros de dominio público para leer gratis y libros árabes modernos con enlaces a sus páginas en fuentes legales.",
+        "auth_dm": "{n} obras de {a} en la Biblioteca Al-Warraq, con enlaces a sus fuentes abiertas y legales.",
+        "cats": "Categorías", "authors": "Autores célebres", "prev": "Anterior", "next": "Siguiente", "page": "página {p}",
+        "open": "Explorar en la biblioteca", "home_t": "Biblioteca Al-Warraq | Libros gratis de dominio público y poesía árabe",
+        "intro_h": "¿Qué es la Biblioteca Al-Warraq?", "arts_h": "Artículos de la biblioteca", "arts_all": "Todos los artículos",
+        "cat_about": "Sobre esta categoría", "auth_about": "Sobre el autor",
+        "arts_t": "Artículos de la Biblioteca Al-Warraq: guías de lectura, libros y poetas", "arts_d": "Artículos originales de la Biblioteca Al-Warraq (en árabe): guías de libros de dominio público, poesía árabe, novelas clásicas e historia de las bibliotecas.",
+        "arts_lead": "Artículos que escribimos para ayudarte a elegir y a leer: guías prácticas, introducciones a autores y obras, y páginas de la historia del libro árabe.",
+        "minutes": "{n} min de lectura", "more_arts": "Más artículos", "arts_lang": "Los artículos están escritos en árabe.",
+        "home_og": "Biblioteca Al-Warraq | مكتبة الوراق",
+        "home_d": "Biblioteca Al-Warraq (مكتبة الوراق): más de un millón de libros gratis de dominio público, poesía árabe y libros árabes "
+                  "modernos, con portadas y categorías, enlazados a sus fuentes legales.",
+    },
+    "pt": {
+        "cat_h": "{c}: livros grátis", "cat_d": "{n} em “{c}”, grátis e em domínio público, para ler na íntegra nas fontes abertas.",
+        "n_books": "{n} livros", "n_poems": " e {p} poemas",
+        "auth_h": "Livros de {a}", "auth_d": "{n} obras de {a} em domínio público, para ler de graça nas fontes abertas.",
+        "cat_hm": "{c}: livros", "cat_dm": "{n} em “{c}”: livros em domínio público para ler de graça e livros árabes modernos com links para as páginas deles em fontes legais.",
+        "auth_dm": "{n} obras de {a} na Biblioteca Al-Warraq, com links para as fontes abertas e legais.",
+        "cats": "Categorias", "authors": "Autores famosos", "prev": "Anterior", "next": "Próxima", "page": "página {p}",
+        "open": "Navegar na biblioteca", "home_t": "Biblioteca Al-Warraq | Livros grátis em domínio público e poesia árabe",
+        "intro_h": "O que é a Biblioteca Al-Warraq?", "arts_h": "Artigos da biblioteca", "arts_all": "Todos os artigos",
+        "cat_about": "Sobre esta categoria", "auth_about": "Sobre o autor",
+        "arts_t": "Artigos da Biblioteca Al-Warraq: guias de leitura, livros e poetas", "arts_d": "Artigos originais da Biblioteca Al-Warraq (em árabe): guias de livros em domínio público, poesia árabe, romances clássicos e a história das bibliotecas.",
+        "arts_lead": "Artigos que escrevemos para ajudar você a escolher e ler: guias práticos, apresentações de autores e obras e páginas da história do livro árabe.",
+        "minutes": "{n} min de leitura", "more_arts": "Mais artigos", "arts_lang": "Os artigos são escritos em árabe.",
+        "home_og": "Biblioteca Al-Warraq | مكتبة الوراق",
+        "home_d": "Biblioteca Al-Warraq (مكتبة الوراق): mais de um milhão de livros grátis em domínio público, poesia árabe e livros árabes "
+                  "modernos, com capas e categorias, ligados às fontes legais.",
+    },
+    "ja": {
+        "cat_h": "{c}：無料の本", "cat_d": "「{c}」の{n}。いずれも無料のパブリックドメイン作品で、公開されている情報源で全文を読めます。",
+        "n_books": "{n}冊の本", "n_poems": "と{p}篇の詩",
+        "auth_h": "{a}の本", "auth_d": "{a}のパブリックドメイン作品{n}点。公開されている情報源で無料で読めます。",
+        "cat_hm": "{c}の本", "cat_dm": "「{c}」の{n}：無料で読めるパブリックドメインの本と、合法的な情報源のページへのリンク付きの現代アラビア語の本。",
+        "auth_dm": "アル・ワッラーク図書館にある{a}の作品{n}点。公開された合法的な情報源へのリンク付き。",
+        "cats": "カテゴリー", "authors": "著名な著者", "prev": "前へ", "next": "次へ", "page": "{p}ページ",
+        "open": "図書館で見る", "home_t": "アル・ワッラーク図書館 | 無料のパブリックドメインの本とアラビア語の詩",
+        "intro_h": "アル・ワッラーク図書館とは？", "arts_h": "図書館の記事から", "arts_all": "すべての記事",
+        "cat_about": "このカテゴリーについて", "auth_about": "著者について",
+        "arts_t": "アル・ワッラーク図書館の記事：読書ガイド、本と詩人", "arts_d": "アル・ワッラーク図書館のオリジナル記事（アラビア語）：パブリックドメインの本のガイド、アラビア語の詩、古典小説、図書館の歴史。",
+        "arts_lead": "本を選び、読むための記事です。実用的なガイド、作家と作品の紹介、そしてアラビア語の本の歴史をお届けします。",
+        "minutes": "約{n}分で読めます", "more_arts": "ほかの記事", "arts_lang": "記事はアラビア語で書かれています。",
+        "home_og": "アル・ワッラーク図書館 | مكتبة الوراق",
+        "home_d": "アル・ワッラーク図書館（مكتبة الوراق）：100万冊以上の無料のパブリックドメインの本、アラビア語の詩、現代アラビア語の本を、"
+                  "表紙とカテゴリー付きで紹介し、合法的な情報源へ案内します。",
+    },
+    "de": {
+        "cat_h": "{c}: kostenlose Bücher", "cat_d": "{n} in „{c}“, kostenlos und gemeinfrei, vollständig an ihren offenen Quellen lesbar.",
+        "n_books": "{n} Bücher", "n_poems": " und {p} Gedichte",
+        "auth_h": "Bücher von {a}", "auth_d": "{n} gemeinfreie Werke von {a}, kostenlos an ihren offenen Quellen lesbar.",
+        "cat_hm": "{c}: Bücher", "cat_dm": "{n} in „{c}“: gemeinfreie Bücher zum kostenlosen Lesen und moderne arabische Bücher mit Links zu ihren Seiten bei legalen Quellen.",
+        "auth_dm": "{n} Werke von {a} in der Bibliothek Al-Warraq, mit Links zu ihren offenen und legalen Quellen.",
+        "cats": "Kategorien", "authors": "Berühmte Autoren", "prev": "Zurück", "next": "Weiter", "page": "Seite {p}",
+        "open": "In der Bibliothek stöbern", "home_t": "Bibliothek Al-Warraq | Kostenlose gemeinfreie Bücher und arabische Dichtung",
+        "intro_h": "Was ist die Bibliothek Al-Warraq?", "arts_h": "Aus den Artikeln der Bibliothek", "arts_all": "Alle Artikel",
+        "cat_about": "Über diese Kategorie", "auth_about": "Über den Autor",
+        "arts_t": "Artikel der Bibliothek Al-Warraq: Leseführer, Bücher und Dichter", "arts_d": "Originalartikel der Bibliothek Al-Warraq (auf Arabisch): Leitfäden zu gemeinfreien Büchern, arabische Dichtung, klassische Romane und die Geschichte der Bibliotheken.",
+        "arts_lead": "Artikel, die wir schreiben, um Ihnen bei Auswahl und Lektüre zu helfen: praktische Leitfäden, Einführungen in Autoren und Werke und Seiten aus der Geschichte des arabischen Buches.",
+        "minutes": "{n} Min. Lesezeit", "more_arts": "Weitere Artikel", "arts_lang": "Die Artikel sind auf Arabisch verfasst.",
+        "home_og": "Bibliothek Al-Warraq | مكتبة الوراق",
+        "home_d": "Bibliothek Al-Warraq (مكتبة الوراق): über eine Million kostenlose gemeinfreie Bücher, arabische Dichtung und moderne "
+                  "arabische Bücher, mit Umschlägen und Kategorien, verlinkt mit ihren legalen Quellen.",
+    },
 }
+for _ui in UI_LANGS:  # a word a language lacks is shown in English
+    S[_ui] = dict(S["en"], **S.get(_ui, {}))
 
 EXTRA_CSS = """
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 4px}
@@ -82,17 +186,18 @@ def _ld(obj) -> str:
 
 
 def _alternates(base: str, path: str, extra: str = "") -> str:
-    """hreflang links: Arabic is the main language of the site, English is ?lang=en."""
-    ar = base + path + (("?" + extra) if extra else "")
-    en = base + path + "?lang=en" + (("&" + extra) if extra else "")
-    return ('<link rel="alternate" hreflang="ar" href="%s">\n<link rel="alternate" hreflang="en" href="%s">\n'
-            '<link rel="alternate" hreflang="x-default" href="%s">' % (esc(ar), esc(en), esc(ar)))
+    """hreflang links: Arabic is the main language of the site (no ?lang=), every other one is ?lang=<code>."""
+    def url(ui):
+        q = lang_q(ui)
+        return base + path + q + (("&" if q else "?") + extra if extra else "")
+    return "\n".join(['<link rel="alternate" hreflang="%s" href="%s">' % (ui, esc(url(ui))) for ui in UI_LANGS]
+                     + ['<link rel="alternate" hreflang="x-default" href="%s">' % esc(url("ar"))])
 
 
 # ---------- the home page: the same file, with the tags only the server can know ----------
 
 _home = {}  # ui -> (file times, index.html with that language's words in place)
-# app.js keeps the interface strings (const T = {ar: {...}, en: {...}}): the server reads them there, one source
+# app.js keeps the interface strings (const T = {ar: {...}, en: {...}, zh: ...}): the server reads them there, one source
 _STRING = re.compile(r"^ +(\w+): '((?:[^'\\]|\\.)*)',?$", re.M)
 _DATA_I = re.compile(r'(<([a-z0-9]+)[^>]*? data-i="(\w+)"[^>]*>)([^<]*)(</\2>)')
 _DATA_IPH = re.compile(r' data-iph="(\w+)"')
@@ -101,16 +206,20 @@ _LHREF = re.compile(r' href="([^"]*)" data-lhref="([^"]*)"')
 
 
 def ui_strings(frontend_dir: str) -> dict:
-    """{"ar": {...}, "en": {...}}: the interface strings of app.js, the very words its script puts in the page."""
+    """{"ar": {...}, "en": {...}, ...}: the interface strings of app.js, the very words its script puts in the page
+    (a word or a language the script lacks is the English one, as the script itself does; Arabic keeps the page's
+    own words instead)."""
     with open(os.path.join(frontend_dir, "app.js"), encoding="utf-8") as f:
         src = f.read()
     table = src[src.index("const T = {"):]
     out = {}
-    for ui in ("ar", "en"):
-        start = table.index("\n        %s: {" % ui)
+    for ui in UI_LANGS:
+        start = table.find("\n        %s: {" % ui)
+        if start < 0:
+            continue
         end = table.index("\n        }", start)
         out[ui] = {k: v.replace("\\'", "'") for k, v in _STRING.findall(table[start:end])}
-    return out
+    return {ui: out.get(ui, {}) if ui == "ar" else dict(out.get("en", {}), **out.get(ui, {})) for ui in UI_LANGS}
 
 
 def _home_template(frontend_dir: str, ui: str) -> str:
@@ -134,15 +243,17 @@ def _home_template(frontend_dir: str, ui: str) -> str:
                                                      if m.group(1) in t else ""), html)
         html = _DATA_IARL.sub(lambda m: ' data-iarl="%s" aria-label="%s"' % (m.group(1), esc(t.get(m.group(1), ""))), html)
         html = re.sub(r'(id="filtBtn"[^>]*>)(</button>)', lambda m: m.group(1) + esc(t.get("filters", "")) + m.group(2), html)
-    if ui == "en":
-        s = S["en"]
-        html = html.replace('<html lang="ar" dir="rtl">', '<html lang="en" dir="ltr">', 1)
+    if ui != "ar":
+        s = S[ui]
+        html = html.replace('<html lang="ar" dir="rtl">', '<html lang="%s" dir="%s">' % (ui, T[ui]["dir"]), 1)
         html = re.sub(r"<title>[^<]*</title>", lambda m: "<title>%s</title>" % esc(s["home_t"]), html, count=1)
         for attr, value in (('name="description"', s["home_d"]), ('property="og:description"', s["home_d"]),
                             ('property="og:title"', s["home_og"]), ('name="twitter:title"', s["home_og"])):
             html = re.sub(r'<meta %s content="[^"]*">' % attr, lambda m: '<meta %s content="%s">' % (attr, esc(value)), html, count=1)
-        html = _LHREF.sub(lambda m: ' href="%s?lang=en" data-lhref="%s"' % (m.group(2), m.group(2)), html)
-        html = html.replace('id="langBtn" type="button" aria-label="Language">EN<', 'id="langBtn" type="button" aria-label="العربية">ع<', 1)
+        html = _LHREF.sub(lambda m: ' href="%s%s" data-lhref="%s"' % (m.group(2), lang_q(ui), m.group(2)), html)
+    # the language menu shows which one this is
+    html = html.replace(' data-ui="%s"' % ui, ' data-ui="%s" aria-current="true"' % ui, 1)
+    html = re.sub(r'(<span id="langCur">)[^<]*(</span>)', lambda m: m.group(1) + esc(UI_LANG_SHORT[ui]) + m.group(2), html, count=1)
     _home[ui] = (key, html)
     return html
 
@@ -154,14 +265,14 @@ def with_nonce(page: str, nonce: str) -> str:
 
 def _home_intro(ui: str) -> str:
     """What the library is (its own words) and its latest articles, for the home page."""
-    s, q = S[ui], ("?lang=en" if ui == "en" else "")
+    s, q = S[ui], lang_q(ui)
     paras = content.home(ui)
     arts = content.articles()[:6]
     if not paras and not arts:
         return ""
     out = '<div class="intro" data-srv-lang="%s">' % ui
     if paras:
-        out += "<h2>%s</h2>%s" % (esc(s["intro_h"]), content.paragraphs(paras))
+        out += "<h2>%s</h2>%s" % (esc(s["intro_h"]), own_text(content.paragraphs(paras), ui))
     if arts:
         out += '<div class="intro-arts"><h3>%s</h3><ul>%s</ul><a class="intro-all" href="/articles%s">%s</a></div>' % (
             esc(s["arts_h"]), "".join('<li><a href="/articles/%s" lang="ar">%s</a></li>' % (esc(a["slug"]), esc(a["title"])) for a in arts),
@@ -170,14 +281,14 @@ def _home_intro(ui: str) -> str:
 
 
 def home_html(frontend_dir: str, base: str, ui: str = "ar", nonce: str = "", search: bool = False) -> str:
-    canon = base + ("/?lang=en" if ui == "en" else "/")
+    canon = base + "/" + lang_q(ui)
     head = "\n".join([
         '<link rel="canonical" href="%s">' % esc(canon),
         _alternates(base, "/"),
         '<meta property="og:url" content="%s">' % esc(canon),
         '<meta property="og:image" content="%s/og-image.png">' % esc(base),
         '<meta property="og:image:width" content="1200">\n<meta property="og:image:height" content="630">',
-        '<meta property="og:locale" content="%s">' % ("en_US" if ui == "en" else "ar_AR"),
+        '<meta property="og:locale" content="%s">' % OG_LOCALE[ui],
         '<meta name="twitter:image" content="%s/og-image.png">' % esc(base),
         verification_meta(),
         analytics_head(),
@@ -185,14 +296,14 @@ def home_html(frontend_dir: str, base: str, ui: str = "ar", nonce: str = "", sea
         infeed_meta() if nonce else "",
         _ld({"@context": "https://schema.org", "@graph": [
             {"@type": "WebSite", "@id": base + "/#site", "url": base + "/", "name": BRAND["ar"], "alternateName": BRAND["en"],
-             "inLanguage": ["ar", "en"], "publisher": {"@id": base + "/#org"},
+             "inLanguage": list(UI_LANGS), "publisher": {"@id": base + "/#org"},
              "potentialAction": {"@type": "SearchAction", "target": base + "/?q={search_term_string}",
                                  "query-input": "required name=search_term_string"}},
             {"@type": "Organization", "@id": base + "/#org", "name": BRAND["ar"], "alternateName": BRAND["en"], "url": base + "/",
              "logo": base + "/icon-512.png"},
         ]}),
     ])
-    links = " ".join('<a href="/category/%s%s">%s</a>' % (k, "?lang=en" if ui == "en" else "", esc(v[ui])) for k, v in CATEGORIES.items())
+    links = " ".join('<a href="/category/%s%s">%s</a>' % (k, lang_q(ui), esc(v[ui])) for k, v in CATEGORIES.items())
     ad = '<div class="wrap">%s</div>' % ad_unit(ui) if nonce and ad_unit(ui) else ""
     page = (_home_template(frontend_dir, ui).replace("<!--SEO:HEAD-->", head).replace("<!--SEO:CATS-->", links)
             .replace("<!--SEO:AD-->", ad).replace("<!--SEO:INTRO-->", _home_intro(ui)))
@@ -206,9 +317,8 @@ def home_html(frontend_dir: str, base: str, ui: str = "ar", nonce: str = "", sea
 def _shell(ui, base, path, title, desc, body, ld, page=1, extra_q="", extra_css="", nonce="", robots="", canonical="",
            alternates=True):
     t = T[ui]
-    canon = base + path + "?" + "&".join(x for x in (("lang=en" if ui == "en" else ""), ("page=%d" % page if page > 1 else "")) if x)
+    canon = base + path + "?" + "&".join(x for x in (lang_q(ui)[1:], ("page=%d" % page if page > 1 else "")) if x)
     canon = canonical or canon.rstrip("?")
-    other = "en" if ui == "ar" else "ar"
     return """<!doctype html>
 <html lang="{ui}" dir="{dir}">
 <head>
@@ -238,7 +348,7 @@ def _shell(ui, base, path, title, desc, body, ld, page=1, extra_q="", extra_css=
 <body>
 <header class="bar"><div class="wrap"><a class="brand" href="/">{logo}<span>{brand}</span></a>
 <form class="sbox" action="/#browse" method="get" role="search">{icon}<input type="search" name="q" placeholder="{ph}" aria-label="{ph}"><button type="submit">{search}</button></form>
-<nav><a href="/#browse">{all}</a><a href="{toggle}" hreflang="{other}">{other_lang}</a></nav></div></header>
+<nav><a href="/#browse">{all}</a>{menu}</nav></div></header>
 <main class="wrap">
 {body}
 <footer>{legal}<p>{note}</p></footer>
@@ -248,8 +358,7 @@ def _shell(ui, base, path, title, desc, body, ld, page=1, extra_q="", extra_css=
 """.format(ui=ui, dir=t["dir"], title=esc(title), desc=esc(desc), canon=esc(canon), alts=_alternates(base, path) if alternates else "",
            robots=('<meta name="robots" content="%s">\n' % esc(robots)) if robots else "",
            brand=esc(BRAND[ui]), base=esc(base), ld=ld, css=CSS, extra=EXTRA_CSS + extra_css, logo=LOGO_SVG, icon=SEARCH_ICON,
-           ph=esc(t["ph"]), search=esc(t["search"]), all=esc(t["all"]), other=other, other_lang=esc(t["other_lang"]),
-           toggle=esc(path + ("?lang=en" if other == "en" else "")),
+           ph=esc(t["ph"]), search=esc(t["search"]), all=esc(t["all"]), menu=lang_menu(ui, lambda c: path + "?lang=" + c),
            body=body.replace("<!--SEO:AD-->", ad_unit(ui) if nonce else "").replace("<!--SEO:FEED-->", infeed_unit(ui) if nonce else ""),
            note=esc(t["note"]), legal=legal_links(ui), adsense=site_head(), ad_head=ad_head() if nonce else "")
 
@@ -266,7 +375,7 @@ def _book_list(conn, rows, ui) -> str:
 
 
 def _pager(path, ui, page, pages) -> str:
-    s, lang = S[ui], ("lang=en&" if ui == "en" else "")
+    s, lang = S[ui], lang_q(ui, amp=True)
     prev = '<a rel="prev" href="%s?%spage=%d">%s</a>' % (path, lang, page - 1, s["prev"]) if page > 1 else "<span></span>"
     nxt = '<a rel="next" href="%s?%spage=%d">%s</a>' % (path, lang, page + 1, s["next"]) if page < pages else "<span></span>"
     return '<nav class="pager">%s%s</nav>' % (prev, nxt)
@@ -302,12 +411,12 @@ def category_page(conn, key: str, base: str, ui: str = "ar", page: int = 1, nonc
     poems = conn.execute("SELECT COUNT(*) FROM books WHERE curated=?", (WS_KIND,)).fetchone()[0] if key in (ARABIC_CAT, "poe") else 0
     n = s["n_books"].format(n="{:,}".format(total - poems)) + (s["n_poems"].format(p="{:,}".format(poems)) if poems else "")
     desc = s["cat_d"].format(n=n, c=name)
-    chips = "".join('<a href="/category/%s%s"%s>%s</a>' % (k, "?lang=en" if ui == "en" else "", ' aria-current="page"' if k == key else "", esc(v[ui]))
+    chips = "".join('<a href="/category/%s%s"%s>%s</a>' % (k, lang_q(ui), ' aria-current="page"' if k == key else "", esc(v[ui]))
                     for k, v in CATEGORIES.items())
     body = ('<p class="crumbs"><a href="/">%s</a> / %s</p><h1>%s</h1><p class="desc">%s <a href="/?cat=%s#browse">%s</a></p>'
             '<nav class="chips" aria-label="%s">%s</nav>%s<!--SEO:AD-->%s%s'
             % (esc(T[ui]["home"]), esc(name), esc(s["cat_h"].format(c=name)), esc(desc), key, esc(s["open"]), esc(s["cats"]), chips,
-               _text_section(s["cat_about"], content.category(key, ui)) if page == 1 else "",
+               _text_section(s["cat_about"], content.category(key, ui), ui) if page == 1 else "",
                _book_list(conn, rows, ui), _pager(path, ui, page, pages)))
     ld = _ld({"@context": "https://schema.org", "@graph": [
         {"@type": "CollectionPage", "name": title, "description": desc, "url": base + path, "inLanguage": ui,
@@ -332,13 +441,13 @@ def author_page(conn, key: str, base: str, ui: str = "ar", page: int = 1, nonce:
     title = s["auth_h"].format(a=name) + ((" (%s)" % a["years"]) if a["years"] else "") + ((" — " + s["page"].format(p=page)) if page > 1 else "") + " | " + BRAND[ui]
     desc = s["auth_d"].format(n="{:,}".format(total), a=name)
     others = conn.execute("SELECT key, en, ar FROM authors ORDER BY ord LIMIT 40").fetchall()
-    chips = "".join('<a href="/author/%s%s">%s</a>' % (quote(o["key"]), "?lang=en" if ui == "en" else "", esc(o["ar"] if ui == "ar" else o["en"]))
+    chips = "".join('<a href="/author/%s%s">%s</a>' % (quote(o["key"]), lang_q(ui), esc(o["ar"] if ui == "ar" else o["en"]))
                     for o in others if o["key"] != key)
     bio = content.author(key, ui)
     body = ('<p class="crumbs"><a href="/">%s</a> / %s</p><h1>%s</h1><p class="desc">%s <a href="/?ak=%s#browse">%s</a></p>%s<!--SEO:AD-->%s%s'
             '<h2>%s</h2><nav class="chips">%s</nav>'
             % (esc(T[ui]["home"]), esc(name), esc(s["auth_h"].format(a=name)), esc(desc), esc(quote(key)), esc(s["open"]),
-               _text_section(s["auth_about"], bio) if page == 1 else "",
+               _text_section(s["auth_about"], bio, ui) if page == 1 else "",
                _book_list(conn, rows, ui), _pager(path, ui, page, pages), esc(s["authors"]), chips))
     person = {"@type": "Person", "name": a["en"], "alternateName": a["ar"]}
     if bio:
@@ -350,8 +459,8 @@ def author_page(conn, key: str, base: str, ui: str = "ar", page: int = 1, nonce:
     return with_nonce(_shell(ui, base, path, title, desc, body, ld, page, nonce=nonce if not robots else "", robots=robots), nonce)
 
 
-def _text_section(heading: str, paras) -> str:
-    return '<section class="intro"><h2>%s</h2>%s</section>' % (esc(heading), content.paragraphs(paras)) if paras else ""
+def _text_section(heading: str, paras, ui: str) -> str:
+    return '<section class="intro"><h2>%s</h2>%s</section>' % (esc(heading), own_text(content.paragraphs(paras), ui)) if paras else ""
 
 
 def _plain_text(text: str) -> str:
@@ -388,7 +497,7 @@ def _minutes(words: int) -> int:
 
 
 def articles_page(base: str, ui: str, nonce: str = "") -> str:
-    s, q = S[ui], ("?lang=en" if ui == "en" else "")
+    s, q = S[ui], lang_q(ui)
     arts = content.articles()
     items = "".join(
         '<li><a href="/articles/%s%s" lang="ar">%s</a><p lang="ar">%s</p><small>%s · %s</small></li>'
@@ -411,7 +520,7 @@ def article_page(slug: str, base: str, ui: str, nonce: str = ""):
     a = content.article(slug)
     if not a:
         return None
-    s, q = S[ui], ("?lang=en" if ui == "en" else "")
+    s, q = S[ui], lang_q(ui)
     html_body = content.render(a["body"])
     # one ad after the second section, one at the end: well apart from the title, three at most on the page
     parts = html_body.split("<h2>")
@@ -451,18 +560,18 @@ def robots_txt(base: str) -> str:
 
 
 def main_urls(conn, base: str):
-    urls = [base + "/", base + "/?lang=en"]
+    urls = [base + "/" + lang_q(ui) for ui in UI_LANGS]
     for p in legal.PAGES:
         if p not in legal.THIN_PAGES:  # the forms (contact, takedown) are not pages to find in a search engine
-            urls += [base + "/" + p, base + "/" + p + "?lang=en"]
+            urls += [base + "/" + p + lang_q(ui) for ui in UI_LANGS]
     urls.append(base + "/articles")
     urls += [base + "/articles/" + a["slug"] for a in content.articles()]
     for k in CATEGORIES:
-        urls += [base + "/category/" + k, base + "/category/" + k + "?lang=en"]
+        urls += [base + "/category/" + k + lang_q(ui) for ui in UI_LANGS]
     for r in conn.execute("SELECT key FROM authors a WHERE EXISTS (SELECT 1 FROM books WHERE author_key=a.key) ORDER BY ord"):
-        for ui, q in (("ar", ""), ("en", "?lang=en")):
-            if author_indexable(conn, r["key"], ui):
-                urls.append(base + "/author/" + quote(r["key"]) + q)
+        # the other languages show the English page's texts and titles: what holds for English holds for them
+        ok = {ui: author_indexable(conn, r["key"], ui) for ui in ("ar", "en")}
+        urls += [base + "/author/" + quote(r["key"]) + lang_q(ui) for ui in UI_LANGS if ok[content.text_ui(ui)]]
     return urls
 
 

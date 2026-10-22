@@ -110,7 +110,8 @@
             p_cited: '{n} استشهاد',
             r_open: '↗',
             legal1: 'جميع الروابط تقود إلى مواقع خارجية. المكتبة لا تستضيف ملفات، وتعرض أعمال الملك العام، أما الكتب الحديثة فنعرض بيانات فهرستها فقط ونوصلك إلى مصادرها القانونية.',
-            legal2: 'حالة الملك العام تختلف من بلد لآخر (مشروع غوتنبرغ يتبع القانون الأمريكي). تحقق من قانون بلدك قبل إعادة النشر.'
+            legal2: 'حالة الملك العام تختلف من بلد لآخر (مشروع غوتنبرغ يتبع القانون الأمريكي). تحقق من قانون بلدك قبل إعادة النشر.',
+            lang_menu: 'اللغة'
         },
         en: {
             brand: 'Al-Warraq Library',
@@ -215,17 +216,657 @@
             p_cited: '{n} citations',
             r_open: '↗',
             legal1: 'All links lead to external sites. This library hosts no files; it lists public-domain works, and for modern books only their catalogue record with a link to a legal source.',
-            legal2: 'Public-domain status differs by country (Project Gutenberg follows US law). Check your local law before republishing.'
+            legal2: 'Public-domain status differs by country (Project Gutenberg follows US law). Check your local law before republishing.',
+            lang_menu: 'Language'
+        },
+        zh: {
+            brand: 'Al-Warraq 图书馆',
+            brand_sub: '公有领域图书与诗歌',
+            theme: '切换主题',
+            nav_browse: '图书',
+            nav_poetry: '诗歌',
+            nav_authors: '作者',
+            nav_research: '研究',
+            ph: '搜索书名或作者',
+            search: '搜索',
+            eyebrow: '公有领域图书',
+            h1: '阅读已脱离版权的作品',
+            lede: '一个开放的索引，收录超过一百万本图书、数万首阿拉伯语诗歌和数千本现代阿拉伯语图书，附封面和分类，并链接到它们在合法原始来源上的页面。',
+            quick: '从这里开始：',
+            st_books: '本图书',
+            st_auth: '位作者',
+            st_lang: '种语言',
+            f_cat: '分类',
+            cats_h: '按分类浏览',
+            cats_p: '选择一个分类，直接查看其中的图书。',
+            poems_tag: '维基文库新增',
+            poems_h: '阿拉伯诗歌集',
+            poems_lead: '{n} 首阿拉伯伟大诗人的诗作，从前伊斯兰时期到现代，均可在维基文库阅读全文。选择一位诗人，浏览其诗作。',
+            poems_n: '{n} 首诗',
+            browse_h: '全部图书',
+            browse_p: '搜索并按分类和语言筛选，然后直接在来源处打开图书。',
+            foot_about: '一个开放的阿拉伯语索引，收录公有领域的图书和诗歌，以及现代阿拉伯语图书。我们不存放文件，每个链接都通向原始来源。',
+            foot_src: '来源',
+            foot_cats: '浏览分类',
+            foot_pages: '图书馆页面',
+            pg_about: '关于我们',
+            pg_privacy: '隐私政策',
+            pg_terms: '使用条款',
+            pg_contact: '联系我们',
+            pg_articles: '文章',
+            pg_takedown: '内容移除申请',
+            ws_name: '维基文库（阿拉伯语）',
+            pop_h: '最多浏览',
+            pop_s: '热门搜索',
+            v_h: '网站访客',
+            v_today: '今日访客',
+            v_month: '本月访客',
+            v_year: '今年访客',
+            n_books: '{n} 本图书',
+            n_poems: '{n} 首诗',
+            results_mix: '{b} 本图书和 {p} 首诗',
+            f_lang: '图书语言',
+            f_org: '起源',
+            f_sort: '排序',
+            all: '全部',
+            all_cats: '全部分类',
+            org_a: '阿拉伯与伊斯兰遗产',
+            org_w: '世界文学与科学',
+            sort_def: '默认',
+            sort_t: '书名',
+            sort_a: '作者',
+            clear: '清除筛选',
+            filters: '筛选',
+            results: '{n} 本图书',
+            results_more: '超过 {n} 本图书',
+            ad: '广告',
+            near_all: '没有与“{q}”完全匹配的结果：{n} 个相近结果',
+            near_some: '其中 {n} 个拼写略有不同',
+            loading: '加载中…',
+            more: '显示更多',
+            none: '索引中没有匹配结果。请试试上方的完整来源。',
+            none_f: '没有同时符合所有所选筛选条件的图书。',
+            clear_f: '清除筛选并显示所有图书',
+            err: '无法连接到服务器。',
+            retry: '重试',
+            beyond: '在完整来源中搜索“{q}”',
+            l_gut: '古腾堡',
+            l_arch: '互联网档案馆',
+            l_ol: 'Open Library',
+            l_ws: '维基文库',
+            l_page: '图书页面',
+            l_ht: '其他副本',
+            read: '阅读',
+            find: '查找本书',
+            view: '查看',
+            src_saf: 'Safahat（Hindawi）',
+            authors_h: '著名作者与人物',
+            authors_p: '选择一个名字，查看其作品。',
+            show_all: '显示全部（{n}）',
+            show_less: '收起',
+            books_n: '{n} 本图书',
+            research_h: '开放研究台',
+            research_p: '输入主题并选择来源。每个链接都会打开一个免费、合法的论文和图书数据库。',
+            med_h: '医学研究',
+            med_p: '可免费阅读全文的生物医学论文和图书。',
+            eng_h: '工程研究',
+            eng_p: '开放的工程与技术论文、报告和课程。',
+            r_ph: '输入主题（英文效果最好），或从下方选择',
+            also_src: '也可以在开放数据库中搜索：',
+            p_loading: '正在查找论文…',
+            p_found: '关于“{q}”的开放论文共 {n} 篇，最相关的是：',
+            p_none: '没有关于这个主题的论文。请换个词，或从下方选择一个主题。',
+            p_err: '暂时无法加载论文。请试试下方的数据库。',
+            p_read: '阅读论文',
+            p_pdf: '免费 PDF',
+            p_cited: '{n} 次引用',
+            r_open: '↗',
+            legal1: '所有链接都通向外部网站。本图书馆不存放任何文件；它列出公有领域作品，对于现代图书，只提供书目信息和指向合法来源的链接。',
+            legal2: '公有领域的认定因国家而异（古腾堡计划遵循美国法律）。转载前请先了解你所在地的法律。',
+            lang_menu: '语言'
+        },
+        fr: {
+            brand: 'Bibliothèque Al-Warraq',
+            brand_sub: 'Livres et poésie du domaine public',
+            theme: 'Changer de thème',
+            nav_browse: 'Livres',
+            nav_poetry: 'Poésie',
+            nav_authors: 'Auteurs',
+            nav_research: 'Recherche',
+            ph: 'Rechercher un titre ou un auteur',
+            search: 'Rechercher',
+            eyebrow: 'Livres du domaine public',
+            h1: 'Lisez ce qui est libre de droits',
+            lede: 'Un index ouvert de plus d’un million de livres, de dizaines de milliers de poèmes arabes et de milliers de livres arabes modernes, avec couvertures et catégories, qui renvoie vers leurs pages aux sources d’origine légales.',
+            quick: 'Pour commencer :',
+            st_books: 'livres',
+            st_auth: 'auteurs',
+            st_lang: 'langues',
+            f_cat: 'Catégorie',
+            cats_h: 'Parcourir par catégorie',
+            cats_p: 'Choisissez une catégorie pour accéder directement à ses livres.',
+            poems_tag: 'Nouveau sur Wikisource',
+            poems_h: 'La poésie arabe',
+            poems_lead: '{n} poèmes des grands poètes arabes, de l’époque préislamique à nos jours, à lire en entier sur Wikisource. Choisissez un poète pour parcourir ses poèmes.',
+            poems_n: '{n} poèmes',
+            browse_h: 'Tous les livres',
+            browse_p: 'Cherchez, filtrez par catégorie et par langue, puis ouvrez le livre à sa source.',
+            foot_about: 'Un index arabe ouvert des livres et poèmes du domaine public, et des livres arabes modernes. Nous n’hébergeons aucun fichier : chaque lien mène à la source d’origine.',
+            foot_src: 'Sources',
+            foot_cats: 'Parcourir les catégories',
+            foot_pages: 'Pages de la bibliothèque',
+            pg_about: 'À propos',
+            pg_privacy: 'Politique de confidentialité',
+            pg_terms: 'Conditions d’utilisation',
+            pg_contact: 'Nous contacter',
+            pg_articles: 'Articles',
+            pg_takedown: 'Demande de retrait',
+            ws_name: 'Wikisource (arabe)',
+            pop_h: 'Les plus consultés',
+            pop_s: 'Recherches populaires',
+            v_h: 'Visiteurs du site',
+            v_today: 'visiteurs aujourd’hui',
+            v_month: 'visiteurs ce mois-ci',
+            v_year: 'visiteurs cette année',
+            n_books: '{n} livres',
+            n_poems: '{n} poèmes',
+            results_mix: '{b} livres et {p} poèmes',
+            f_lang: 'Langue du livre',
+            f_org: 'Origine',
+            f_sort: 'Trier par',
+            all: 'Tout',
+            all_cats: 'Toutes les catégories',
+            org_a: 'Patrimoine arabe et islamique',
+            org_w: 'Littérature et science du monde',
+            sort_def: 'Par défaut',
+            sort_t: 'Titre',
+            sort_a: 'Auteur',
+            clear: 'Effacer les filtres',
+            filters: 'Filtres',
+            results: '{n} livres',
+            results_more: 'Plus de {n} livres',
+            ad: 'Publicités',
+            near_all: 'Aucun résultat exact pour « {q} » : {n} résultats proches',
+            near_some: 'dont {n} avec une orthographe un peu différente',
+            loading: 'Chargement…',
+            more: 'Afficher plus',
+            none: 'Aucun résultat dans l’index. Essayez les sources complètes ci-dessus.',
+            none_f: 'Aucun livre ne correspond à tous les filtres choisis.',
+            clear_f: 'Effacer les filtres et afficher tous les livres',
+            err: 'Impossible de joindre le serveur.',
+            retry: 'Réessayer',
+            beyond: 'Chercher « {q} » dans les sources complètes',
+            l_gut: 'Gutenberg',
+            l_arch: 'Internet Archive',
+            l_ol: 'Open Library',
+            l_ws: 'Wikisource',
+            l_page: 'Page du livre',
+            l_ht: 'Autres exemplaires',
+            read: 'Lire',
+            find: 'Trouver le livre',
+            view: 'Voir',
+            src_saf: 'Safahat (Hindawi)',
+            authors_h: 'Auteurs et figures célèbres',
+            authors_p: 'Choisissez un nom pour voir ses œuvres.',
+            show_all: 'Tout afficher ({n})',
+            show_less: 'Afficher moins',
+            books_n: '{n} livres',
+            research_h: 'Bureau de la recherche ouverte',
+            research_p: 'Tapez un sujet et choisissez une source. Chaque lien ouvre une base gratuite et légale d’articles et de livres.',
+            med_h: 'Recherche médicale',
+            med_p: 'Articles et livres biomédicaux en texte intégral gratuit.',
+            eng_h: 'Recherche en ingénierie',
+            eng_p: 'Articles, rapports et cours ouverts en ingénierie et technologie.',
+            r_ph: 'Tapez un sujet (de préférence en anglais) ou choisissez-en un ci-dessous',
+            also_src: 'Cherchez aussi dans les bases ouvertes :',
+            p_loading: 'Recherche d’articles…',
+            p_found: '{n} articles ouverts sur « {q} ». Les plus pertinents :',
+            p_none: 'Aucun article sur ce sujet. Essayez d’autres mots ou choisissez un sujet ci-dessous.',
+            p_err: 'Impossible de charger les articles pour le moment. Essayez les bases ci-dessous.',
+            p_read: 'Lire l’article',
+            p_pdf: 'PDF gratuit',
+            p_cited: '{n} citations',
+            r_open: '↗',
+            legal1: 'Tous les liens mènent à des sites externes. Cette bibliothèque n’héberge aucun fichier ; elle répertorie des œuvres du domaine public et, pour les livres modernes, seulement leur notice avec un lien vers une source légale.',
+            legal2: 'Le statut de domaine public varie selon les pays (le Projet Gutenberg suit le droit américain). Vérifiez la loi de votre pays avant toute republication.',
+            lang_menu: 'Langue'
+        },
+        es: {
+            brand: 'Biblioteca Al-Warraq',
+            brand_sub: 'Libros y poesía de dominio público',
+            theme: 'Cambiar tema',
+            nav_browse: 'Libros',
+            nav_poetry: 'Poesía',
+            nav_authors: 'Autores',
+            nav_research: 'Investigación',
+            ph: 'Busca un título o un autor',
+            search: 'Buscar',
+            eyebrow: 'Libros de dominio público',
+            h1: 'Lee lo que ya no tiene derechos de autor',
+            lede: 'Un índice abierto de más de un millón de libros, decenas de miles de poemas árabes y miles de libros árabes modernos, con portadas y categorías, que enlaza a sus páginas en fuentes originales legales.',
+            quick: 'Empieza por aquí:',
+            st_books: 'libros',
+            st_auth: 'autores',
+            st_lang: 'idiomas',
+            f_cat: 'Categoría',
+            cats_h: 'Explora por categoría',
+            cats_p: 'Elige una categoría para ir directamente a sus libros.',
+            poems_tag: 'Novedad de Wikisource',
+            poems_h: 'La poesía árabe',
+            poems_lead: '{n} poemas de los grandes poetas árabes, desde la época preislámica hasta la actualidad, para leer completos en Wikisource. Elige un poeta para ver sus poemas.',
+            poems_n: '{n} poemas',
+            browse_h: 'Todos los libros',
+            browse_p: 'Busca, filtra por categoría e idioma, y abre el libro en su fuente.',
+            foot_about: 'Un índice árabe abierto de libros y poemas de dominio público, y de libros árabes modernos. No alojamos archivos: cada enlace lleva a la fuente original.',
+            foot_src: 'Fuentes',
+            foot_cats: 'Explorar categorías',
+            foot_pages: 'Páginas de la biblioteca',
+            pg_about: 'Quiénes somos',
+            pg_privacy: 'Política de privacidad',
+            pg_terms: 'Términos de uso',
+            pg_contact: 'Contacto',
+            pg_articles: 'Artículos',
+            pg_takedown: 'Solicitud de retirada',
+            ws_name: 'Wikisource (árabe)',
+            pop_h: 'Lo más visto',
+            pop_s: 'Búsquedas populares',
+            v_h: 'Visitantes del sitio',
+            v_today: 'visitantes hoy',
+            v_month: 'visitantes este mes',
+            v_year: 'visitantes este año',
+            n_books: '{n} libros',
+            n_poems: '{n} poemas',
+            results_mix: '{b} libros y {p} poemas',
+            f_lang: 'Idioma del libro',
+            f_org: 'Origen',
+            f_sort: 'Ordenar por',
+            all: 'Todos',
+            all_cats: 'Todas las categorías',
+            org_a: 'Patrimonio árabe e islámico',
+            org_w: 'Literatura y ciencia universales',
+            sort_def: 'Predeterminado',
+            sort_t: 'Título',
+            sort_a: 'Autor',
+            clear: 'Borrar filtros',
+            filters: 'Filtros',
+            results: '{n} libros',
+            results_more: 'Más de {n} libros',
+            ad: 'Anuncios',
+            near_all: 'No hay coincidencias exactas para «{q}»: {n} resultados parecidos',
+            near_some: '{n} de ellos con una ortografía algo distinta',
+            loading: 'Cargando…',
+            more: 'Mostrar más',
+            none: 'No hay resultados en el índice. Prueba las fuentes completas de arriba.',
+            none_f: 'Ningún libro cumple todos los filtros elegidos a la vez.',
+            clear_f: 'Borra los filtros y muestra todos los libros',
+            err: 'No se pudo conectar con el servidor.',
+            retry: 'Reintentar',
+            beyond: 'Busca «{q}» en las fuentes completas',
+            l_gut: 'Gutenberg',
+            l_arch: 'Internet Archive',
+            l_ol: 'Open Library',
+            l_ws: 'Wikisource',
+            l_page: 'Página del libro',
+            l_ht: 'Otras copias',
+            read: 'Leer',
+            find: 'Buscar el libro',
+            view: 'Ver',
+            src_saf: 'Safahat (Hindawi)',
+            authors_h: 'Autores y figuras célebres',
+            authors_p: 'Elige un nombre para ver sus obras.',
+            show_all: 'Mostrar todos ({n})',
+            show_less: 'Mostrar menos',
+            books_n: '{n} libros',
+            research_h: 'Mesa de investigación abierta',
+            research_p: 'Escribe un tema y elige una fuente. Cada enlace abre una base de datos gratuita y legal de artículos y libros.',
+            med_h: 'Investigación médica',
+            med_p: 'Artículos y libros biomédicos con texto completo gratuito.',
+            eng_h: 'Investigación en ingeniería',
+            eng_p: 'Artículos, informes y cursos abiertos de ingeniería y tecnología.',
+            r_ph: 'Escribe un tema (mejor en inglés) o elige uno abajo',
+            also_src: 'Busca también en las bases de datos abiertas:',
+            p_loading: 'Buscando artículos…',
+            p_found: '{n} artículos abiertos sobre «{q}». Los más relevantes:',
+            p_none: 'No hay artículos sobre este tema. Prueba otras palabras o elige un tema abajo.',
+            p_err: 'No se pudieron cargar los artículos ahora. Prueba las bases de datos de abajo.',
+            p_read: 'Leer el artículo',
+            p_pdf: 'PDF gratis',
+            p_cited: '{n} citas',
+            r_open: '↗',
+            legal1: 'Todos los enlaces llevan a sitios externos. Esta biblioteca no aloja archivos; recoge obras de dominio público y, de los libros modernos, solo su ficha de catálogo con un enlace a una fuente legal.',
+            legal2: 'La condición de dominio público cambia según el país (el Proyecto Gutenberg sigue la ley de EE. UU.). Consulta la ley de tu país antes de volver a publicar.',
+            lang_menu: 'Idioma'
+        },
+        pt: {
+            brand: 'Biblioteca Al-Warraq',
+            brand_sub: 'Livros e poesia em domínio público',
+            theme: 'Mudar tema',
+            nav_browse: 'Livros',
+            nav_poetry: 'Poesia',
+            nav_authors: 'Autores',
+            nav_research: 'Pesquisa',
+            ph: 'Pesquise um título ou um autor',
+            search: 'Pesquisar',
+            eyebrow: 'Livros em domínio público',
+            h1: 'Leia o que já saiu dos direitos autorais',
+            lede: 'Um índice aberto de mais de um milhão de livros, dezenas de milhares de poemas árabes e milhares de livros árabes modernos, com capas e categorias, que leva às páginas deles em fontes originais legais.',
+            quick: 'Comece por aqui:',
+            st_books: 'livros',
+            st_auth: 'autores',
+            st_lang: 'idiomas',
+            f_cat: 'Categoria',
+            cats_h: 'Navegue por categoria',
+            cats_p: 'Escolha uma categoria para ir direto aos livros dela.',
+            poems_tag: 'Novo no Wikisource',
+            poems_h: 'A poesia árabe',
+            poems_lead: '{n} poemas dos grandes poetas árabes, da era pré-islâmica aos dias de hoje, para ler na íntegra no Wikisource. Escolha um poeta para ver os poemas dele.',
+            poems_n: '{n} poemas',
+            browse_h: 'Todos os livros',
+            browse_p: 'Pesquise, filtre por categoria e idioma e abra o livro na fonte.',
+            foot_about: 'Um índice árabe aberto de livros e poemas em domínio público e de livros árabes modernos. Não hospedamos arquivos: cada link leva à fonte original.',
+            foot_src: 'Fontes',
+            foot_cats: 'Navegar pelas categorias',
+            foot_pages: 'Páginas da biblioteca',
+            pg_about: 'Sobre nós',
+            pg_privacy: 'Política de privacidade',
+            pg_terms: 'Termos de uso',
+            pg_contact: 'Fale conosco',
+            pg_articles: 'Artigos',
+            pg_takedown: 'Pedido de remoção',
+            ws_name: 'Wikisource (árabe)',
+            pop_h: 'Mais vistos',
+            pop_s: 'Pesquisas populares',
+            v_h: 'Visitantes do site',
+            v_today: 'visitantes hoje',
+            v_month: 'visitantes este mês',
+            v_year: 'visitantes este ano',
+            n_books: '{n} livros',
+            n_poems: '{n} poemas',
+            results_mix: '{b} livros e {p} poemas',
+            f_lang: 'Idioma do livro',
+            f_org: 'Origem',
+            f_sort: 'Ordenar por',
+            all: 'Todos',
+            all_cats: 'Todas as categorias',
+            org_a: 'Patrimônio árabe e islâmico',
+            org_w: 'Literatura e ciência mundiais',
+            sort_def: 'Padrão',
+            sort_t: 'Título',
+            sort_a: 'Autor',
+            clear: 'Limpar filtros',
+            filters: 'Filtros',
+            results: '{n} livros',
+            results_more: 'Mais de {n} livros',
+            ad: 'Anúncios',
+            near_all: 'Nenhum resultado exato para “{q}”: {n} resultados parecidos',
+            near_some: '{n} deles com grafia um pouco diferente',
+            loading: 'Carregando…',
+            more: 'Mostrar mais',
+            none: 'Nenhum resultado no índice. Tente as fontes completas acima.',
+            none_f: 'Nenhum livro atende a todos os filtros escolhidos ao mesmo tempo.',
+            clear_f: 'Limpe os filtros e mostre todos os livros',
+            err: 'Não foi possível conectar ao servidor.',
+            retry: 'Tentar de novo',
+            beyond: 'Pesquise “{q}” nas fontes completas',
+            l_gut: 'Gutenberg',
+            l_arch: 'Internet Archive',
+            l_ol: 'Open Library',
+            l_ws: 'Wikisource',
+            l_page: 'Página do livro',
+            l_ht: 'Outras cópias',
+            read: 'Ler',
+            find: 'Encontrar o livro',
+            view: 'Ver',
+            src_saf: 'Safahat (Hindawi)',
+            authors_h: 'Autores e figuras famosas',
+            authors_p: 'Escolha um nome para ver as obras.',
+            show_all: 'Mostrar todos ({n})',
+            show_less: 'Mostrar menos',
+            books_n: '{n} livros',
+            research_h: 'Central de pesquisa aberta',
+            research_p: 'Digite um tema e escolha uma fonte. Cada link abre uma base de dados gratuita e legal de artigos e livros.',
+            med_h: 'Pesquisa médica',
+            med_p: 'Artigos e livros biomédicos com texto completo gratuito.',
+            eng_h: 'Pesquisa em engenharia',
+            eng_p: 'Artigos, relatórios e cursos abertos de engenharia e tecnologia.',
+            r_ph: 'Digite um tema (de preferência em inglês) ou escolha um abaixo',
+            also_src: 'Pesquise também nas bases de dados abertas:',
+            p_loading: 'Buscando artigos…',
+            p_found: '{n} artigos abertos sobre “{q}”. Os mais relevantes:',
+            p_none: 'Nenhum artigo sobre este tema. Tente outras palavras ou escolha um tema abaixo.',
+            p_err: 'Não foi possível carregar os artigos agora. Tente as bases de dados abaixo.',
+            p_read: 'Ler o artigo',
+            p_pdf: 'PDF grátis',
+            p_cited: '{n} citações',
+            r_open: '↗',
+            legal1: 'Todos os links levam a sites externos. Esta biblioteca não hospeda arquivos; ela lista obras em domínio público e, dos livros modernos, apenas a ficha catalográfica com um link para uma fonte legal.',
+            legal2: 'A condição de domínio público varia de país para país (o Projeto Gutenberg segue a lei dos EUA). Confira a lei do seu país antes de republicar.',
+            lang_menu: 'Idioma'
+        },
+        ja: {
+            brand: 'アル・ワッラーク図書館',
+            brand_sub: 'パブリックドメインの本と詩',
+            theme: 'テーマを切り替える',
+            nav_browse: '本',
+            nav_poetry: '詩',
+            nav_authors: '著者',
+            nav_research: '研究',
+            ph: '書名や著者名で検索',
+            search: '検索',
+            eyebrow: 'パブリックドメインの本',
+            h1: '著作権の切れた名作を読もう',
+            lede: '100万冊以上の本、数万篇のアラビア語の詩、数千冊の現代アラビア語の本を、表紙とカテゴリー付きで収めたオープンな索引です。合法的な元の情報源にあるページへ案内します。',
+            quick: 'ここから始める：',
+            st_books: '冊の本',
+            st_auth: '人の著者',
+            st_lang: '言語',
+            f_cat: 'カテゴリー',
+            cats_h: 'カテゴリーから探す',
+            cats_p: 'カテゴリーを選ぶと、その本が一覧で表示されます。',
+            poems_tag: 'ウィキソースから新着',
+            poems_h: 'アラビア語詩集',
+            poems_lead: 'イスラーム以前から現代まで、アラビアの偉大な詩人による{n}篇の詩を、ウィキソースで全文読めます。詩人を選んで作品を見てみましょう。',
+            poems_n: '{n}篇の詩',
+            browse_h: 'すべての本',
+            browse_p: '検索し、カテゴリーや言語で絞り込んで、元の情報源で本を開きましょう。',
+            foot_about: 'パブリックドメインの本と詩、そして現代アラビア語の本のためのオープンなアラビア語索引です。ファイルは掲載せず、すべてのリンクが元の情報源へつながります。',
+            foot_src: '情報源',
+            foot_cats: 'カテゴリー一覧',
+            foot_pages: '図書館のページ',
+            pg_about: '私たちについて',
+            pg_privacy: 'プライバシーポリシー',
+            pg_terms: '利用規約',
+            pg_contact: 'お問い合わせ',
+            pg_articles: '記事',
+            pg_takedown: '削除依頼',
+            ws_name: 'ウィキソース（アラビア語）',
+            pop_h: 'よく見られている本',
+            pop_s: '人気の検索',
+            v_h: 'サイトの訪問者',
+            v_today: '今日の訪問者',
+            v_month: '今月の訪問者',
+            v_year: '今年の訪問者',
+            n_books: '{n}冊',
+            n_poems: '{n}篇の詩',
+            results_mix: '{b}冊の本と{p}篇の詩',
+            f_lang: '本の言語',
+            f_org: '由来',
+            f_sort: '並べ替え',
+            all: 'すべて',
+            all_cats: 'すべてのカテゴリー',
+            org_a: 'アラブ・イスラームの遺産',
+            org_w: '世界の文学と科学',
+            sort_def: '標準',
+            sort_t: '書名',
+            sort_a: '著者',
+            clear: '絞り込みを解除',
+            filters: '絞り込み',
+            results: '{n}冊',
+            results_more: '{n}冊以上',
+            ad: '広告',
+            near_all: '「{q}」に完全一致する結果はありません：近い結果 {n}件',
+            near_some: 'うち{n}件は表記が少し異なります',
+            loading: '読み込み中…',
+            more: 'もっと見る',
+            none: '索引に該当する本がありません。上の完全な情報源をお試しください。',
+            none_f: '選択したすべての条件に合う本はありません。',
+            clear_f: '絞り込みを解除してすべての本を表示',
+            err: 'サーバーに接続できませんでした。',
+            retry: '再試行',
+            beyond: '「{q}」を完全な情報源で検索',
+            l_gut: 'Gutenberg',
+            l_arch: 'インターネット・アーカイブ',
+            l_ol: 'Open Library',
+            l_ws: 'ウィキソース',
+            l_page: '本のページ',
+            l_ht: 'ほかの版',
+            read: '読む',
+            find: '本を探す',
+            view: '見る',
+            src_saf: 'Safahat（Hindawi）',
+            authors_h: '著名な著者と人物',
+            authors_p: '名前を選ぶと作品が表示されます。',
+            show_all: 'すべて表示（{n}）',
+            show_less: '表示を減らす',
+            books_n: '{n}冊',
+            research_h: 'オープン研究デスク',
+            research_p: 'テーマを入力して情報源を選んでください。すべてのリンクは無料で合法的な論文・書籍データベースにつながります。',
+            med_h: '医学研究',
+            med_p: '全文を無料で読める生物医学の論文と本。',
+            eng_h: '工学研究',
+            eng_p: '工学・技術分野のオープンな論文、報告書、講義。',
+            r_ph: 'テーマを入力（英語がおすすめ）するか、下から選択',
+            also_src: 'オープンデータベースでも検索：',
+            p_loading: '論文を検索中…',
+            p_found: '「{q}」に関するオープンな論文 {n}件。関連性の高いもの：',
+            p_none: 'このテーマの論文はありません。別の言葉を試すか、下からテーマを選んでください。',
+            p_err: '現在、論文を読み込めません。下のデータベースをお試しください。',
+            p_read: '論文を読む',
+            p_pdf: '無料PDF',
+            p_cited: '被引用 {n}件',
+            r_open: '↗',
+            legal1: 'すべてのリンクは外部サイトにつながります。当図書館はファイルを掲載せず、パブリックドメインの作品を紹介し、現代の本については書誌情報と合法的な情報源へのリンクのみを表示します。',
+            legal2: 'パブリックドメインかどうかは国によって異なります（プロジェクト・グーテンベルクは米国法に従います）。再公開する前に、お住まいの国の法律を確認してください。',
+            lang_menu: '言語'
+        },
+        de: {
+            brand: 'Bibliothek Al-Warraq',
+            brand_sub: 'Gemeinfreie Bücher und Lyrik',
+            theme: 'Design wechseln',
+            nav_browse: 'Bücher',
+            nav_poetry: 'Lyrik',
+            nav_authors: 'Autoren',
+            nav_research: 'Forschung',
+            ph: 'Titel oder Autor suchen',
+            search: 'Suchen',
+            eyebrow: 'Gemeinfreie Bücher',
+            h1: 'Lesen Sie, was gemeinfrei ist',
+            lede: 'Ein offenes Verzeichnis von über einer Million Büchern, Zehntausenden arabischen Gedichten und Tausenden modernen arabischen Büchern, mit Umschlägen und Kategorien, das zu ihren Seiten an legalen Originalquellen führt.',
+            quick: 'Fangen Sie hier an:',
+            st_books: 'Bücher',
+            st_auth: 'Autoren',
+            st_lang: 'Sprachen',
+            f_cat: 'Kategorie',
+            cats_h: 'Nach Kategorie stöbern',
+            cats_p: 'Wählen Sie eine Kategorie, um direkt zu ihren Büchern zu gelangen.',
+            poems_tag: 'Neu aus Wikisource',
+            poems_h: 'Arabische Dichtung',
+            poems_lead: '{n} Gedichte der großen arabischen Dichter, von der vorislamischen Zeit bis in die Moderne, vollständig auf Wikisource lesbar. Wählen Sie einen Dichter, um seine Gedichte zu durchsuchen.',
+            poems_n: '{n} Gedichte',
+            browse_h: 'Alle Bücher',
+            browse_p: 'Suchen, nach Kategorie und Sprache filtern und das Buch direkt an der Quelle öffnen.',
+            foot_about: 'Ein offenes arabisches Verzeichnis gemeinfreier Bücher und Gedichte sowie moderner arabischer Bücher. Wir speichern keine Dateien; jeder Link führt zur Originalquelle.',
+            foot_src: 'Quellen',
+            foot_cats: 'Kategorien durchsuchen',
+            foot_pages: 'Seiten der Bibliothek',
+            pg_about: 'Über uns',
+            pg_privacy: 'Datenschutzerklärung',
+            pg_terms: 'Nutzungsbedingungen',
+            pg_contact: 'Kontakt',
+            pg_articles: 'Artikel',
+            pg_takedown: 'Antrag auf Entfernung',
+            ws_name: 'Wikisource (Arabisch)',
+            pop_h: 'Meistgesehen',
+            pop_s: 'Beliebte Suchen',
+            v_h: 'Besucher der Website',
+            v_today: 'Besucher heute',
+            v_month: 'Besucher diesen Monat',
+            v_year: 'Besucher dieses Jahr',
+            n_books: '{n} Bücher',
+            n_poems: '{n} Gedichte',
+            results_mix: '{b} Bücher und {p} Gedichte',
+            f_lang: 'Sprache des Buches',
+            f_org: 'Herkunft',
+            f_sort: 'Sortieren nach',
+            all: 'Alle',
+            all_cats: 'Alle Kategorien',
+            org_a: 'Arabisches und islamisches Erbe',
+            org_w: 'Weltliteratur und Wissenschaft',
+            sort_def: 'Standard',
+            sort_t: 'Titel',
+            sort_a: 'Autor',
+            clear: 'Filter zurücksetzen',
+            filters: 'Filter',
+            results: '{n} Bücher',
+            results_more: 'Mehr als {n} Bücher',
+            ad: 'Anzeigen',
+            near_all: 'Kein genauer Treffer für „{q}“: {n} ähnliche Ergebnisse',
+            near_some: 'davon {n} mit etwas anderer Schreibweise',
+            loading: 'Wird geladen…',
+            more: 'Mehr anzeigen',
+            none: 'Keine Treffer im Verzeichnis. Versuchen Sie die vollständigen Quellen oben.',
+            none_f: 'Kein Buch erfüllt alle gewählten Filter zugleich.',
+            clear_f: 'Filter zurücksetzen und alle Bücher zeigen',
+            err: 'Der Server ist nicht erreichbar.',
+            retry: 'Erneut versuchen',
+            beyond: '„{q}“ in den vollständigen Quellen suchen',
+            l_gut: 'Gutenberg',
+            l_arch: 'Internet Archive',
+            l_ol: 'Open Library',
+            l_ws: 'Wikisource',
+            l_page: 'Buchseite',
+            l_ht: 'Weitere Exemplare',
+            read: 'Lesen',
+            find: 'Buch finden',
+            view: 'Ansehen',
+            src_saf: 'Safahat (Hindawi)',
+            authors_h: 'Berühmte Autoren und Persönlichkeiten',
+            authors_p: 'Wählen Sie einen Namen, um die Werke zu sehen.',
+            show_all: 'Alle zeigen ({n})',
+            show_less: 'Weniger zeigen',
+            books_n: '{n} Bücher',
+            research_h: 'Offener Forschungstisch',
+            research_p: 'Geben Sie ein Thema ein und wählen Sie eine Quelle. Jeder Link öffnet eine kostenlose, legale Datenbank für Fachartikel und Bücher.',
+            med_h: 'Medizinische Forschung',
+            med_p: 'Biomedizinische Artikel und Bücher mit kostenlosem Volltext.',
+            eng_h: 'Ingenieurwissenschaftliche Forschung',
+            eng_p: 'Offene Artikel, Berichte und Kurse aus Technik und Ingenieurwesen.',
+            r_ph: 'Thema eingeben (am besten auf Englisch) oder unten wählen',
+            also_src: 'Suchen Sie auch in den offenen Datenbanken:',
+            p_loading: 'Fachartikel werden gesucht…',
+            p_found: '{n} offene Fachartikel zu „{q}“. Die wichtigsten:',
+            p_none: 'Keine Fachartikel zu diesem Thema. Versuchen Sie andere Wörter oder wählen Sie unten ein Thema.',
+            p_err: 'Die Fachartikel können gerade nicht geladen werden. Versuchen Sie die Datenbanken unten.',
+            p_read: 'Artikel lesen',
+            p_pdf: 'Kostenloses PDF',
+            p_cited: '{n} Zitierungen',
+            r_open: '↗',
+            legal1: 'Alle Links führen zu externen Websites. Diese Bibliothek speichert keine Dateien; sie verzeichnet gemeinfreie Werke und zeigt bei modernen Büchern nur die Katalogdaten mit einem Link zu einer legalen Quelle.',
+            legal2: 'Ob ein Werk gemeinfrei ist, hängt vom Land ab (Projekt Gutenberg folgt US-Recht). Prüfen Sie das Recht Ihres Landes, bevor Sie etwas neu veröffentlichen.',
+            lang_menu: 'Sprache'
         }
     };
+    // the interface languages, as the server has them (pages.UI_LANGS); Arabic is the site's own (no ?lang=)
+    const LANGS = ['ar', 'en', 'zh', 'fr', 'es', 'pt', 'ja', 'de'];
+    const LANG_SHORT = { ar: 'ع', en: 'EN', zh: '中', fr: 'FR', es: 'ES', pt: 'PT', ja: '日', de: 'DE' };
 
     const QUICK = [
-        { q: 'المتنبي', ar: 'المتنبي', en: 'Al-Mutanabbi' },
-        { q: 'جبران', ar: 'جبران', en: 'Gibran' },
-        { q: 'ابن سينا', ar: 'ابن سينا', en: 'Avicenna' },
-        { q: 'ألف ليلة', ar: 'ألف ليلة وليلة', en: 'Arabian Nights' },
-        { q: 'shakespeare', ar: 'شكسبير', en: 'Shakespeare' },
-        { q: 'dostoevsky', ar: 'دوستويفسكي', en: 'Dostoevsky' }
+        { q: 'المتنبي', ar: 'المتنبي', en: 'Al-Mutanabbi', zh: '穆太奈比', ja: 'ムタナッビー' },
+        { q: 'جبران', ar: 'جبران', en: 'Gibran', zh: '纪伯伦', ja: 'ジブラーン' },
+        { q: 'ابن سينا', ar: 'ابن سينا', en: 'Avicenna', zh: '伊本·西那', fr: 'Avicenne', es: 'Avicena', pt: 'Avicena', ja: 'イブン・シーナー' },
+        { q: 'ألف ليلة', ar: 'ألف ليلة وليلة', en: 'Arabian Nights', zh: '一千零一夜', fr: 'Les Mille et Une Nuits', es: 'Las mil y una noches', pt: 'As Mil e Uma Noites', ja: '千夜一夜物語', de: 'Tausendundeine Nacht' },
+        { q: 'shakespeare', ar: 'شكسبير', en: 'Shakespeare', zh: '莎士比亚', ja: 'シェイクスピア' },
+        { q: 'dostoevsky', ar: 'دوستويفسكي', en: 'Dostoevsky', zh: '陀思妥耶夫斯基', fr: 'Dostoïevski', es: 'Dostoyevski', pt: 'Dostoiévski', ja: 'ドストエフスキー', de: 'Dostojewski' }
     ];
 
     // famous public-domain verses shown in the poetry section
@@ -306,8 +947,11 @@
         document.cookie = 'warraq_lang=' + ui + '; path=/; max-age=31536000; samesite=lax' + (location.protocol === 'https:' ? '; secure' : '');
         try { localStorage.removeItem('warraq.lang'); } catch (e) {}
     };
-    const tr = (k, v) => { let s = (T[S.ui] && T[S.ui][k]) || k; if (v)
+    const tr = (k, v) => { let s = (T[S.ui] && T[S.ui][k]) || T.en[k] || k; if (v)
             for (const x in v) s = s.replace('{' + x + '}', v[x]); return s; };
+    // a name kept in several languages ({ar, en, fr...}): the interface's, else the English one
+    const inUi = (o) => (o && (o[S.ui] || o.en)) || '';
+    const langQ = () => (S.ui === 'ar' ? '' : '?lang=' + S.ui);
     const isArabic = (s) => /[؀-ۿ]/.test(s || '');
     // links and images that come from other services: plain web addresses only (never javascript: or data:)
     const safeUrl = (u) => (/^https?:\/\//i.test(String(u || '')) ? String(u) : '#');
@@ -320,7 +964,7 @@
         return fetch(url, { headers: { Accept: 'application/json' } }).then((r) => { if (!r.ok) throw new Error(String(r.status)); return r.json(); });
     }
     const hue = (c) => (S.cmap[c] ? S.cmap[c].hue : 210);
-    const catName = (c) => (S.cmap[c] ? S.cmap[c][S.ui] : c);
+    const catName = (c) => (S.cmap[c] ? inUi(S.cmap[c]) : c);
 
     function authName(b) {
         const a = b.ak && S.amap[b.ak];
@@ -518,15 +1162,16 @@
         document.querySelectorAll('[data-iph]').forEach((e) => { e.placeholder = tr(e.dataset.iph);
             e.setAttribute('aria-label', tr(e.dataset.iph)); });
         document.querySelectorAll('[data-iarl]').forEach((e) => { e.setAttribute('aria-label', tr(e.dataset.iarl)); });
-        document.querySelectorAll('[data-lhref]').forEach((e) => { e.href = e.dataset.lhref + (S.ui === 'en' ? '?lang=en' : ''); });
-        $('#langBtn').textContent = S.ui === 'ar' ? 'EN' : 'ع';
-        $('#langBtn').setAttribute('aria-label', S.ui === 'ar' ? 'English' : 'العربية');
+        document.querySelectorAll('[data-lhref]').forEach((e) => { e.href = e.dataset.lhref + langQ(); });
+        $('#langCur').textContent = LANG_SHORT[S.ui];
+        document.querySelectorAll('#langList [data-ui]').forEach((e) => { if (e.dataset.ui === S.ui) e.setAttribute('aria-current', 'true');
+            else e.removeAttribute('aria-current'); });
         $('#filtBtn').textContent = tr('filters');
         document.querySelectorAll('[data-srv-lang]').forEach((e) => { e.hidden = e.dataset.srvLang !== S.ui; });
     }
 
     function renderHero() {
-        $('#quick').innerHTML = '<span>' + esc(tr('quick')) + '</span>' + QUICK.map((c) => '<button class="qchip" type="button" data-q="' + esc(c.q) + '">' + esc(c[S.ui]) + '</button>').join('');
+        $('#quick').innerHTML = '<span>' + esc(tr('quick')) + '</span>' + QUICK.map((c) => '<button class="qchip" type="button" data-q="' + esc(c.q) + '">' + esc(inUi(c)) + '</button>').join('');
         if (!S.meta) { $('#stats').innerHTML = ''; return; }
         $('#stats').innerHTML = [
                 [S.meta.total, 'st_books', 'book'],
@@ -585,14 +1230,14 @@
         const el = $('#catGrid');
         if (!el || !S.meta) return;
         el.innerHTML = S.meta.categories.filter((c) => c.count + (c.poems || 0) > 0).map((c, i) =>
-            '<a class="cc" href="/category/' + esc(c.key) + (S.ui === 'en' ? '?lang=en' : '') + '" data-cat="' + esc(c.key) + '" style="--h:' + num(c.hue) + ';--i:' + i + '"><span class="cci">' + ico(c.key, 26) + '</span><b>' + esc(c[S.ui]) + '</b><small>' + esc(c.count ? tr('n_books', { n: fmt(c.count) }) + (c.poems ? ' · ' + tr('n_poems', { n: fmt(c.poems) }) : '') : tr('n_poems', { n: fmt(c.poems) })) + '</small></a>').join('');
+            '<a class="cc" href="/category/' + esc(c.key) + langQ() + '" data-cat="' + esc(c.key) + '" style="--h:' + num(c.hue) + ';--i:' + i + '"><span class="cci">' + ico(c.key, 26) + '</span><b>' + esc(inUi(c)) + '</b><small>' + esc(c.count ? tr('n_books', { n: fmt(c.count) }) + (c.poems ? ' · ' + tr('n_poems', { n: fmt(c.poems) }) : '') : tr('n_poems', { n: fmt(c.poems) })) + '</small></a>').join('');
         renderFootCats();
     }
 
     function renderFootCats() {
         const el = $('#footCats');
         if (!el || !S.meta) return;
-        el.innerHTML = S.meta.categories.map((c) => '<a href="/category/' + esc(c.key) + (S.ui === 'en' ? '?lang=en' : '') + '">' + esc(c[S.ui]) + '</a>').join('');
+        el.innerHTML = S.meta.categories.map((c) => '<a href="/category/' + esc(c.key) + langQ() + '">' + esc(inUi(c)) + '</a>').join('');
     }
 
     function renderPopular() {
@@ -653,7 +1298,7 @@
         const total = S.meta.total;
         $('#catList').innerHTML =
             '<button class="catitem" type="button" data-cat="" aria-pressed="' + (S.cat === '') + '"><i class="ci" style="--h:215">' + ico('gen', 15) + '</i><span>' + esc(tr('all_cats')) + '</span><small>' + fmt(total) + '</small></button>' +
-            S.meta.categories.map((c) => '<button class="catitem" type="button" data-cat="' + esc(c.key) + '" aria-pressed="' + (S.cat === c.key) + '"><i class="ci" style="--h:' + num(c.hue) + '">' + ico(c.key, 15) + '</i><span>' + esc(c[S.ui]) + '</span><small>' + fmt(c.count) + '</small></button>').join('');
+            S.meta.categories.map((c) => '<button class="catitem" type="button" data-cat="' + esc(c.key) + '" aria-pressed="' + (S.cat === c.key) + '"><i class="ci" style="--h:' + num(c.hue) + '">' + ico(c.key, 15) + '</i><span>' + esc(inUi(c)) + '</span><small>' + fmt(c.count) + '</small></button>').join('');
         $('#fLang').innerHTML = '<option value="">' + esc(tr('all')) + '</option>' + S.meta.languages.map((l) => '<option value="' + esc(l.code) + '">' + esc(langName(l.code)) + ' (' + fmt(l.count) + ')</option>').join('');
         $('#fLang').value = S.bl;
         $('#fOrg').innerHTML = '<option value="">' + esc(tr('all')) + '</option><option value="a">' + esc(tr('org_a')) + '</option><option value="w">' + esc(tr('org_w')) + '</option>';
@@ -757,7 +1402,7 @@
         av.innerHTML = list.map((a) => {
             const nm = S.ui === 'ar' ? a.ar : a.en,
                 ini = Array.from(nm.replace(/[^\p{L}]/gu, '') || '?')[0];
-            return '<a class="av" href="/author/' + enc(a.key) + (S.ui === 'en' ? '?lang=en' : '') + '" data-ak="' + esc(a.key) + '"><span class="mono" style="--h:' + num(hue(a.cat)) + '" aria-hidden="true">' + esc(ini) + '</span><b>' + esc(nm) + '</b><small>' + esc(tr('books_n', { n: fmt(a.count) })) + '</small></a>';
+            return '<a class="av" href="/author/' + enc(a.key) + langQ() + '" data-ak="' + esc(a.key) + '"><span class="mono" style="--h:' + num(hue(a.cat)) + '" aria-hidden="true">' + esc(ini) + '</span><b>' + esc(nm) + '</b><small>' + esc(tr('books_n', { n: fmt(a.count) })) + '</small></a>';
         }).join('');
         const m = $('#authMore');
         m.hidden = keys.length <= 16;
@@ -773,8 +1418,8 @@
     function renderDesk(d) {
         if (!d.data) { $(d.topics).innerHTML = '';
             $(d.srcs).innerHTML = ''; return; }
-        $(d.topics).innerHTML = d.data.topics.map((t) => '<button class="topic" type="button" data-topic="' + esc(t.en) + '">' + esc(S.ui === 'ar' ? t.ar : t.en) + '</button>').join('');
-        $(d.srcs).innerHTML = d.data.sources.map((s) => '<a class="src" href="' + esc(safeUrl(s.url)) + '" target="_blank" rel="noopener" title="' + esc(S.ui === 'ar' ? s.ar : s.en) + '"><b>' + esc(s.name) + '</b><em aria-hidden="true">' + tr('r_open') + '</em></a>').join('');
+        $(d.topics).innerHTML = d.data.topics.map((t) => '<button class="topic" type="button" data-topic="' + esc(t.en) + '">' + esc(inUi(t)) + '</button>').join('');
+        $(d.srcs).innerHTML = d.data.sources.map((s) => '<a class="src" href="' + esc(safeUrl(s.url)) + '" target="_blank" rel="noopener" title="' + esc(inUi(s)) + '"><b>' + esc(s.name) + '</b><em aria-hidden="true">' + tr('r_open') + '</em></a>').join('');
         renderPapers(d);
     }
 
@@ -834,9 +1479,31 @@
         applyFilters();
         toBrowse(); }
 
-    $('#langBtn').addEventListener('click', () => {
-        S.ui = S.ui === 'ar' ? 'en' : 'ar';
+    // the language menu: a plain click switches the page in place (its links work without the script too)
+    const langMenu = $('#langMenu');
+    $('#langList').addEventListener('click', (e) => {
+        const a = e.target.closest('[data-ui]');
+        if (!a || !inPage(e)) return;
+        e.preventDefault();
+        langMenu.open = false;
+        setLang(a.dataset.ui);
+    });
+    document.addEventListener('click', (e) => { if (langMenu.open && !langMenu.contains(e.target)) langMenu.open = false; });
+    langMenu.addEventListener('keydown', (e) => { if (e.key === 'Escape' && langMenu.open) { langMenu.open = false;
+            $('#langBtn').focus(); } });
+
+    function setLang(ui) {
+        if (ui === S.ui || LANGS.indexOf(ui) < 0) return;
+        S.ui = ui;
         saveLang(S.ui);
+        try { // an address that names a language goes on naming the one shown, so a reload keeps it
+            const u = new URL(location.href);
+            if (u.searchParams.has('lang')) {
+                if (ui === 'ar') u.searchParams.delete('lang');
+                else u.searchParams.set('lang', ui);
+                history.replaceState(history.state, '', u.pathname + u.search + u.hash);
+            }
+        } catch (e) {}
         applyStatic();
         renderHero();
         renderSide();
@@ -850,7 +1517,7 @@
         grid.innerHTML = '';
         if (S.sort !== 'def') loadBooks(false);
         else renderResults(false);
-    });
+    }
     $('#themeBtn').addEventListener('click', () => {
         const cur = document.documentElement.getAttribute('data-theme') || 'light'; // light by default, dark only on request
         const nx = cur === 'dark' ? 'light' : 'dark';
@@ -863,13 +1530,14 @@
     // visitor's saved choice (a cookie, set by the language button), else their browser's language. Crawlers
     // always get Arabic on "/", so search engines see the Arabic page there as before.
     let _l = '';
-    try { const ql = new URLSearchParams(location.search).get('lang'); if (ql === 'en' || ql === 'ar') _l = ql; } catch (e) {}
+    try { const ql = new URLSearchParams(location.search).get('lang'); if (LANGS.indexOf(ql) >= 0) _l = ql; } catch (e) {}
     const _old = lsGet('warraq.lang'); // where the choice used to be kept: carried over to the cookie once
     if ((_old === 'en' || _old === 'ar') && !/(?:^|;\s*)warraq_lang=/.test(document.cookie)) {
         saveLang(_old);
         if (!_l) _l = _old;
     }
-    S.ui = (_l || document.documentElement.lang) === 'en' ? 'en' : 'ar';
+    _l = _l || document.documentElement.lang;
+    S.ui = LANGS.indexOf(_l) >= 0 ? _l : 'ar';
 
     // a fresh choice (category card, quick search, new search) starts from the whole library
     function freshStart(keepQuery) {

@@ -35,6 +35,39 @@ TOPICS = {
         ],
     },
 }
+# the same topics in the site's other interface languages, in this order (a missing one shows its English name)
+TOPIC_LANGS = ("zh", "fr", "es", "pt", "ja", "de")
+TOPIC_NAMES = {
+    "Anatomy": ("解剖学", "Anatomie", "Anatomía", "Anatomia", "解剖学", "Anatomie"),
+    "Cardiology": ("心脏病学", "Cardiologie", "Cardiología", "Cardiologia", "循環器学", "Kardiologie"),
+    "Oncology": ("肿瘤学", "Oncologie", "Oncología", "Oncologia", "腫瘍学", "Onkologie"),
+    "Infectious diseases": ("传染病", "Maladies infectieuses", "Enfermedades infecciosas", "Doenças infecciosas", "感染症", "Infektionskrankheiten"),
+    "Pharmacology": ("药理学", "Pharmacologie", "Farmacología", "Farmacologia", "薬理学", "Pharmakologie"),
+    "Public health": ("公共卫生", "Santé publique", "Salud pública", "Saúde pública", "公衆衛生", "Öffentliche Gesundheit"),
+    "Neuroscience": ("神经科学", "Neurosciences", "Neurociencia", "Neurociência", "神経科学", "Neurowissenschaften"),
+    "Pediatrics": ("儿科学", "Pédiatrie", "Pediatría", "Pediatria", "小児科学", "Kinderheilkunde"),
+    "Surgery": ("外科", "Chirurgie", "Cirugía", "Cirurgia", "外科", "Chirurgie"),
+    "Nursing": ("护理", "Soins infirmiers", "Enfermería", "Enfermagem", "看護", "Pflege"),
+    "Genetics": ("遗传学", "Génétique", "Genética", "Genética", "遺伝学", "Genetik"),
+    "Nutrition": ("营养学", "Nutrition", "Nutrición", "Nutrição", "栄養学", "Ernährung"),
+    "Diabetes": ("糖尿病", "Diabète", "Diabetes", "Diabetes", "糖尿病", "Diabetes"),
+    "Radiology": ("放射学", "Radiologie", "Radiología", "Radiologia", "放射線医学", "Radiologie"),
+    "Civil engineering": ("土木工程", "Génie civil", "Ingeniería civil", "Engenharia civil", "土木工学", "Bauingenieurwesen"),
+    "Mechanical engineering": ("机械工程", "Génie mécanique", "Ingeniería mecánica", "Engenharia mecânica", "機械工学", "Maschinenbau"),
+    "Electrical engineering": ("电气工程", "Génie électrique", "Ingeniería eléctrica", "Engenharia elétrica", "電気工学", "Elektrotechnik"),
+    "Control systems": ("控制系统", "Systèmes de commande", "Sistemas de control", "Sistemas de controle", "制御システム", "Regelungstechnik"),
+    "Signal processing": ("信号处理", "Traitement du signal", "Procesamiento de señales", "Processamento de sinais", "信号処理", "Signalverarbeitung"),
+    "Computer architecture": ("计算机体系结构", "Architecture des ordinateurs", "Arquitectura de computadoras", "Arquitetura de computadores",
+                              "コンピュータアーキテクチャ", "Rechnerarchitektur"),
+    "Machine learning": ("机器学习", "Apprentissage automatique", "Aprendizaje automático", "Aprendizado de máquina", "機械学習", "Maschinelles Lernen"),
+    "Robotics": ("机器人学", "Robotique", "Robótica", "Robótica", "ロボット工学", "Robotik"),
+    "Renewable energy": ("可再生能源", "Énergies renouvelables", "Energías renovables", "Energia renovável", "再生可能エネルギー", "Erneuerbare Energien"),
+    "Materials science": ("材料科学", "Science des matériaux", "Ciencia de materiales", "Ciência dos materiais", "材料科学", "Materialwissenschaft"),
+    "Structural analysis": ("结构分析", "Analyse des structures", "Análisis estructural", "Análise estrutural", "構造解析", "Statik"),
+    "Aerospace": ("航空航天", "Aérospatiale", "Aeroespacial", "Aeroespacial", "航空宇宙工学", "Luft- und Raumfahrt"),
+    "Chemical engineering": ("化学工程", "Génie chimique", "Ingeniería química", "Engenharia química", "化学工学", "Verfahrenstechnik"),
+    "Power systems": ("电力系统", "Réseaux électriques", "Sistemas de potencia", "Sistemas de potência", "電力システム", "Energiesysteme"),
+}
 
 _DOAJ_AR = "دليل المجلات المفتوحة المحكّمة، بحث في مقالاتها."
 _DOAJ_EN = "Directory of peer-reviewed open-access journals, searched by article."
@@ -91,10 +124,11 @@ SOURCES = {
 
 
 def to_english(domain: str, raw: str) -> str:
-    """The databases are mostly English: an Arabic topic from our list is searched by its English name."""
+    """The databases are mostly English: a topic from our list in another language (Arabic, French...) is searched
+    by its English name."""
     n = norm(raw)
     for en, ar in TOPICS[domain]["topics"]:
-        if n and n == norm(ar):
+        if n and any(n == norm(name) for name in (ar,) + TOPIC_NAMES.get(en, ())):
             return en
     return raw
 
@@ -207,6 +241,6 @@ def build(domain: str, raw: str) -> dict:
         "domain": domain,
         "query": raw,
         "default": TOPICS[domain]["default"],
-        "topics": [{"en": en, "ar": ar} for en, ar in TOPICS[domain]["topics"]],
+        "topics": [dict(zip(TOPIC_LANGS, TOPIC_NAMES.get(en, ())), en=en, ar=ar) for en, ar in TOPICS[domain]["topics"]],
         "sources": [{"name": n, "ar": a, "en": e, "url": fn(q, raw)} for n, a, e, fn in SOURCES[domain]],
     }

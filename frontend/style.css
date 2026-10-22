@@ -788,6 +788,66 @@ h2 {
     animation: flip .6s var(--ease)
 }
 
+/* the language menu: a <details>, so it opens without the script too */
+.lmenu {
+    position: relative
+}
+
+.lmenu>summary {
+    gap: 6px;
+    list-style: none;
+    cursor: pointer;
+    user-select: none
+}
+
+.lmenu>summary::-webkit-details-marker {
+    display: none
+}
+
+.lmenu>summary .ic {
+    width: 18px;
+    height: 18px;
+    color: var(--brand)
+}
+
+.lmenu[open]>summary {
+    border-color: var(--brand-2)
+}
+
+.lmenu-list {
+    position: absolute;
+    inset-inline-end: 0;
+    top: calc(100% + 8px);
+    z-index: 40;
+    display: grid;
+    min-width: 180px;
+    padding: 6px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    box-shadow: var(--shadow-lg)
+}
+
+.lmenu-list a {
+    padding: 8px 12px;
+    border-radius: 10px;
+    color: var(--ink);
+    font-weight: 500;
+    text-decoration: none
+}
+
+.lmenu-list a:hover,
+.lmenu-list a:focus-visible {
+    background: var(--brand-soft);
+    color: var(--brand)
+}
+
+.lmenu-list a[aria-current] {
+    background: var(--brand-soft);
+    color: var(--brand);
+    font-weight: 700
+}
+
 @keyframes flip {
     50% {
         transform: translateY(-2px) rotateX(180deg)

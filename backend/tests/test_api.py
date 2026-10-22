@@ -542,7 +542,7 @@ def test_home_page_words_are_in_its_html(client):
 def test_pages_open_in_the_visitors_language(client):
     from app.pages import browser_ui
     assert browser_ui("ar-IQ,ar;q=0.9,en-US;q=0.8") == "ar" and browser_ui("en-US,en;q=0.9,ar;q=0.8") == "en"
-    assert browser_ui("ku-IQ,ar;q=0.8") == "ar" and browser_ui("fr-FR,fr;q=0.9") == "en" and browser_ui("") == ""
+    assert browser_ui("ku-IQ,ar;q=0.8") == "ar" and browser_ui("ru-RU,ru;q=0.9") == "en" and browser_ui("") == ""
     chrome = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0 Safari/537.36"
 
     def lang_of(url, **headers):
@@ -566,10 +566,82 @@ def test_pages_open_in_the_visitors_language(client):
     assert "set-cookie" not in client.get("/?lang=en", headers={"sec-fetch-site": "cross-site"}).headers
     client.cookies.clear()  # the test client kept that choice, as a browser would: start again without one
     privacy = client.get("/privacy").text  # and the privacy policy says so, dated
-    assert "warraq_lang" in privacy and "اختيارك للغة والمظهر" not in privacy and "آخر تحديث: 21 أكتوبر 2026" in privacy
+    assert "warraq_lang" in privacy and "اختيارك للغة والمظهر" not in privacy and "آخر تحديث: 22 أكتوبر 2026" in privacy
     assert "<p>نعرض إعلانات من خلال Google AdSense" in privacy and "قد نعرض إعلانات" not in privacy
-    assert "Our site sets the language cookie above" in client.get("/privacy?lang=en").text
+    assert "والبرتغالية واليابانية والألمانية" in privacy and "(ar أو en)" not in privacy  # the eight languages, dated
+    en_privacy = client.get("/privacy?lang=en").text
+    assert "Our site sets the language cookie above" in en_privacy and "Portuguese, Japanese and German" in en_privacy
     assert "آخر تحديث: 21 أكتوبر 2026" in client.get("/terms").text  # the terms changed with the takedown form
+
+
+def test_the_eight_languages(client):
+    """Arabic, English, Chinese, French, Spanish, Portuguese, Japanese and German: every page opens in each one
+    (a missing word is English, never an error), the browser's language picks one, and every page has a menu of them."""
+    import re as _re
+    from app import legal, pages, seo
+    from app.catalog import CATEGORIES
+    assert pages.browser_ui("zh-TW,zh;q=0.9,en;q=0.8") == "zh" and pages.browser_ui("pt-BR,pt;q=0.9") == "pt"
+    assert pages.browser_ui("fr-CA,fr;q=0.9,ar;q=0.8") == "fr" and pages.browser_ui("es-419,es;q=0.9") == "es"
+    assert pages.browser_ui("ru-RU,ja;q=0.5") == "ja" and pages.browser_ui("de-AT,de;q=0.9,en;q=0.8") == "de"
+    assert pages.browser_ui("zh-Hant-TW") == "zh" and pages.browser_ui("en;q=0.5,de;q=0.8") == "de"
+    for ui in pages.UI_LANGS:  # every table has every language, and every word of the English one
+        for table in (pages.T, seo.S, legal.L):
+            assert set(table["en"]) <= set(table[ui]), ui
+        assert all(ui in c for c in CATEGORIES.values()) and ui in legal.TOPICS and ui in legal.UPDATED["privacy"]
+    chrome = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0 Safari/537.36"
+    urls = ("/", "/category/nov", "/category/poe?page=1", "/author/shakespeare", "/book/1", "/about", "/privacy", "/terms",
+            "/contact", "/takedown", "/articles", "/nothing-here", "/book/999999")
+    for ui in pages.UI_LANGS:
+        for url in urls:
+            r = client.get(url + ("&" if "?" in url else "?") + "lang=" + ui, follow_redirects=True)
+            assert r.status_code == (404 if url in ("/nothing-here", "/book/999999") else 200), (ui, url)
+            assert '<html lang="%s" dir="%s">' % (ui, "rtl" if ui == "ar" else "ltr") in r.text, (ui, url)
+            menu = r.text.split('<div class="lmenu-list"')[1].split("</div>")[0]
+            assert all('hreflang="%s"' % x in menu for x in pages.UI_LANGS), (ui, url)  # the menu offers all eight
+            assert menu.count("aria-current") == 1 and _re.search(r'<a [^>]*hreflang="%s"[^>]*aria-current' % ui, menu), (ui, url)
+        # the browser's language opens the page in it, and so does the saved choice
+        client.cookies.clear()
+        assert '<html lang="%s"' % ui in client.get("/", headers={"accept-language": ui + ";q=0.9", "user-agent": chrome}).text
+        assert '<html lang="%s"' % ui in client.get("/about", headers={"cookie": "warraq_lang=" + ui, "user-agent": chrome}).text
+    client.cookies.clear()
+
+    # the home page's own words, before any script runs
+    zh = client.get("/?lang=zh").text
+    assert "<title>Al-Warraq 图书馆 | 免费的公有领域图书与阿拉伯语诗歌</title>" in zh and '<h1 data-i="h1">阅读已脱离版权的作品</h1>' in zh
+    assert 'data-ui="zh" aria-current="true"' in zh and '<span id="langCur">中</span>' in zh and 'href="/about?lang=zh"' in zh
+    assert 'href="/category/nov?lang=zh">小说与故事</a>' in zh and '<link rel="canonical" href="http://testserver/?lang=zh">' in zh
+    assert not _re.findall(r'data-i="\w+"[^>]*></', zh) and '<meta property="og:locale" content="zh_CN">' in zh
+    # a category page: its words, links that keep the language, hreflang for every language
+    fr = client.get("/category/nov?lang=fr").text
+    assert "<h1>Romans et nouvelles : livres gratuits</h1>" in fr and 'href="/category/his?lang=fr"' in fr
+    assert '<link rel="canonical" href="http://testserver/category/nov?lang=fr">' in fr
+    assert all('<link rel="alternate" hreflang="%s" href="http://testserver/category/nov%s">' % (x, pages.lang_q(x)) in fr
+               for x in pages.UI_LANGS) and 'hreflang="x-default" href="http://testserver/category/nov"' in fr
+    assert 'href="/category/nov?lang=ar" hreflang="ar" lang="ar">العربية</a>' in fr  # Arabic replaces a saved choice too
+    assert "page=2" not in fr or "?lang=fr&page=2" in fr
+    # a book page in German; its other languages are links search engines need not follow
+    de = client.get("/book/1?lang=de", follow_redirects=True).text
+    assert "Über dieses Buch" in de and "<dt>Sprache</dt><dd>Englisch</dd>" in de and 'href="?lang=ja" hreflang="ja" lang="ja" rel="nofollow"' in de
+    assert 'href="/takedown?lang=de&amp;u=' in de and '<meta property="og:locale" content="de_DE">' in de
+    # the long legal texts are written in Arabic and English: the others show the English one, and say so
+    es = client.get("/privacy?lang=es").text
+    assert "Última actualización: 22 de octubre de 2026" in es and legal.L["es"]["en_only"] in es and '<div lang="en">' in es
+    assert "Política de privacidad" in es and "Third-party vendors, including Google" in es
+    ja = client.get("/contact?lang=ja").text
+    assert "お名前" in ja and "一般的な質問" in ja and 'action="/contact?lang=ja"' in ja and legal.L["ja"]["en_only"] not in ja
+    # choosing a language inside the site keeps it
+    r = client.get("/category/nov?lang=pt", headers={"sec-fetch-site": "same-origin"})
+    assert "warraq_lang=pt" in r.headers.get("set-cookie", "")
+    assert '<html lang="pt"' in client.get("/author/shakespeare").text
+    client.cookies.clear()
+    # the sitemap lists every language of the pages search engines may keep
+    sm = client.get("/sitemap-main.xml").text
+    assert all("/category/his%s</loc>" % pages.lang_q(x) in sm for x in pages.UI_LANGS) and "/about?lang=ja</loc>" in sm
+    # the script's data carries every name
+    meta = client.get("/api/meta").json()
+    assert {c["key"]: c["fr"] for c in meta["categories"]}["nov"] == "Romans et nouvelles"
+    topics = client.get("/api/research", params={"domain": "med", "q": "Cardiologie"}).json()
+    assert topics["query"] == "Cardiology" and any(t["ja"] == "循環器学" for t in topics["topics"])
 
 
 def test_seo_pages(client, monkeypatch):

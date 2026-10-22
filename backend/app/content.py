@@ -27,6 +27,12 @@ def thin_noindex() -> bool:
     return os.environ.get("THIN_NOINDEX", "1").strip() != "0"
 
 
+def text_ui(ui: str) -> str:
+    """The language these texts are read in: they are written in Arabic and English, and every other interface
+    language (French, Chinese...) shows the English one."""
+    return ui if ui in ("ar", "en") else "en"
+
+
 def _load(name: str, default):
     path = os.path.join(DIR, name)
     try:
@@ -43,15 +49,15 @@ def _load(name: str, default):
 
 
 def home(ui: str) -> list:
-    return _load("home.json", {}).get(ui, [])
+    return _load("home.json", {}).get(text_ui(ui), [])
 
 
 def category(key: str, ui: str) -> list:
-    return _load("categories.json", {}).get(key, {}).get(ui, [])
+    return _load("categories.json", {}).get(key, {}).get(text_ui(ui), [])
 
 
 def author(key: str, ui: str) -> list:
-    return _load("authors.json", {}).get(key, {}).get(ui, []) if key else []
+    return _load("authors.json", {}).get(key, {}).get(text_ui(ui), []) if key else []
 
 
 def book(row, ui: str) -> dict:
@@ -59,6 +65,7 @@ def book(row, ui: str) -> dict:
     Reads from DB book_descriptions (keyed by gid), falls back to books.json."""
     if not row["gid"]:
         return {}
+    ui = text_ui(ui)
     try:
         from . import db as _db
         conn = _db.connect()
