@@ -3679,7 +3679,8 @@ html[lang="en"] .hero h1 {
     margin-bottom: 6px
 }
 
-.ad:has(ins[data-ad-status=filled]) .ad-l {
+.ad:has(ins[data-ad-status=filled]) .ad-l,
+.ad.nat:has([id^=container-] > *) .ad-l {
     display: block
 }
 

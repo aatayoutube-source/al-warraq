@@ -61,7 +61,8 @@ CREATE TABLE IF NOT EXISTS book_descriptions(
   ar     TEXT NOT NULL DEFAULT '[]',
   ar_ctx TEXT NOT NULL DEFAULT '[]',
   en     TEXT NOT NULL DEFAULT '[]',
-  en_ctx TEXT NOT NULL DEFAULT '[]'
+  en_ctx TEXT NOT NULL DEFAULT '[]',
+  i18n   TEXT NOT NULL DEFAULT '{}'  -- the other interface languages: {"fr": {"about": [...], "context": [...]}, ...}
 );
 CREATE INDEX IF NOT EXISTS ix_books_cat_ord ON books(cat, ord);   -- a category page comes out already in order
 CREATE INDEX IF NOT EXISTS ix_books_lang_ord ON books(lang, ord);
@@ -219,8 +220,12 @@ def init_db(conn: sqlite3.Connection) -> None:
           ar     TEXT NOT NULL DEFAULT '[]',
           ar_ctx TEXT NOT NULL DEFAULT '[]',
           en     TEXT NOT NULL DEFAULT '[]',
-          en_ctx TEXT NOT NULL DEFAULT '[]'
+          en_ctx TEXT NOT NULL DEFAULT '[]',
+          i18n   TEXT NOT NULL DEFAULT '{}'
         )""")
+        conn.execute("DELETE FROM meta WHERE key='descs_version'")
+    elif "i18n" not in cols:  # the descriptions in the other interface languages: load them again
+        conn.execute("ALTER TABLE book_descriptions ADD COLUMN i18n TEXT NOT NULL DEFAULT '{}'")
         conn.execute("DELETE FROM meta WHERE key='descs_version'")
     conn.commit()
     fix_author_names(conn)
@@ -392,7 +397,7 @@ def seed_curated(conn: sqlite3.Connection) -> int:
 
 
 DESCS_FILE = os.path.join(DATA_DIR, "book_descriptions.json")
-DESCS_VERSION = "1"  # bump when book_descriptions.json changes significantly
+DESCS_VERSION = "2"  # bump when book_descriptions.json changes significantly (2: the six other interface languages)
 
 
 def seed_descriptions(conn: sqlite3.Connection) -> int:
@@ -415,11 +420,12 @@ def seed_descriptions(conn: sqlite3.Connection) -> int:
         ar_ctx = json.dumps(langs.get("ar", {}).get("context", []), ensure_ascii=False)
         en = json.dumps(langs.get("en", {}).get("about", []), ensure_ascii=False)
         en_ctx = json.dumps(langs.get("en", {}).get("context", []), ensure_ascii=False)
+        i18n = json.dumps({k: v for k, v in langs.items() if k not in ("ar", "en")}, ensure_ascii=False)
         conn.execute(
-            "INSERT INTO book_descriptions(gid,ar,ar_ctx,en,en_ctx) VALUES(?,?,?,?,?)"
+            "INSERT INTO book_descriptions(gid,ar,ar_ctx,en,en_ctx,i18n) VALUES(?,?,?,?,?,?)"
             " ON CONFLICT(gid) DO UPDATE SET ar=excluded.ar, ar_ctx=excluded.ar_ctx,"
-            " en=excluded.en, en_ctx=excluded.en_ctx",
-            (gid, ar, ar_ctx, en, en_ctx)
+            " en=excluded.en, en_ctx=excluded.en_ctx, i18n=excluded.i18n",
+            (gid, ar, ar_ctx, en, en_ctx, i18n)
         )
         n += 1
     conn.execute("INSERT OR REPLACE INTO meta(key,value) VALUES('descs_version',?)", (DESCS_VERSION,))

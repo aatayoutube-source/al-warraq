@@ -34,10 +34,12 @@ def lang_q(ui: str, amp: bool = False) -> str:
     return ("lang=%s&" if amp else "?lang=%s") % ui
 
 
-def own_text(html_: str, ui: str) -> str:
-    """The library's own texts (written in Arabic and English) as this interface shows them: in English, marked
-    as such, for the other languages (content.text_ui)."""
-    return html_ if not html_ or content.text_ui(ui) == ui else '<div lang="en">%s</div>' % html_
+def own_text(paras, ui: str) -> str:
+    """The library's own paragraphs (a content.Text), marked with their language when English stands in for a
+    translation this interface language does not have yet."""
+    html_ = content.paragraphs(paras)
+    lang = getattr(paras, "lang", "") or ui
+    return html_ if not html_ or lang == ui else '<div lang="%s">%s</div>' % (lang, html_)
 
 
 BRAND = {"ar": "مكتبة الوراق", "en": "Al-Warraq Library", "zh": "Al-Warraq 图书馆", "fr": "Bibliothèque Al-Warraq",
@@ -417,7 +419,7 @@ footer p{margin:0}
 .nf-cats a{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:5px 14px;text-decoration:none;color:var(--ink);font-size:.9rem}
 .nf-cats a:hover{border-color:var(--brand-2);color:var(--brand)}
 @media (max-width:640px){.book{grid-template-columns:1fr;justify-items:center}.cover{width:200px}.book>div{width:100%}dl{grid-template-columns:1fr}}
-.ad{margin:28px 0;text-align:center}.ad .ad-l{display:none;font-size:11px;letter-spacing:.04em;color:var(--muted);margin-bottom:6px}.ad:has(ins[data-ad-status=filled]) .ad-l{display:block}.ad:has(ins[data-ad-status=unfilled]){display:none}ins.adsbygoogle[data-ad-status=unfilled]{display:none!important}
+.ad{margin:28px 0;text-align:center}.ad .ad-l{display:none;font-size:11px;letter-spacing:.04em;color:var(--muted);margin-bottom:6px}.ad:has(ins[data-ad-status=filled]) .ad-l,.ad.nat:has([id^=container-] > *) .ad-l{display:block}.ad:has(ins[data-ad-status=unfilled]){display:none}ins.adsbygoogle[data-ad-status=unfilled]{display:none!important}
 .rel li.infeed{grid-column:1/-1;background:none;border:0;transform:none;text-align:center}.infeed .ad-l{display:none;font-size:11px;letter-spacing:.04em;color:var(--muted);margin-bottom:6px}.infeed:has(ins[data-ad-status=filled]) .ad-l{display:block}.infeed:has(ins[data-ad-status=unfilled]){display:none}
 .book h2.facts-h{font-size:1rem;margin:18px 0 6px;color:var(--muted);font-weight:600}.rights.pd{background:var(--soft);color:var(--ink)}.rights a{font-weight:600}.crumbs span{color:var(--muted)}.about p+p{margin-top:.6em}.about small a{font-weight:600}
 """
@@ -549,6 +551,26 @@ def ad_unit(ui: str = "ar") -> str:
             '<ins class="adsbygoogle" style="display:block" data-ad-client="%s" data-ad-slot="%s" data-ad-format="auto" '
             'data-full-width-responsive="true"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script></aside>'
             % (label, label, esc(ADSENSE_ACCOUNT), esc(AD_SLOT)))
+
+
+# A second network's native banner (bauval.org): in the first ad place of each page with ads, and only there, since
+# its container's id must be unique on the page. NATIVE_AD=0 turns it off; NATIVE_AD_ID replaces the unit.
+NATIVE_AD_ID = os.environ.get("NATIVE_AD_ID", "").strip() or "4d9f7dee523a20db44fe6c6ffb5f7e2a"
+NATIVE_AD_SRC = "https://bauval.org/21/"
+
+
+def native_on() -> bool:
+    return ads_on() and os.environ.get("NATIVE_AD", "1").strip() != "0" and bool(re.fullmatch(r"[0-9a-f]{32}", NATIVE_AD_ID))
+
+
+def native_unit(ui: str = "ar") -> str:
+    """The native banner, labelled as an ad once it has drawn something (it carries the page's nonce like AdSense)."""
+    if not native_on():
+        return ""
+    label = AD_LABEL.get(ui, AD_LABEL["ar"])
+    return ('<aside class="ad nat" aria-label="%s"><span class="ad-l">%s</span>'
+            '<script async="async" data-cfasync="false" src="%s%s"></script><div id="container-%s"></div></aside>'
+            % (label, label, NATIVE_AD_SRC, NATIVE_AD_ID, NATIVE_AD_ID))
 
 
 # The in-feed unit: drawn like one of the books, inside a list of at least INFEED_MIN of them, after the
@@ -935,9 +957,9 @@ def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool 
         rel_html = "<h2>%s</h2><ul class=\"rel\">%s</ul>" % (esc(t[key]), "".join(items))
 
     if note.get("about"):
-        about_html = '<section class="about"><h2>%s</h2>%s</section>' % (esc(t["about"]), own_text(content.paragraphs(note["about"]), ui))
+        about_html = '<section class="about"><h2>%s</h2>%s</section>' % (esc(t["about"]), own_text(note["about"], ui))
         if note.get("context"):
-            about_html += '<section class="about"><h2>%s</h2>%s</section>' % (esc(t["context"]), own_text(content.paragraphs(note["context"]), ui))
+            about_html += '<section class="about"><h2>%s</h2>%s</section>' % (esc(t["context"]), own_text(note["context"], ui))
     else:
         about_html = '<section class="about"><h2>%s</h2><p>%s</p></section>' % (
             esc(t["about"]), esc(t["about_saf" if modern and row["curated"] == SAFAHAT_KIND else "about_ol" if modern else "about_txt"].format(
@@ -945,7 +967,7 @@ def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool 
     bio = content.author(row["author_key"], ui)
     if bio:  # written for this site; Wikipedia's summary is only fetched for the others
         about_html += '<section class="about"><h2>%s</h2>%s<small><a href="/author/%s%s">%s</a></small></section>' % (
-            esc(t["about_author"]), own_text(content.paragraphs(bio), ui), esc(quote(row["author_key"])), lang_q(ui), esc(t["bio_more"]))
+            esc(t["about_author"]), own_text(bio, ui), esc(quote(row["author_key"])), lang_q(ui), esc(t["bio_more"]))
     elif author:
         about_html += ('<section class="about" id="aa" hidden data-name="%s" data-alt="%s" data-ui="%s" data-src="%s"><h2>%s</h2><p id="aaT"></p>'
                        '<small><a id="aaL" href="#" target="_blank" rel="noopener">%s</a></small></section>'
@@ -1026,7 +1048,7 @@ def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool 
            logo=LOGO_SVG, search_icon=SEARCH_ICON, ph=esc(t["ph"]), search=esc(t["search"]),
            locale=OG_LOCALE[ui], adsense=site_head(),
            # far from the read buttons (an ad must not invite a mistaken click); only with a nonce to run it
-           ad_head=ad_head() if nonce and ads and indexable else "", ad=ad_unit(ui) if nonce and ads and indexable else "",
+           ad_head=ad_head() if nonce and ads and indexable else "", ad=ad_unit(ui) + native_unit(ui) if nonce and ads and indexable else "",
            robots="index,follow,max-image-preview:large" if indexable else "noindex,follow", facts_h=esc(t["facts_h"]))
     # the Content-Security-Policy of this response only lets scripts carrying its nonce run
     return page.replace("<script", '<script nonce="%s"' % esc(nonce)) if nonce else page

@@ -20,7 +20,7 @@ from .wikisource import WS_KIND
 from .catalog import ARABIC_CAT, CATEGORIES
 from .pages import (ARTICLES_NAME, BRAND, CSS, INFEED_AT, INFEED_MIN, LOGO_SVG, OG_LOCALE, SEARCH_ICON, T, UI_LANG_SHORT, UI_LANGS,
                     _authors, ad_head, ad_unit, analytics_head, book_author, book_title, canonical_path, esc, infeed_meta, infeed_unit,
-                    lang_menu, lang_q, legal_links, own_text, site_head)
+                    lang_menu, lang_q, legal_links, native_unit, own_text, site_head)
 
 PER_PAGE = 60
 MAX_PAGES = 200  # category pages go this deep; the sitemaps list every single book anyway
@@ -272,7 +272,7 @@ def _home_intro(ui: str) -> str:
         return ""
     out = '<div class="intro" data-srv-lang="%s">' % ui
     if paras:
-        out += "<h2>%s</h2>%s" % (esc(s["intro_h"]), own_text(content.paragraphs(paras), ui))
+        out += "<h2>%s</h2>%s" % (esc(s["intro_h"]), own_text(paras, ui))
     if arts:
         out += '<div class="intro-arts"><h3>%s</h3><ul>%s</ul><a class="intro-all" href="/articles%s">%s</a></div>' % (
             esc(s["arts_h"]), "".join('<li><a href="/articles/%s" lang="ar">%s</a></li>' % (esc(a["slug"]), esc(a["title"])) for a in arts),
@@ -305,8 +305,9 @@ def home_html(frontend_dir: str, base: str, ui: str = "ar", nonce: str = "", sea
     ])
     links = " ".join('<a href="/category/%s%s">%s</a>' % (k, lang_q(ui), esc(v[ui])) for k, v in CATEGORIES.items())
     ad = '<div class="wrap">%s</div>' % ad_unit(ui) if nonce and ad_unit(ui) else ""
+    first = '<div class="wrap">%s</div>' % (ad_unit(ui) + native_unit(ui)) if nonce and (ad_unit(ui) or native_unit(ui)) else ""
     page = (_home_template(frontend_dir, ui).replace("<!--SEO:HEAD-->", head).replace("<!--SEO:CATS-->", links)
-            .replace("<!--SEO:AD-->", ad).replace("<!--SEO:INTRO-->", _home_intro(ui)))
+            .replace("<!--SEO:AD-->", first, 1).replace("<!--SEO:AD-->", ad).replace("<!--SEO:INTRO-->", _home_intro(ui)))
     if search:  # /?q=...: the same page showing search results, not a page of its own for search engines
         page = page.replace('<meta name="robots" content="index,follow">', '<meta name="robots" content="noindex,follow">', 1)
     return with_nonce(page, nonce)
@@ -359,7 +360,9 @@ def _shell(ui, base, path, title, desc, body, ld, page=1, extra_q="", extra_css=
            robots=('<meta name="robots" content="%s">\n' % esc(robots)) if robots else "",
            brand=esc(BRAND[ui]), base=esc(base), ld=ld, css=CSS, extra=EXTRA_CSS + extra_css, logo=LOGO_SVG, icon=SEARCH_ICON,
            ph=esc(t["ph"]), search=esc(t["search"]), all=esc(t["all"]), menu=lang_menu(ui, lambda c: path + "?lang=" + c),
-           body=body.replace("<!--SEO:AD-->", ad_unit(ui) if nonce else "").replace("<!--SEO:FEED-->", infeed_unit(ui) if nonce else ""),
+           # the native banner goes in the first ad place only (one per page)
+           body=body.replace("<!--SEO:AD-->", ad_unit(ui) + native_unit(ui) if nonce else "", 1)
+           .replace("<!--SEO:AD-->", ad_unit(ui) if nonce else "").replace("<!--SEO:FEED-->", infeed_unit(ui) if nonce else ""),
            note=esc(t["note"]), legal=legal_links(ui), adsense=site_head(), ad_head=ad_head() if nonce else "")
 
 
@@ -460,7 +463,7 @@ def author_page(conn, key: str, base: str, ui: str = "ar", page: int = 1, nonce:
 
 
 def _text_section(heading: str, paras, ui: str) -> str:
-    return '<section class="intro"><h2>%s</h2>%s</section>' % (esc(heading), own_text(content.paragraphs(paras), ui)) if paras else ""
+    return '<section class="intro"><h2>%s</h2>%s</section>' % (esc(heading), own_text(paras, ui)) if paras else ""
 
 
 def _plain_text(text: str) -> str:

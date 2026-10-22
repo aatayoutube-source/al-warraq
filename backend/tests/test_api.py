@@ -571,7 +571,9 @@ def test_pages_open_in_the_visitors_language(client):
     assert "والبرتغالية واليابانية والألمانية" in privacy and "(ar أو en)" not in privacy  # the eight languages, dated
     en_privacy = client.get("/privacy?lang=en").text
     assert "Our site sets the language cookie above" in en_privacy and "Portuguese, Japanese and German" in en_privacy
-    assert "آخر تحديث: 21 أكتوبر 2026" in client.get("/terms").text  # the terms changed with the takedown form
+    terms = client.get("/terms").text  # the terms changed with the second advertising network
+    assert "آخر تحديث: 22 أكتوبر 2026" in terms and "ومن شبكات إعلانية أخرى" in terms
+    assert "bauval.org" in privacy and "bauval.org" in en_privacy  # the privacy policy names it
 
 
 def test_the_eight_languages(client):
@@ -1060,6 +1062,16 @@ def test_ad_units_on_content_pages_only(client, monkeypatch):
     for url in ("/about", "/privacy", "/terms", "/contact", "/no/such/page"):  # no ads beside thin or legal content
         r = client.get(url)
         assert unit not in r.text and loader not in r.text and "'strict-dynamic'" not in r.headers["content-security-policy"], url
+    # the second network's native banner: once per page with ads (its container id is unique), in the first ad place
+    native = '<script nonce="%s" async="async" data-cfasync="false" src="https://bauval.org/21/4d9f7dee523a20db44fe6c6ffb5f7e2a">'
+    for url in ("/", "/?lang=fr", "/category/poe", "/author/shakespeare", "/book/1", "/articles"):
+        r = client.get(url, follow_redirects=True)
+        nonce = r.headers["content-security-policy"].split("'nonce-")[1].split("'")[0]
+        assert r.text.count(native % nonce) == 1 and r.text.count('<div id="container-4d9f7dee523a20db44fe6c6ffb5f7e2a">') == 1, url
+    assert all('src="https://bauval.org/' not in client.get(u).text for u in ("/about", "/privacy", "/contact", "/no/such/page"))
+    monkeypatch.setenv("NATIVE_AD", "0")  # the banner alone can be turned off
+    r = client.get("/category/poe")
+    assert 'src="https://bauval.org/' not in r.text and unit in r.text
     monkeypatch.setenv("ADS", "0")  # a test copy of the site: no ads, the strict policies as before
     r = client.get("/")
     assert unit not in r.text and loader not in r.text and "script-src 'self'" in r.headers["content-security-policy"]

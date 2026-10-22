@@ -8,6 +8,8 @@ apart from the code:
     authors.json     {"shakespeare": {"ar": [...], "en": [...]}, ...}
     articles/*.md    a front matter (slug, title, description, date) and a light Markdown body
 
+Beside "ar" and "en", each text may be written in the other interface languages ("zh", "fr", "es", "pt", "ja", "de",
+as is the book descriptions file app/data/book_descriptions.json); a language it lacks shows the English text.
 Paragraphs may hold **bold** and [links](/path) (site paths and https addresses only); everything else is text.
 
 A page whose own words are too few to stand on their own (a catalogue record) is "thin": with THIN_NOINDEX on
@@ -28,9 +30,26 @@ def thin_noindex() -> bool:
 
 
 def text_ui(ui: str) -> str:
-    """The language these texts are read in: they are written in Arabic and English, and every other interface
-    language (French, Chinese...) shows the English one."""
+    """The language the legal pages (legal.py) are read in: they are written in Arabic and English, and every other
+    interface language (French, Chinese...) shows the English one."""
     return ui if ui in ("ar", "en") else "en"
+
+
+class Text(list):
+    """Paragraphs, and the language they are written in (English stands in for a language not translated yet)."""
+    def __init__(self, items=(), lang=""):
+        super().__init__(items or ())
+        self.lang = lang
+
+
+def _pick(entry: dict, ui: str):
+    """(text, its language) from {"ar": ..., "en": ..., "fr": ...}: this language's, else the English one (Arabic,
+    the site's own, never falls back)."""
+    if entry.get(ui):
+        return entry[ui], ui
+    if ui != "ar" and entry.get("en"):
+        return entry["en"], "en"
+    return None, ui
 
 
 def _load(name: str, default):
@@ -48,45 +67,45 @@ def _load(name: str, default):
     return data
 
 
-def home(ui: str) -> list:
-    return _load("home.json", {}).get(text_ui(ui), [])
+def home(ui: str) -> Text:
+    return Text(*_pick(_load("home.json", {}), ui))
 
 
-def category(key: str, ui: str) -> list:
-    return _load("categories.json", {}).get(key, {}).get(text_ui(ui), [])
+def category(key: str, ui: str) -> Text:
+    return Text(*_pick(_load("categories.json", {}).get(key, {}), ui))
 
 
-def author(key: str, ui: str) -> list:
-    return _load("authors.json", {}).get(key, {}).get(text_ui(ui), []) if key else []
+def author(key: str, ui: str) -> Text:
+    return Text(*_pick(_load("authors.json", {}).get(key, {}), ui)) if key else Text()
 
 
 def book(row, ui: str) -> dict:
-    """{"about": [...], "context": [...]} for a book in that language.
+    """{"about": Text, "context": Text} for a book in that language.
     Reads from DB book_descriptions (keyed by gid), falls back to books.json."""
     if not row["gid"]:
         return {}
-    ui = text_ui(ui)
     try:
         from . import db as _db
         conn = _db.connect()
         dr = conn.execute(
-            "SELECT ar, ar_ctx, en, en_ctx FROM book_descriptions WHERE gid=?",
+            "SELECT ar, ar_ctx, en, en_ctx, i18n FROM book_descriptions WHERE gid=?",
             (row["gid"],)
         ).fetchone()
         conn.close()
         if dr:
-            if ui == "ar":
-                ab, ctx = json.loads(dr["ar"]), json.loads(dr["ar_ctx"])
-            else:
-                ab, ctx = json.loads(dr["en"]), json.loads(dr["en_ctx"])
-            if ab:
-                return {"about": ab, "context": ctx}
+            texts = {"ar": {"about": json.loads(dr["ar"]), "context": json.loads(dr["ar_ctx"])},
+                     "en": {"about": json.loads(dr["en"]), "context": json.loads(dr["en_ctx"])}}
+            texts.update(json.loads(dr["i18n"] or "{}"))
+            note, lang = _pick({k: v for k, v in texts.items() if v.get("about")}, ui)
+            if note:
+                return {"about": Text(note["about"], lang), "context": Text(note.get("context"), lang)}
     except Exception:
         pass
     # Legacy books.json fallback
     if row["curated"] != 1:
         return {}
-    return _load("books.json", {}).get("gid:%d" % row["gid"], {}).get(ui, {})
+    note, lang = _pick(_load("books.json", {}).get("gid:%d" % row["gid"], {}), ui)
+    return {k: Text(v, lang) for k, v in note.items()} if note else {}
 
 
 def described_gids(ui: str = "") -> set:
