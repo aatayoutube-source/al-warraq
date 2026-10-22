@@ -13,7 +13,7 @@ as is the book descriptions file app/data/book_descriptions.json); a language it
 Paragraphs may hold **bold** and [links](/path) (site paths and https addresses only); everything else is text.
 
 A page whose own words are too few to stand on their own (a catalogue record) is "thin": with THIN_NOINDEX on
-(the default) it stays out of search results, the sitemap and ads until it gets a text of its own here.
+(the default) it stays out of search results and the sitemap until it gets a text of its own here.
 """
 import json
 import os

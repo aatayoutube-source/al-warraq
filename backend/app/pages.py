@@ -44,8 +44,6 @@ def own_text(paras, ui: str) -> str:
 
 BRAND = {"ar": "مكتبة الوراق", "en": "Al-Warraq Library", "zh": "Al-Warraq 图书馆", "fr": "Bibliothèque Al-Warraq",
          "es": "Biblioteca Al-Warraq", "pt": "Biblioteca Al-Warraq", "ja": "アル・ワッラーク図書館", "de": "Bibliothek Al-Warraq"}
-# the site's Google AdSense account: its tag goes in the head of every page (ADSENSE_ACCOUNT replaces it)
-ADSENSE_ACCOUNT = os.environ.get("ADSENSE_ACCOUNT", "").strip() or "ca-pub-7058063023261152"
 # the about / privacy / terms / contact pages (legal.py), linked from every footer
 LEGAL = {"ar": (("about", "عن المكتبة"), ("privacy", "سياسة الخصوصية"), ("terms", "شروط الاستخدام"), ("contact", "اتصل بنا"),
                 ("takedown", "طلب إزالة محتوى")),
@@ -419,8 +417,6 @@ footer p{margin:0}
 .nf-cats a{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:5px 14px;text-decoration:none;color:var(--ink);font-size:.9rem}
 .nf-cats a:hover{border-color:var(--brand-2);color:var(--brand)}
 @media (max-width:640px){.book{grid-template-columns:1fr;justify-items:center}.cover{width:200px}.book>div{width:100%}dl{grid-template-columns:1fr}}
-.ad{margin:28px 0;text-align:center}.ad .ad-l{display:none;font-size:11px;letter-spacing:.04em;color:var(--muted);margin-bottom:6px}.ad:has(ins[data-ad-status=filled]) .ad-l,.ad.nat:has([id^=container-] > *) .ad-l{display:block}.ad:has(ins[data-ad-status=unfilled]){display:none}ins.adsbygoogle[data-ad-status=unfilled]{display:none!important}
-.rel li.infeed{grid-column:1/-1;background:none;border:0;transform:none;text-align:center}.infeed .ad-l{display:none;font-size:11px;letter-spacing:.04em;color:var(--muted);margin-bottom:6px}.infeed:has(ins[data-ad-status=filled]) .ad-l{display:block}.infeed:has(ins[data-ad-status=unfilled]){display:none}
 .book h2.facts-h{font-size:1rem;margin:18px 0 6px;color:var(--muted);font-weight:600}.rights.pd{background:var(--soft);color:var(--ink)}.rights a{font-weight:600}.crumbs span{color:var(--muted)}.about p+p{margin-top:.6em}.about small a{font-weight:600}
 """
 
@@ -459,7 +455,7 @@ def default_ui(row) -> str:
 # ---------- the visitor's language ----------
 LANG_COOKIE = "warraq_lang"  # the language button's choice (kept a year); the server reads it for every page
 # Crawlers always get a page's own language: Googlebot sends no Accept-Language, and these are recognised too
-# (Google's other fetchers and the AdSense crawler Mediapartners-Google, page-speed tools, headless browsers...)
+# (Google's other fetchers, page-speed tools, headless browsers...)
 _CRAWLER = re.compile(r"bot|crawl|spider|slurp|google|bing|yandex|baidu|lighthouse|pagespeed|preview|headless|"
                       r"facebookexternalhit|curl|wget|python|monitor|uptime", re.I)
 
@@ -518,86 +514,6 @@ def canonical_path(row) -> str:
     return "/book/%d/%s" % (row["id"], quote(slugify(book_title(row, ui))))
 
 
-def adsense_meta() -> str:
-    return '<meta name="google-adsense-account" content="%s">' % esc(ADSENSE_ACCOUNT)
-
-
-# The AdSense display unit ("Dhdj"). Only on pages with real content (home, categories, authors, books): never
-# on the 404, contact or legal pages. ADS=0 turns ads off (a test copy); ADSENSE_SLOT replaces the unit.
-AD_SLOT = os.environ.get("ADSENSE_SLOT", "").strip() or "1844690351"
-# Google permits "Advertisements" or "Sponsored links" only (or the same word in the page's language)
-AD_LABEL = {"ar": "إعلانات", "en": "Advertisements", "zh": "广告", "fr": "Publicités", "es": "Anuncios", "pt": "Anúncios",
-            "ja": "広告", "de": "Anzeigen"}
-
-
-def ads_on() -> bool:
-    return os.environ.get("ADS", "1").strip() != "0"
-
-
-def ad_head() -> str:
-    """The AdSense loader, once per page with ads (it carries the response's nonce like every script there)."""
-    if not ads_on():
-        return ""
-    return ('<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=%s" '
-            'crossorigin="anonymous"></script>' % esc(ADSENSE_ACCOUNT))
-
-
-def ad_unit(ui: str = "ar") -> str:
-    """One responsive ad, labelled as such once Google fills it (an unfilled one takes no room)."""
-    if not ads_on():
-        return ""
-    label = AD_LABEL.get(ui, AD_LABEL["ar"])
-    return ('<aside class="ad" aria-label="%s"><span class="ad-l">%s</span>'
-            '<ins class="adsbygoogle" style="display:block" data-ad-client="%s" data-ad-slot="%s" data-ad-format="auto" '
-            'data-full-width-responsive="true"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script></aside>'
-            % (label, label, esc(ADSENSE_ACCOUNT), esc(AD_SLOT)))
-
-
-# A second network's native banner (bauval.org): in the first ad place of each page with ads, and only there, since
-# its container's id must be unique on the page. NATIVE_AD=0 turns it off; NATIVE_AD_ID replaces the unit.
-NATIVE_AD_ID = os.environ.get("NATIVE_AD_ID", "").strip() or "4d9f7dee523a20db44fe6c6ffb5f7e2a"
-NATIVE_AD_SRC = "https://bauval.org/21/"
-
-
-def native_on() -> bool:
-    return ads_on() and os.environ.get("NATIVE_AD", "1").strip() != "0" and bool(re.fullmatch(r"[0-9a-f]{32}", NATIVE_AD_ID))
-
-
-def native_unit(ui: str = "ar") -> str:
-    """The native banner, labelled as an ad once it has drawn something (it carries the page's nonce like AdSense)."""
-    if not native_on():
-        return ""
-    label = AD_LABEL.get(ui, AD_LABEL["ar"])
-    return ('<aside class="ad nat" aria-label="%s"><span class="ad-l">%s</span>'
-            '<script async="async" data-cfasync="false" src="%s%s"></script><div id="container-%s"></div></aside>'
-            % (label, label, NATIVE_AD_SRC, NATIVE_AD_ID, NATIVE_AD_ID))
-
-
-# The in-feed unit: drawn like one of the books, inside a list of at least INFEED_MIN of them, after the
-# INFEED_AT-th (server pages: the category and author lists; the home page: its search results, through app.js)
-INFEED_SLOT = os.environ.get("ADSENSE_INFEED_SLOT", "").strip() or "6915772378"
-INFEED_LAYOUT = "-gg+g-1f-3w+ci"
-INFEED_AT, INFEED_MIN = 8, 12
-
-
-def infeed_unit(ui: str = "ar") -> str:
-    """The in-feed ad as an item of a server-rendered list (its script gets the page's nonce)."""
-    if not ads_on():
-        return ""
-    label = AD_LABEL.get(ui, AD_LABEL["ar"])
-    return ('<li class="infeed" aria-label="%s"><span class="ad-l">%s</span><ins class="adsbygoogle" style="display:block" '
-            'data-ad-format="fluid" data-ad-layout-key="%s" data-ad-client="%s" data-ad-slot="%s"></ins>'
-            '<script>(adsbygoogle = window.adsbygoogle || []).push({});</script></li>'
-            % (label, label, esc(INFEED_LAYOUT), esc(ADSENSE_ACCOUNT), esc(INFEED_SLOT)))
-
-
-def infeed_meta() -> str:
-    """Tells the home page's script which in-feed unit to put among the search results."""
-    if not ads_on():
-        return ""
-    return '<meta name="warraq-infeed" content="%s|%s|%s">' % (esc(ADSENSE_ACCOUNT), esc(INFEED_SLOT), esc(INFEED_LAYOUT))
-
-
 # Google Analytics 4 (the site's property). ANALYTICS=0 turns it off (a test copy); GA_ID replaces the property.
 GA_ID = os.environ.get("GA_ID", "").strip() or "G-RB47QYRPE9"
 
@@ -615,13 +531,8 @@ def analytics_head() -> str:
 
 
 def site_head() -> str:
-    """What every page carries in its head: AdSense's site tag and Google Analytics."""
-    return adsense_meta() + "\n" + analytics_head()
-
-
-def ads_txt() -> str:
-    """ads.txt: Google may sell ads on this site for this publisher account, and nobody else may."""
-    return "google.com, %s, DIRECT, f08c47fec0942fa0\n" % ADSENSE_ACCOUNT.replace("ca-pub-", "pub-")
+    """What every page carries in its head: Google Analytics."""
+    return analytics_head()
 
 
 def legal_links(ui: str) -> str:
@@ -735,7 +646,7 @@ def related(conn, row):
 
 
 def book_indexable(row) -> bool:
-    """In search results and with ads: a book page with a text of its own (in its default language). With
+    """In search results: a book page with a text of its own (in its default language). With
     THIN_NOINDEX off, every book page."""
     return not content.thin_noindex() or bool(content.book(row, default_ui(row)))
 
@@ -783,7 +694,7 @@ def not_found_html(ui="ar") -> str:
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex">
-{adsense}
+{site_head}
 <title>{h} | {brand}</title>
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" type="image/svg+xml" href="/logo.svg">
@@ -808,7 +719,7 @@ def not_found_html(ui="ar") -> str:
 """.format(ui=ui, dir=t["dir"], h=esc(t["notfound"]), brand=esc(BRAND[ui]), css=CSS, q=q,
            logo=LOGO_SVG, all=esc(t["all"]), menu=lang_menu(ui, lambda c: "/?lang=" + c), p=esc(t["nf_p"]), icon=SEARCH_ICON,
            ph=esc(t["ph"]), search=esc(t["search"]), home=esc(t["nf_home"]), try_=esc(t["nf_try"]), cats=cats,
-           legal=legal_links(ui), note=esc(t["note"]), adsense=site_head())
+           legal=legal_links(ui), note=esc(t["note"]), site_head=site_head())
 
 
 SHARE_ICONS = {"wa": '<svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" d="M12 3a9 9 0 0 0-7.7 13.6L3 21l4.5-1.2A9 9 0 1 0 12 3z"/><path fill="currentColor" d="M9.1 7.6c.3 0 .5 0 .7.5l.8 1.9c.1.3 0 .5-.1.7l-.6.7c-.1.2-.2.4 0 .6.9 1.5 2 2.6 3.5 3.4.2.1.4.1.6-.1l.8-.9c.2-.2.4-.3.7-.2l1.8.9c.3.1.5.3.5.5 0 .6-.3 1.4-.9 1.8-.7.5-1.6.6-2.5.3-3-.9-5.4-3.2-6.5-6.2-.3-.9-.2-1.9.4-2.6.2-.3.5-.5.8-.5z"/></svg>',
@@ -831,7 +742,7 @@ var a=document.getElementById('aaL'),u=(j.content_urls&&j.content_urls.desktop&&
 next();})();</script>"""
 
 
-def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool = False, nonce: str = "", ads: bool = True) -> str:
+def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool = False, nonce: str = "") -> str:
     d_ui = default_ui(row)
     ui = ui if ui in T else d_ui
     t = T[ui]
@@ -999,8 +910,7 @@ def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool 
 <meta name="twitter:title" content="{page_title}">
 <meta name="twitter:description" content="{desc}">
 <meta name="robots" content="{robots}">
-{adsense}
-{ad_head}
+{site_head}
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" type="image/svg+xml" href="/logo.svg">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -1030,7 +940,6 @@ def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool 
 </div>
 </article>
 {about}
-{ad}
 {rel}
 <footer>{legal}<p>{note}</p></footer>
 </main>
@@ -1046,9 +955,7 @@ def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool 
            alt=esc(title), by=('<p class="by">%s</p>' % esc(author)) if author else "", tags=tags, numbers_html=numbers_html, btns=btns, share=share, share_js=SHARE_JS, facts=facts, rel=rel_html, about=about_html,
            note=esc(t["note"]), legal=legal_links(ui), cv_script=cv_script, like_js=LIKE_JS, wiki_js=WIKI_JS,
            logo=LOGO_SVG, search_icon=SEARCH_ICON, ph=esc(t["ph"]), search=esc(t["search"]),
-           locale=OG_LOCALE[ui], adsense=site_head(),
-           # far from the read buttons (an ad must not invite a mistaken click); only with a nonce to run it
-           ad_head=ad_head() if nonce and ads and indexable else "", ad=ad_unit(ui) + native_unit(ui) if nonce and ads and indexable else "",
+           locale=OG_LOCALE[ui], site_head=site_head(),
            robots="index,follow,max-image-preview:large" if indexable else "noindex,follow", facts_h=esc(t["facts_h"]))
     # the Content-Security-Policy of this response only lets scripts carrying its nonce run
     return page.replace("<script", '<script nonce="%s"' % esc(nonce)) if nonce else page

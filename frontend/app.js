@@ -67,7 +67,6 @@
             filters: 'تصفية',
             results: '{n} كتاب',
             results_more: 'أكثر من {n} كتاب',
-            ad: 'إعلانات', // the labels Google permits: "Advertisements" or "Sponsored links"
             near_all: 'لا يوجد تطابق تام لـ«{q}»، وهذه {n} نتيجة قريبة منه',
             near_some: 'منها {n} بتهجئة قريبة',
             loading: 'جارٍ التحميل…',
@@ -173,7 +172,6 @@
             filters: 'Filters',
             results: '{n} books',
             results_more: 'More than {n} books',
-            ad: 'Advertisements',
             near_all: 'No exact match for “{q}”: {n} close results',
             near_some: '{n} of them spelled a little differently',
             loading: 'Loading…',
@@ -279,7 +277,6 @@
             filters: '筛选',
             results: '{n} 本图书',
             results_more: '超过 {n} 本图书',
-            ad: '广告',
             near_all: '没有与“{q}”完全匹配的结果：{n} 个相近结果',
             near_some: '其中 {n} 个拼写略有不同',
             loading: '加载中…',
@@ -385,7 +382,6 @@
             filters: 'Filtres',
             results: '{n} livres',
             results_more: 'Plus de {n} livres',
-            ad: 'Publicités',
             near_all: 'Aucun résultat exact pour « {q} » : {n} résultats proches',
             near_some: 'dont {n} avec une orthographe un peu différente',
             loading: 'Chargement…',
@@ -491,7 +487,6 @@
             filters: 'Filtros',
             results: '{n} libros',
             results_more: 'Más de {n} libros',
-            ad: 'Anuncios',
             near_all: 'No hay coincidencias exactas para «{q}»: {n} resultados parecidos',
             near_some: '{n} de ellos con una ortografía algo distinta',
             loading: 'Cargando…',
@@ -597,7 +592,6 @@
             filters: 'Filtros',
             results: '{n} livros',
             results_more: 'Mais de {n} livros',
-            ad: 'Anúncios',
             near_all: 'Nenhum resultado exato para “{q}”: {n} resultados parecidos',
             near_some: '{n} deles com grafia um pouco diferente',
             loading: 'Carregando…',
@@ -703,7 +697,6 @@
             filters: '絞り込み',
             results: '{n}冊',
             results_more: '{n}冊以上',
-            ad: '広告',
             near_all: '「{q}」に完全一致する結果はありません：近い結果 {n}件',
             near_some: 'うち{n}件は表記が少し異なります',
             loading: '読み込み中…',
@@ -809,7 +802,6 @@
             filters: 'Filter',
             results: '{n} Bücher',
             results_more: 'Mehr als {n} Bücher',
-            ad: 'Anzeigen',
             near_all: 'Kein genauer Treffer für „{q}“: {n} ähnliche Ergebnisse',
             near_some: 'davon {n} mit etwas anderer Schreibweise',
             loading: 'Wird geladen…',
@@ -1318,34 +1310,6 @@
     }
     let rendered = 0;
 
-    // The AdSense in-feed unit among the results (the server names it in a meta tag, only where ads are shown):
-    // one per search, made once and put back in place when the same list is drawn again, so that switching the
-    // language never reloads an ad on its own.
-    const FEED = (() => { const m = document.querySelector('meta[name="warraq-infeed"]');
-        const p = m ? (m.getAttribute('content') || '').split('|') : [];
-        return p.length === 3 && p[0] && p[1] ? { client: p[0], slot: p[1], layout: p[2] } : null; })();
-    const FEED_AT = 8; // after the 8th book, in a list of 12 or more
-    let feedAd = null,
-        feedKey = '';
-
-    function placeFeedAd(grid) {
-        if (!FEED || S.loading || S.err || S.items.length < FEED_AT + 4) return;
-        const at = grid.children[FEED_AT - 1];
-        if (!at) return;
-        const key = [S.q.trim(), S.cat, S.org, S.ak, S.au, S.bl, S.sort].join('\u0001');
-        const fresh = !feedAd || key !== feedKey;
-        if (fresh) {
-            feedAd = document.createElement('div');
-            feedAd.className = 'infeed';
-            feedKey = key;
-        }
-        feedAd.setAttribute('aria-label', tr('ad'));
-        if (fresh) feedAd.innerHTML = '<span class="ad-l">' + esc(tr('ad')) + '</span><ins class="adsbygoogle" style="display:block" data-ad-format="fluid" data-ad-layout-key="' + esc(FEED.layout) + '" data-ad-client="' + esc(FEED.client) + '" data-ad-slot="' + esc(FEED.slot) + '"></ins>';
-        else feedAd.querySelector('.ad-l').textContent = tr('ad');
-        at.after(feedAd);
-        if (fresh) try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {}
-    }
-
     function renderResults(append) {
         const chips = [];
         if (S.au) chips.push('<button class="chip" type="button" data-clear="au">' + esc(S.au) + ' <span aria-hidden="true">×</span></button>');
@@ -1375,8 +1339,7 @@
 
         const grid = $('#grid');
         if (!append) { grid.innerHTML = S.items.map(card).join('');
-            rendered = S.items.length;
-            placeFeedAd(grid); } else if (S.items.length > rendered) { grid.insertAdjacentHTML('beforeend', S.items.slice(rendered).map(card).join(''));
+            rendered = S.items.length; } else if (S.items.length > rendered) { grid.insertAdjacentHTML('beforeend', S.items.slice(rendered).map(card).join(''));
             rendered = S.items.length; }
         watchCovers(grid);
 

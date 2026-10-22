@@ -347,47 +347,33 @@ def create_app() -> FastAPI:
         except Exception:  # OpenAlex unreachable or slow: the desk still shows the source links
             return {"query": q, "translated": False, "total": 0, "items": [], "error": True}
 
-    @app.get("/ads.txt", include_in_schema=False)
-    def ads_txt():
-        return PlainTextResponse(pages.ads_txt())
-
     @app.get("/robots.txt", include_in_schema=False)
     def robots(request: Request):
         return PlainTextResponse(seo.robots_txt(pages.site_base(request)))
 
     frontend = os.environ.get("FRONTEND_DIR") or os.path.join(os.path.dirname(__file__), "..", "..", "frontend")
 
-    def _ad_nonce() -> str:  # pages with ads run scripts by nonce (AdSense's loader and the ad's own line)
-        return secrets.token_urlsafe(16) if pages.ads_on() else ""
-
-    def _ad_headers(nonce: str) -> dict:
-        return {"Content-Security-Policy": security.AD_CSP.format(nonce=nonce)} if nonce else {}
-
     @app.get("/", include_in_schema=False)
     def home(request: Request, lang: str = Query("", max_length=5)):
         """index.html plus what only the server knows: canonical links, structured data, verification tags."""
         if not os.path.isfile(os.path.join(frontend, "index.html")):
             raise HTTPException(404, "not found")
-        nonce = _ad_nonce()
-        return HTMLResponse(seo.home_html(frontend, pages.site_base(request), pages.visitor_ui(request, lang), nonce,
-                                          search=bool(request.query_params.get("q", "").strip())),
-                            headers=_ad_headers(nonce))
+        return HTMLResponse(seo.home_html(frontend, pages.site_base(request), pages.visitor_ui(request, lang),
+                                          search=bool(request.query_params.get("q", "").strip())))
 
     @app.get("/category/{key}", include_in_schema=False)
     def category(key: str, request: Request, lang: str = Query("", max_length=5), page: int = Query(1, ge=1, le=seo.MAX_PAGES),
                  conn=Depends(get_conn)):
-        nonce = _ad_nonce()
         ui = pages.visitor_ui(request, lang)
-        body = seo.category_page(conn, key, pages.site_base(request), ui, page, nonce)
-        return HTMLResponse(body, headers=_ad_headers(nonce)) if body else HTMLResponse(pages.not_found_html(ui), status_code=404)
+        body = seo.category_page(conn, key, pages.site_base(request), ui, page)
+        return HTMLResponse(body) if body else HTMLResponse(pages.not_found_html(ui), status_code=404)
 
     @app.get("/author/{key}", include_in_schema=False)
     def author(key: str, request: Request, lang: str = Query("", max_length=5), page: int = Query(1, ge=1, le=seo.MAX_PAGES),
                conn=Depends(get_conn)):
-        nonce = _ad_nonce()
         ui = pages.visitor_ui(request, lang)
-        body = seo.author_page(conn, key, pages.site_base(request), ui, page, nonce)
-        return HTMLResponse(body, headers=_ad_headers(nonce)) if body else HTMLResponse(pages.not_found_html(ui), status_code=404)
+        body = seo.author_page(conn, key, pages.site_base(request), ui, page)
+        return HTMLResponse(body) if body else HTMLResponse(pages.not_found_html(ui), status_code=404)
 
     # ---------- about, privacy, terms, contact (legal.py) ----------
     def _ui(request, lang):
@@ -445,17 +431,15 @@ def create_app() -> FastAPI:
     # ---------- the library's articles ----------
     @app.get("/articles", include_in_schema=False)
     def articles(request: Request, lang: str = Query("", max_length=5)):
-        nonce = _ad_nonce()
-        return HTMLResponse(seo.articles_page(pages.site_base(request), pages.visitor_ui(request, lang), nonce), headers=_ad_headers(nonce))
+        return HTMLResponse(seo.articles_page(pages.site_base(request), pages.visitor_ui(request, lang)))
 
     @app.get("/articles/{slug}", include_in_schema=False)
     def article(slug: str, request: Request, lang: str = Query("", max_length=5)):
         ui = pages.visitor_ui(request, lang)
-        nonce = _ad_nonce()
-        body = seo.article_page(slug, pages.site_base(request), ui, nonce)
+        body = seo.article_page(slug, pages.site_base(request), ui)
         if not body:
             return HTMLResponse(pages.not_found_html(ui), status_code=404)
-        return HTMLResponse(body, headers=_ad_headers(nonce))
+        return HTMLResponse(body)
 
     @app.get("/admin/messages", include_in_schema=False)
     def admin_messages(request: Request, conn=Depends(get_conn)):
@@ -499,10 +483,9 @@ def create_app() -> FastAPI:
         stats.track_visitor(conn, request)
         stats.add_view(conn, request, book_id)
         nonce = secrets.token_urlsafe(16)  # only this page's own scripts may run
-        ads = pages.ads_on() and pages.book_indexable(row)  # a thin page (THIN_NOINDEX) shows no ads
         return HTMLResponse(pages.render_book(conn, row, pages.site_base(request), pages.visitor_ui(request, lang, pages.default_ui(row)),
-                                              stats.book_numbers(conn, book_id), stats.has_liked(conn, request, book_id), nonce, ads),
-                            headers={"Content-Security-Policy": (security.AD_CSP if ads else security.BOOK_CSP).format(nonce=nonce)})
+                                              stats.book_numbers(conn, book_id), stats.has_liked(conn, request, book_id), nonce),
+                            headers={"Content-Security-Policy": security.BOOK_CSP.format(nonce=nonce)})
 
     @app.get("/book/{book_id}", include_in_schema=False)
     def book_short(book_id: int, request: Request, lang: str = "", conn=Depends(get_conn)):

@@ -340,7 +340,7 @@ def _records(paths):
 
 
 PERSIAN = re.compile("[گپچژکی]")  # letters Arabic does not use: a Persian or Urdu title
-ADULT = re.compile(r"(?<![a-z])(sex|sexual|erotic|erotica)(?![a-z])|جنس", re.I)  # kept off a family library (and AdSense)
+ADULT = re.compile(r"(?<![a-z])(sex|sexual|erotic|erotica)(?![a-z])|جنس", re.I)  # kept off a family library
 
 
 def fix_name(name: str) -> str:

@@ -1,5 +1,4 @@
-"""The pages every site needs before it shows ads (AdSense reviews them): about, privacy, terms, contact, and
-the takedown form for rights holders.
+"""The pages every site needs: about, privacy, terms, contact, and the takedown form for rights holders.
 
 Contact messages go to the statistics database (table contact_messages, deleted after a year) and are
 read at /admin/messages, behind HTTP Basic auth with the password in ADMIN_PASSWORD; without that
@@ -19,11 +18,11 @@ from urllib.parse import parse_qs
 from . import content, stats
 from .pages import BRAND, LEGAL, T, UI_LANGS, esc, lang_q
 
-# each page its own date: both changed with the second advertising network (the privacy policy also with the languages)
-UPDATED = {"privacy": {"ar": "22 أكتوبر 2026", "en": "22 October 2026", "zh": "2026年10月22日", "fr": "22 octobre 2026",
-                       "es": "22 de octubre de 2026", "pt": "22 de outubro de 2026", "ja": "2026年10月22日", "de": "22. Oktober 2026"},
-           "terms": {"ar": "22 أكتوبر 2026", "en": "22 October 2026", "zh": "2026年10月22日", "fr": "22 octobre 2026",
-                     "es": "22 de octubre de 2026", "pt": "22 de outubro de 2026", "ja": "2026年10月22日", "de": "22. Oktober 2026"}}
+# each page its own date: both changed when the site stopped showing ads
+UPDATED = {"privacy": {"ar": "23 أكتوبر 2026", "en": "23 October 2026", "zh": "2026年10月23日", "fr": "23 octobre 2026",
+                       "es": "23 de octubre de 2026", "pt": "23 de outubro de 2026", "ja": "2026年10月23日", "de": "23. Oktober 2026"},
+           "terms": {"ar": "23 أكتوبر 2026", "en": "23 October 2026", "zh": "2026年10月23日", "fr": "23 octobre 2026",
+                     "es": "23 de octubre de 2026", "pt": "23 de outubro de 2026", "ja": "2026年10月23日", "de": "23. Oktober 2026"}}
 EMAIL_DEFAULT = "alwarraqibrary@gmail.com"  # the library's mailbox
 PAGES = ("about", "privacy", "terms", "contact", "takedown")
 THIN_PAGES = ("contact", "takedown")  # forms with a few lines around them: reachable from every page, not search results
@@ -57,7 +56,7 @@ L = {
     "ar": {
         "updated": "آخر تحديث: {d}",
         "about_d": "مكتبة الوراق مكتبة رقمية عربية مفتوحة تفهرس أكثر من مليون كتاب سقط عنها حق النشر، وتوصلك إلى نسخها المجانية في مصادرها الأصلية.",
-        "privacy_d": "ما الذي تجمعه مكتبة الوراق من معلومات، وكيف تستخدمها، وكيف تعمل ملفات الكوكيز وإعلانات Google AdSense على الموقع.",
+        "privacy_d": "ما الذي تجمعه مكتبة الوراق من معلومات، وكيف تستخدمها، وكيف تعمل ملفات الكوكيز وGoogle Analytics على الموقع.",
         "terms_d": "شروط استخدام مكتبة الوراق: طبيعة الخدمة، والملك العام وحقوق النشر، والاستخدام المقبول، وحدود المسؤولية.",
         "contact_d": "تواصل مع مكتبة الوراق: اقترح كتاباً، أو أبلغ عن خطأ أو رابط معطّل، أو اسأل عن حقوق النشر والإعلانات.",
         "f_name": "الاسم", "f_email": "بريدك الإلكتروني", "f_topic": "الموضوع", "f_msg": "رسالتك", "f_send": "إرسال الرسالة",
@@ -79,7 +78,7 @@ L = {
     "en": {
         "updated": "Last updated: {d}",
         "about_d": "Al-Warraq is an open Arabic digital library that indexes over a million public-domain books and leads you to their free copies at the original sources.",
-        "privacy_d": "What Al-Warraq Library collects, how it is used, and how cookies and Google AdSense ads work on the site.",
+        "privacy_d": "What Al-Warraq Library collects, how it is used, and how cookies and Google Analytics work on the site.",
         "terms_d": "Terms of use of Al-Warraq Library: the service, the public domain and copyright, acceptable use and liability.",
         "contact_d": "Contact Al-Warraq Library: suggest a book, report an error or a broken link, or ask about copyright and advertising.",
         "f_name": "Name", "f_email": "Your email", "f_topic": "Subject", "f_msg": "Your message", "f_send": "Send message",
@@ -101,7 +100,7 @@ L = {
     "zh": {
         "updated": "最后更新：{d}",
         "about_d": "Al-Warraq 图书馆是一个开放的阿拉伯数字图书馆，为超过一百万本公有领域图书建立索引，并带你前往原始来源中的免费副本。",
-        "privacy_d": "Al-Warraq 图书馆收集哪些信息、如何使用，以及 Cookie 和 Google AdSense 广告在本站如何运作。",
+        "privacy_d": "Al-Warraq 图书馆收集哪些信息、如何使用，以及 Cookie 和 Google Analytics 在本站如何运作。",
         "terms_d": "Al-Warraq 图书馆的使用条款：服务性质、公有领域与版权、可接受的使用方式以及责任限制。",
         "contact_d": "联系 Al-Warraq 图书馆：推荐图书、报告错误或失效链接，或咨询版权与广告事宜。",
         "f_name": "姓名", "f_email": "你的电子邮箱", "f_topic": "主题", "f_msg": "留言内容", "f_send": "发送留言",
@@ -124,7 +123,7 @@ L = {
     "fr": {
         "updated": "Dernière mise à jour : {d}",
         "about_d": "Al-Warraq est une bibliothèque numérique arabe ouverte qui indexe plus d’un million de livres du domaine public et vous mène à leurs copies gratuites aux sources d’origine.",
-        "privacy_d": "Ce que la Bibliothèque Al-Warraq collecte, comment ces données sont utilisées, et comment fonctionnent les cookies et les annonces Google AdSense sur le site.",
+        "privacy_d": "Ce que la Bibliothèque Al-Warraq collecte, comment ces données sont utilisées, et comment fonctionnent les cookies et Google Analytics sur le site.",
         "terms_d": "Conditions d’utilisation de la Bibliothèque Al-Warraq : le service, le domaine public et le droit d’auteur, l’usage acceptable et la responsabilité.",
         "contact_d": "Contactez la Bibliothèque Al-Warraq : suggérez un livre, signalez une erreur ou un lien cassé, ou posez une question sur le droit d’auteur et la publicité.",
         "f_name": "Nom", "f_email": "Votre e-mail", "f_topic": "Objet", "f_msg": "Votre message", "f_send": "Envoyer le message",
@@ -147,7 +146,7 @@ L = {
     "es": {
         "updated": "Última actualización: {d}",
         "about_d": "Al-Warraq es una biblioteca digital árabe abierta que indexa más de un millón de libros de dominio público y te lleva a sus copias gratuitas en las fuentes originales.",
-        "privacy_d": "Qué información recoge la Biblioteca Al-Warraq, cómo se usa y cómo funcionan las cookies y los anuncios de Google AdSense en el sitio.",
+        "privacy_d": "Qué información recoge la Biblioteca Al-Warraq, cómo se usa y cómo funcionan las cookies y Google Analytics en el sitio.",
         "terms_d": "Términos de uso de la Biblioteca Al-Warraq: el servicio, el dominio público y los derechos de autor, el uso aceptable y la responsabilidad.",
         "contact_d": "Contacta con la Biblioteca Al-Warraq: sugiere un libro, informa de un error o un enlace roto, o pregunta sobre derechos de autor y publicidad.",
         "f_name": "Nombre", "f_email": "Tu correo electrónico", "f_topic": "Asunto", "f_msg": "Tu mensaje", "f_send": "Enviar mensaje",
@@ -170,7 +169,7 @@ L = {
     "pt": {
         "updated": "Última atualização: {d}",
         "about_d": "A Al-Warraq é uma biblioteca digital árabe aberta que indexa mais de um milhão de livros em domínio público e leva você às cópias gratuitas nas fontes originais.",
-        "privacy_d": "Quais informações a Biblioteca Al-Warraq coleta, como elas são usadas e como funcionam os cookies e os anúncios do Google AdSense no site.",
+        "privacy_d": "Quais informações a Biblioteca Al-Warraq coleta, como elas são usadas e como funcionam os cookies e o Google Analytics no site.",
         "terms_d": "Termos de uso da Biblioteca Al-Warraq: o serviço, o domínio público e os direitos autorais, o uso aceitável e a responsabilidade.",
         "contact_d": "Fale com a Biblioteca Al-Warraq: sugira um livro, informe um erro ou link quebrado, ou tire dúvidas sobre direitos autorais e publicidade.",
         "f_name": "Nome", "f_email": "Seu e-mail", "f_topic": "Assunto", "f_msg": "Sua mensagem", "f_send": "Enviar mensagem",
@@ -193,7 +192,7 @@ L = {
     "ja": {
         "updated": "最終更新日：{d}",
         "about_d": "アル・ワッラーク図書館は、100万冊以上のパブリックドメインの本を索引化し、元の情報源にある無料の本へ案内するオープンなアラビア語デジタル図書館です。",
-        "privacy_d": "アル・ワッラーク図書館が収集する情報とその利用方法、そして当サイトでの Cookie と Google AdSense 広告の仕組みについて。",
+        "privacy_d": "アル・ワッラーク図書館が収集する情報とその利用方法、そして当サイトでの Cookie と Google Analytics の仕組みについて。",
         "terms_d": "アル・ワッラーク図書館の利用規約：サービスの内容、パブリックドメインと著作権、許容される利用、責任の制限。",
         "contact_d": "アル・ワッラーク図書館へのお問い合わせ：本の提案、誤りやリンク切れの報告、著作権や広告に関するご質問。",
         "f_name": "お名前", "f_email": "メールアドレス", "f_topic": "件名", "f_msg": "メッセージ", "f_send": "送信する",
@@ -216,7 +215,7 @@ L = {
     "de": {
         "updated": "Zuletzt aktualisiert: {d}",
         "about_d": "Al-Warraq ist eine offene arabische digitale Bibliothek, die über eine Million gemeinfreie Bücher verzeichnet und Sie zu ihren kostenlosen Exemplaren an den Originalquellen führt.",
-        "privacy_d": "Welche Daten die Bibliothek Al-Warraq erhebt, wie sie verwendet werden und wie Cookies und Google-AdSense-Anzeigen auf der Website funktionieren.",
+        "privacy_d": "Welche Daten die Bibliothek Al-Warraq erhebt, wie sie verwendet werden und wie Cookies und Google Analytics auf der Website funktionieren.",
         "terms_d": "Nutzungsbedingungen der Bibliothek Al-Warraq: der Dienst, Gemeinfreiheit und Urheberrecht, zulässige Nutzung und Haftung.",
         "contact_d": "Kontakt zur Bibliothek Al-Warraq: Schlagen Sie ein Buch vor, melden Sie einen Fehler oder defekten Link, oder fragen Sie zu Urheberrecht und Werbung.",
         "f_name": "Name", "f_email": "Ihre E-Mail-Adresse", "f_topic": "Betreff", "f_msg": "Ihre Nachricht", "f_send": "Nachricht senden",
@@ -324,37 +323,27 @@ def _privacy(ui):
 <li><b>التخزين المحلي في متصفحك:</b> نحفظ فيه اختيارك للمظهر (فاتح أو داكن) فقط، ولا يُرسل إلينا.</li>
 </ul>
 <h2>2. ملفات تعريف الارتباط (الكوكيز)</h2>
-<p>الكوكيز ملفات نصية صغيرة تحفظها المواقع في متصفحك. يضع موقعنا كوكيز اللغة المذكور أعلاه، وتضع خدمة Google Analytics كوكيز إحصائية (مثل _ga) كما يوضح البند الرابع، وقد تستخدم أطراف ثالثة، منها Google، الكوكيز عند عرض الإعلانات كما يوضح البند التالي. يمكنك ضبط متصفحك لرفض الكوكيز أو حذفها في أي وقت، وقد يغيّر ذلك الإعلانات التي تراها.</p>
-<h2>3. الإعلانات وGoogle AdSense</h2>
-<p>نعرض إعلانات من خلال Google AdSense لتغطية تكاليف تشغيل المكتبة وإبقائها مجانية:</p>
-<ul>
-<li>يستخدم موردو الجهات الخارجية، ومنهم Google، ملفات تعريف الارتباط لعرض الإعلانات استناداً إلى زياراتك السابقة لهذا الموقع أو لمواقع أخرى على الإنترنت.</li>
-<li>يتيح استخدام Google لملفات تعريف ارتباط الإعلانات لها ولشركائها عرض إعلانات لك استناداً إلى زيارتك لهذا الموقع و/أو لمواقع أخرى على الإنترنت.</li>
-<li>يمكنك إيقاف الإعلانات المخصّصة من <a href="https://www.google.com/settings/ads" rel="noopener" target="_blank">إعدادات الإعلانات في Google</a>، كما يمكنك إيقاف استخدام موردين آخرين لملفات تعريف الارتباط للإعلانات المخصّصة عبر <a href="https://www.aboutads.info/choices/" rel="noopener" target="_blank">www.aboutads.info</a>.</li>
-<li>لمعرفة المزيد عن طريقة استخدام Google للبيانات، راجع <a href="https://policies.google.com/technologies/partner-sites" rel="noopener" target="_blank">كيف تستخدم Google المعلومات من المواقع التي تستخدم خدماتها</a> و<a href="https://policies.google.com/technologies/ads" rel="noopener" target="_blank">طريقة استخدام Google للكوكيز في الإعلانات</a>.</li>
-<li>للزوار من المنطقة الاقتصادية الأوروبية والمملكة المتحدة وسويسرا: نطلب موافقتك قبل أن تستخدم Google الكوكيز في الإعلانات المخصّصة وفي الإحصاءات، كما تفرض القوانين هناك.</li>
-<li>نعرض أيضاً إعلانات أصلية (Native) من شبكة إعلانية تابعة لجهة خارجية تُحمَّل من النطاق bauval.org. قد تضع هذه الشبكة ملفات كوكيز، وتجمع معلومات عن جهازك ومتصفحك وعنوان IP الخاص بك، لعرض الإعلانات وقياسها ومنع الاحتيال، وفق سياسة الخصوصية الخاصة بها.</li>
-</ul>
-<h2>4. خدمات أطراف ثالثة أخرى</h2>
+<p>الكوكيز ملفات نصية صغيرة تحفظها المواقع في متصفحك. يضع موقعنا كوكيز اللغة المذكور أعلاه، وتضع خدمة Google Analytics كوكيز إحصائية (مثل _ga) كما يوضح البند التالي. لا يعرض الموقع أي إعلانات. يمكنك ضبط متصفحك لرفض الكوكيز أو حذفها في أي وقت.</p>
+<h2>3. خدمات أطراف ثالثة</h2>
 <p>يحمّل متصفحك بعض المحتوى من خدمات خارجية، وتتلقى هذه الخدمات عنوان IP الخاص بك كما يحدث في أي طلب على الإنترنت:</p>
 <ul>
 <li>الخطوط من Google Fonts.</li>
 <li>أغلفة الكتب من Open Library ومشروع غوتنبرغ وHathiTrust ومؤسسة هنداوي، ونبذ المؤلفين من ويكيبيديا في صفحات الكتب.</li>
 <li>روابط القراءة تنقلك إلى مواقع خارجية تحكمها سياسات الخصوصية الخاصة بها.</li>
 <li>عبارات البحث في مكتب البحوث يرسلها خادمنا إلى OpenAlex للعثور على الأوراق العلمية.</li>
-<li><b>Google Analytics:</b> لنعرف عدد الزوار والصفحات الأكثر زيارة وكيف يُستخدم الموقع، تجمع Google بيانات الاستخدام (الصفحات التي تزورها، ومدة الزيارة، ونوع الجهاز والمتصفح، والبلد أو المدينة على وجه التقريب) بكوكيز مثل _ga تبقى حتى سنتين. لا نرسل إليها اسمك ولا بريدك. يمكنك منعها بتثبيت <a href="https://tools.google.com/dlpage/gaoptout" rel="noopener" target="_blank">إضافة إيقاف Google Analytics</a>، ولمعرفة المزيد راجع <a href="https://policies.google.com/privacy" rel="noopener" target="_blank">سياسة خصوصية Google</a>.</li>
+<li><b>Google Analytics:</b> لنعرف عدد الزوار والصفحات الأكثر زيارة وكيف يُستخدم الموقع، تجمع Google بيانات الاستخدام (الصفحات التي تزورها، ومدة الزيارة، ونوع الجهاز والمتصفح، والبلد أو المدينة على وجه التقريب) بكوكيز مثل _ga تبقى حتى سنتين. لا نرسل إليها اسمك ولا بريدك. وفي المنطقة الاقتصادية الأوروبية والمملكة المتحدة وسويسرا لا تضع كوكيزها على جهازك، كما تفرض القوانين هناك. يمكنك منعها بتثبيت <a href="https://tools.google.com/dlpage/gaoptout" rel="noopener" target="_blank">إضافة إيقاف Google Analytics</a>، ولمعرفة المزيد راجع <a href="https://policies.google.com/privacy" rel="noopener" target="_blank">سياسة خصوصية Google</a>.</li>
 </ul>
-<h2>5. كيف نستخدم المعلومات</h2>
+<h2>4. كيف نستخدم المعلومات</h2>
 <p>لتشغيل الموقع وتحسينه ومعرفة كيف يُستخدم، ولعرض الكتب الأكثر مشاهدة والعبارات الأكثر بحثاً، وللرد على رسائلك، ولحماية الموقع من الإساءة. لا نبيع بياناتك، ولا نشاركها إلا مع مزوّدي الخدمات المذكورين أعلاه، أو إذا ألزمنا القانون بذلك.</p>
-<h2>6. الأطفال</h2>
+<h2>5. الأطفال</h2>
 <p>الموقع موجّه لعامة القرّاء، ولا نجمع عن قصد بيانات شخصية من أطفال دون 13 عاماً. إن علمت أن طفلاً أرسل إلينا بياناته فراسلنا لنحذفها.</p>
-<h2>7. حقوقك</h2>
+<h2>6. حقوقك</h2>
 <p>يمكنك أن تطلب الاطلاع على رسالة أرسلتها إلينا أو حذفها عبر <a href="{link("contact", ui)}">صفحة الاتصال</a>. أما الإحصاءات فمجهولة الهوية ولا يمكن ربطها بشخصك.</p>
-<h2>8. الأمان</h2>
+<h2>7. الأمان</h2>
 <p>نستخدم اتصالاً مشفراً (HTTPS) وضوابط أمنية ونحدّ من الطلبات المتكررة، لكن لا توجد وسيلة نقل أو تخزين على الإنترنت آمنة تماماً.</p>
-<h2>9. التعديلات</h2>
+<h2>8. التعديلات</h2>
 <p>قد نحدّث هذه السياسة من وقت لآخر، وننشر تاريخ آخر تحديث في أعلى الصفحة.</p>
-<h2>10. اتصل بنا</h2>
+<h2>9. اتصل بنا</h2>
 <p>لأي سؤال عن الخصوصية، أو لطلب حذف رسالة أرسلتها إلينا، راسلنا على <a href="mailto:{contact_email()}">{contact_email()}</a> أو <a href="{link("contact", ui)}">من صفحة الاتصال</a>.</p>"""
     return f"""
 <p class="lead">This policy explains what information Al-Warraq Library (“the site”, “we”) collects when you use the site, how we use it and the choices you have. By using the site you agree to this policy.</p>
@@ -368,37 +357,27 @@ def _privacy(ui):
 <li><b>Local storage in your browser:</b> only your choice of theme (light or dark). It is never sent to us.</li>
 </ul>
 <h2>2. Cookies</h2>
-<p>Cookies are small text files that websites store in your browser. Our site sets the language cookie above, Google Analytics sets statistics cookies (such as _ga) as section 4 explains, and third parties, including Google, may use cookies when showing ads, as described below. You can set your browser to refuse or delete cookies at any time; this may change the ads you see.</p>
-<h2>3. Advertising and Google AdSense</h2>
-<p>We show ads through Google AdSense to cover the costs of running the library and keep it free:</p>
-<ul>
-<li>Third-party vendors, including Google, use cookies to serve ads based on your prior visits to this website or other websites.</li>
-<li>Google's use of advertising cookies enables it and its partners to serve ads to you based on your visit to this site and/or other sites on the Internet.</li>
-<li>You may opt out of personalised advertising by visiting <a href="https://www.google.com/settings/ads" rel="noopener" target="_blank">Google Ads Settings</a>. You can also opt out of a third-party vendor's use of cookies for personalised advertising at <a href="https://www.aboutads.info/choices/" rel="noopener" target="_blank">www.aboutads.info</a>.</li>
-<li>To learn more, see <a href="https://policies.google.com/technologies/partner-sites" rel="noopener" target="_blank">how Google uses information from sites that use its services</a> and <a href="https://policies.google.com/technologies/ads" rel="noopener" target="_blank">how Google uses cookies in advertising</a>.</li>
-<li>Visitors from the European Economic Area, the United Kingdom and Switzerland are asked for consent before Google uses cookies for personalised ads and for statistics, as the law there requires.</li>
-<li>We also show native ads from a third-party advertising network, loaded from the bauval.org domain. This network may set cookies and collect information about your device, browser and IP address to serve and measure ads and to prevent fraud, under its own privacy policy.</li>
-</ul>
-<h2>4. Other third-party services</h2>
+<p>Cookies are small text files that websites store in your browser. Our site sets the language cookie above, and Google Analytics sets statistics cookies (such as _ga) as the next section explains. The site shows no ads. You can set your browser to refuse or delete cookies at any time.</p>
+<h2>3. Third-party services</h2>
 <p>Your browser loads some content from outside services, which receive your IP address as with any request on the Internet:</p>
 <ul>
 <li>Fonts from Google Fonts.</li>
 <li>Book covers from Open Library, Project Gutenberg, HathiTrust and the Hindawi Foundation; author summaries from Wikipedia on book pages.</li>
 <li>Reading links take you to external sites governed by their own privacy policies.</li>
 <li>Research-desk searches are sent by our server to OpenAlex to find papers.</li>
-<li><b>Google Analytics:</b> to learn how many people visit, which pages they read and how the site is used, Google collects usage data (the pages you visit, visit length, device and browser type, approximate country or city) with cookies such as _ga that last up to two years. We never send it your name or email. You can block it with the <a href="https://tools.google.com/dlpage/gaoptout" rel="noopener" target="_blank">Google Analytics opt-out add-on</a>; see <a href="https://policies.google.com/privacy" rel="noopener" target="_blank">Google's privacy policy</a> for more.</li>
+<li><b>Google Analytics:</b> to learn how many people visit, which pages they read and how the site is used, Google collects usage data (the pages you visit, visit length, device and browser type, approximate country or city) with cookies such as _ga that last up to two years. We never send it your name or email. In the European Economic Area, the United Kingdom and Switzerland it sets no cookies on your device, as the law there requires. You can block it with the <a href="https://tools.google.com/dlpage/gaoptout" rel="noopener" target="_blank">Google Analytics opt-out add-on</a>; see <a href="https://policies.google.com/privacy" rel="noopener" target="_blank">Google's privacy policy</a> for more.</li>
 </ul>
-<h2>5. How we use information</h2>
+<h2>4. How we use information</h2>
 <p>To run and improve the site and learn how it is used, to show the most viewed books and most searched phrases, to reply to your messages and to protect the site from abuse. We do not sell your data, and we share it only with the service providers above, or when the law requires it.</p>
-<h2>6. Children</h2>
+<h2>5. Children</h2>
 <p>The site is meant for the general public, and we do not knowingly collect personal data from children under 13. If you learn that a child has sent us personal data, contact us and we will delete it.</p>
-<h2>7. Your rights</h2>
+<h2>6. Your rights</h2>
 <p>You can ask to see or delete a message you sent us through the <a href="{link("contact", ui)}">contact page</a>. Statistics are anonymous and cannot be linked to you.</p>
-<h2>8. Security</h2>
+<h2>7. Security</h2>
 <p>We use encrypted connections (HTTPS), security controls and rate limits, but no method of transmission or storage on the Internet is completely secure.</p>
-<h2>9. Changes</h2>
+<h2>8. Changes</h2>
 <p>We may update this policy from time to time and will show the date of the latest update at the top of this page.</p>
-<h2>10. Contact</h2>
+<h2>9. Contact</h2>
 <p>For any privacy question, or to have a message you sent us deleted, email <a href="mailto:{contact_email()}">{contact_email()}</a> or <a href="{link("contact", ui)}">use the contact page</a>.</p>"""
 
 
@@ -427,13 +406,11 @@ def _terms(ui):
 <p>تصميم الموقع وشعاره وشيفرته البرمجية ونصوصه التعريفية ملك لمكتبة الوراق. أما الكتب فهي ملك لأصحاب حقوقها أو في الملك العام، بحسب كل عمل وقانون كل بلد، وأسماء المصادر وعلاماتها التجارية ملك أصحابها.</p>
 <h2>7. بلاغات حقوق النشر</h2>
 <p>إن رأيت أن رابطاً في المكتبة يخالف حقوقك، <a href="{link("takedown", ui)}">املأ نموذج طلب الإزالة</a> واذكر اسم العمل ورابطه وصفتك، وسنراجع البلاغ ونزيل الرابط إن ثبتت المخالفة.</p>
-<h2>8. الإعلانات</h2>
-<p>يعرض الموقع إعلانات من Google وشركائها ومن شبكات إعلانية أخرى. ظهور إعلان لا يعني أننا نؤيد المعلن أو منتجه، وأي تعامل بينك وبين المعلن شأن بينكما وحدكما.</p>
-<h2>9. حدود المسؤولية</h2>
+<h2>8. حدود المسؤولية</h2>
 <p>في أقصى حدّ يسمح به القانون، لا تتحمل مكتبة الوراق مسؤولية أي ضرر مباشر أو غير مباشر ينتج عن استخدامك للموقع أو للمواقع الخارجية التي يدلّك عليها.</p>
-<h2>10. التعديلات</h2>
+<h2>9. التعديلات</h2>
 <p>قد نعدّل هذه الشروط أو الخدمة في أي وقت، وننشر تاريخ آخر تحديث في أعلى الصفحة. استمرارك في استخدام الموقع بعد التعديل يعني قبولك للشروط الجديدة.</p>
-<h2>11. التواصل</h2>
+<h2>10. التواصل</h2>
 <p>لأي سؤال عن هذه الشروط، <a href="{link("contact", ui)}">راسلنا من هنا</a>. وتجد طريقة تعاملنا مع بياناتك في <a href="{link("privacy", ui)}">سياسة الخصوصية</a>.</p>"""
     return f"""
 <p class="lead">Welcome to Al-Warraq Library. By using the site you agree to the following terms; if you do not agree, please do not use the site.</p>
@@ -458,13 +435,11 @@ def _terms(ui):
 <p>The site's design, logo, code and descriptive texts belong to Al-Warraq Library. The books belong to their rights holders or are in the public domain, depending on each work and the law of each country; the names and trademarks of the sources belong to their owners.</p>
 <h2>7. Copyright reports</h2>
 <p>If you believe a link in the library infringes your rights, <a href="{link("takedown", ui)}">send a removal request</a> with the title of the work, its link and your capacity, and we will review the report and remove the link if it infringes.</p>
-<h2>8. Advertising</h2>
-<p>The site shows ads from Google and its partners and from other advertising networks. An ad does not mean that we endorse the advertiser or the product, and any dealings between you and an advertiser are between you and the advertiser alone.</p>
-<h2>9. Limitation of liability</h2>
+<h2>8. Limitation of liability</h2>
 <p>To the fullest extent permitted by law, Al-Warraq Library is not liable for any direct or indirect damage arising from your use of the site or of the external sites it points to.</p>
-<h2>10. Changes</h2>
+<h2>9. Changes</h2>
 <p>We may change these terms or the service at any time and will show the date of the latest update at the top of this page. Using the site after a change means you accept the new terms.</p>
-<h2>11. Contact</h2>
+<h2>10. Contact</h2>
 <p>For any question about these terms, <a href="{link("contact", ui)}">write to us here</a>. How we handle your data is described in the <a href="{link("privacy", ui)}">privacy policy</a>.</p>"""
 
 
