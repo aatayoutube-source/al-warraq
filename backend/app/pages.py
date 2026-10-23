@@ -968,11 +968,12 @@ def _total(conn) -> int:
 
 
 def _sitemap_rows(conn):
-    """With THIN_NOINDEX, the book pages that may be listed: those with a text of their own."""
+    """With THIN_NOINDEX, the book pages that may be listed: those with a text of their own, whichever books they are
+    (the hand-picked ones and every other book given a description); the rest stay out until they get one."""
     gids = sorted(content.described_gids())
     if not gids:
         return []
-    rows = conn.execute("SELECT id, gid, curated, title, title_ar, lang, origin FROM books WHERE curated=1 AND gid IN (%s) ORDER BY id"
+    rows = conn.execute("SELECT id, gid, curated, title, title_ar, lang, origin FROM books WHERE gid IN (%s) ORDER BY id"
                         % ",".join("?" * len(gids)), gids).fetchall()
     return [r for r in rows if book_indexable(r)]
 

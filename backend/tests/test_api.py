@@ -1090,6 +1090,13 @@ def test_thin_pages_stay_out_of_search_and_sitemaps(client, monkeypatch, tmp_pat
     assert 'name="robots" content="noindex,follow"' in macbeth.text and "Catalogue details" in macbeth.text
     books_map = client.get("/sitemap-books-1.xml").text
     assert "/book/1/" in books_map and "/book/2/" not in books_map and client.get("/sitemap-books-2.xml").status_code == 404
+    conn = db.connect()
+    conn.execute("UPDATE books SET curated=0 WHERE id=1")  # a described book outside the hand-picked list is listed too
+    conn.commit()
+    assert "/book/1/" in client.get("/sitemap-books-1.xml").text
+    conn.execute("UPDATE books SET curated=1 WHERE id=1")
+    conn.commit()
+    conn.close()
     # authors: a biography makes the page whole; a short list of titles does not
     plato = client.get("/author/plato").text
     assert "سيرة أفلاطون" in plato and 'name="robots"' not in plato
