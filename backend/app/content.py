@@ -79,6 +79,11 @@ def author(key: str, ui: str) -> Text:
     return Text(*_pick(_load("authors.json", {}).get(key, {}), ui)) if key else Text()
 
 
+def short_title(gid) -> str:
+    """The short title the library gives a book whose catalogue title runs on into its subtitle (titles.json, by Gutenberg number)."""
+    return _load("titles.json", {}).get(str(gid), "") if gid else ""
+
+
 def book(row, ui: str) -> dict:
     """{"about": Text, "context": Text} for a book in that language.
     Reads from DB book_descriptions (keyed by gid), falls back to books.json."""

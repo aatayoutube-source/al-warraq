@@ -502,11 +502,45 @@ def book_title(row, ui: str) -> str:
     return (row["title_ar"] or row["title"]) if ui == "ar" else row["title"]
 
 
+_BY_END = re.compile(r"^(.*\S)\s+by\s+(.+?)[\s.]*$", re.I)
+
+
+def shown_title(row, ui: str) -> str:
+    """The title as pages show it: the short one the library gave the book (content/titles.json), or the catalogue's
+    without the author's name some records repeat at its end ("..., by John Bunyan"). Addresses keep book_title."""
+    title = book_title(row, ui)
+    if title != row["title"]:
+        return title  # the Arabic title
+    short = content.short_title(row["gid"])
+    if short:
+        return short
+    m = _BY_END.match(title)
+    if m and row["author_en"] and norm(m.group(2)) == norm(author_name(row["author_en"])):
+        return m.group(1).rstrip(" ,;:") or title
+    return title
+
+
+_DATES_FIRST = re.compile(r"^(?:(?:[\d?]+\.?|B\.?C\.?E?|A\.?D\.?|C\.?E\.?|[ad]\.\s?C\.?|or)(?:-[\d?]*\.?)?\s+)+(?=[^\W\d])")
+_BODY = re.compile(r"\w{3}\. [A-Z]")  # "Boston. Mayor": an office, whose dates tell which holder
+
+
+def author_name(name: str) -> str:
+    """'481? BCE-407 BCE Euripides' -> 'Euripides': the import put the dates of ancient and medieval authors before their
+    names (it strips only four-digit years). Modern dates stay: there they can be an office's term ('1877-1881 U. S. President')."""
+    m = _DATES_FIRST.match(name or "")
+    if m and "-" in m.group(0):
+        dates = m.group(0)
+        old = re.search(r"B\.?C|[ad]\.\s?C", dates) or all(len(y) <= 3 for y in re.findall(r"\d+", dates))
+        if old and not _BODY.search(name[m.end():]):
+            return name[m.end():]
+    return name or ""
+
+
 def book_author(row, ui: str, authors: dict) -> str:
     a = authors.get(row["author_key"]) if row["author_key"] else None
     if a:
         return a["ar"] if ui == "ar" and a["ar"] else a["en"]
-    return (row["author_ar"] if ui == "ar" and row["author_ar"] else row["author_en"]) or ""
+    return row["author_ar"] if ui == "ar" and row["author_ar"] else author_name(row["author_en"])
 
 
 def canonical_path(row) -> str:
@@ -747,7 +781,7 @@ def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool 
     ui = ui if ui in T else d_ui
     t = T[ui]
     authors = _authors(conn)
-    title = book_title(row, ui)
+    title = shown_title(row, ui)
     author = book_author(row, ui, authors)
     cat = CATEGORIES.get(row["cat"], CATEGORIES["gen"])
     cat_name = cat[ui]
@@ -773,7 +807,8 @@ def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool 
         if len(desc) > 158 and parts["p"]:  # too long to show whole: the publisher stays in the details below
             desc = form.format(**dict(parts, p=""))
         desc = _cut(desc)
-    page_title = (t["title_by"].format(t=title, a=author) if author else title) + " | " + BRAND[ui]
+    head = (re.split(r"[:;]\s|\s—\s|\.\s", title, 1)[0] or title) if len(title) > 70 else title  # search results cut long titles
+    page_title = (t["title_by"].format(t=head, a=author) if author else head) + " | " + BRAND[ui]
 
     book = {"@type": "CreativeWork" if poem else "Book", "@id": canon + "#book", "name": title, "url": canon,
             "mainEntityOfPage": {"@id": canon}, "description": desc, "genre": cat_name, "isAccessibleForFree": True,
@@ -863,7 +898,7 @@ def render_book(conn, row, base: str, ui: str = "", numbers=(0, 0), liked: bool 
     if rel_rows:
         items = []
         for r in rel_rows:
-            rt, ra = book_title(r, ui), book_author(r, ui, authors)
+            rt, ra = shown_title(r, ui), book_author(r, ui, authors)
             items.append('<li><a href="/book/%d">%s%s</a></li>' % (r["id"], esc(rt), ("<small>%s</small>" % esc(ra)) if ra else ""))
         rel_html = "<h2>%s</h2><ul class=\"rel\">%s</ul>" % (esc(t[key]), "".join(items))
 

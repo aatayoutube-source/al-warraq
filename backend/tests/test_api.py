@@ -1239,3 +1239,28 @@ def test_horror_ranked_by_downloads_and_hathi_titles(client, tmp_path):
     assert cats["Ghost stories of an antiquary"] == "hor" and cats["The vampire bat in Brazil"] == "gen"
     assert cats["The adventures of Sherlock Holmes"] == "mys" and cats["A history of Rome"] == "gen"
     conn.close()
+
+
+def test_shown_title():
+    """A catalogue title that repeats its author at the end loses the repetition, and the library's short title wins;
+    other uses of "by" stay, and so does an Arabic title."""
+    from app import pages
+
+    def row(title, author, gid=None, title_ar=""):
+        return {"id": 1, "gid": gid, "title": title, "title_ar": title_ar, "author_en": author}
+    assert pages.shown_title(row("The Pilgrim's Progress from this world, by John Bunyan", "John Bunyan"), "en") == "The Pilgrim's Progress from this world"
+    assert pages.shown_title(row("Four Short Stories By Emile Zola", "Émile Zola"), "en") == "Four Short Stories"
+    for title in ("Poems by Emily Dickinson, Series Two", "Speeches delivered by ex-Senator Plunkitt", "Stand by Me"):
+        assert pages.shown_title(row(title, "Emily Dickinson"), "en") == title
+    assert pages.shown_title(row("The Pilgrim's Progress from this world to that which is to come", "John Bunyan", gid=131), "en") == "The Pilgrim's Progress"
+    assert pages.shown_title(row("Hamlet", "William Shakespeare", gid=131, title_ar="هاملت"), "ar") == "هاملت"
+
+
+def test_author_name():
+    """The dates the import put before ancient and medieval names go; modern ones, which can be an office's term, stay."""
+    from app import pages
+    for raw, shown in (("481? BCE-407 BCE Euripides", "Euripides"), ("43 B.C.-17 A.D. or 18 A.D Ovid", "Ovid"),
+                       ("69?-122? Suetonius", "Suetonius"), ("643 or 644-711 or 712. ʻUmar ibn Abī Rabīʻah", "ʻUmar ibn Abī Rabīʻah"),
+                       ("384-322 a.C Aristóteles", "Aristóteles"), ("1877-1881 U. S. President", "1877-1881 U. S. President"),
+                       ("1890-1894 Boston. Mayor", "1890-1894 Boston. Mayor"), ("1855-", "1855-"), ("Mark Twain", "Mark Twain")):
+        assert pages.author_name(raw) == shown

@@ -19,7 +19,8 @@ from . import content, legal, modern
 from .wikisource import WS_KIND
 from .catalog import ARABIC_CAT, CATEGORIES
 from .pages import (ARTICLES_NAME, BRAND, CSS, LOGO_SVG, OG_LOCALE, SEARCH_ICON, T, UI_LANG_SHORT, UI_LANGS, _authors,
-                    analytics_head, book_author, book_title, canonical_path, esc, lang_menu, lang_q, legal_links, own_text, site_head)
+                    analytics_head, book_author, book_title, canonical_path, esc, lang_menu, lang_q, legal_links, own_text, shown_title,
+                    site_head)
 
 PER_PAGE = 60
 MAX_PAGES = 200  # category pages go this deep; the sitemaps list every single book anyway
@@ -356,7 +357,7 @@ def _book_list(conn, rows, ui) -> str:
     items = []
     for r in rows:
         a = book_author(r, ui, authors)
-        items.append('<li><a href="%s">%s%s</a></li>' % (esc(canonical_path(r)), esc(book_title(r, ui)), ("<small>%s</small>" % esc(a)) if a else ""))
+        items.append('<li><a href="%s">%s%s</a></li>' % (esc(canonical_path(r)), esc(shown_title(r, ui)), ("<small>%s</small>" % esc(a)) if a else ""))
     return '<ul class="rel">%s</ul>' % "".join(items)
 
 
