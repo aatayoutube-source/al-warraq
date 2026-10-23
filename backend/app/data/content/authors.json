@@ -130,5 +130,779 @@
       "Charles Dickens (1812–1870) worked in a boot-blacking factory as a boy while his father was in a debtors' prison, and poverty and wronged childhood run through his novels, from [Oliver Twist](/book/31?lang=en) to the largely autobiographical [David Copperfield](/book/32?lang=en).",
       "Published in instalments, books such as [A Tale of Two Cities](/book/30?lang=en), [Great Expectations](/book/29?lang=en) and [A Christmas Carol](/book/33?lang=en) mixed comedy and social protest."
     ]
+  },
+  "austen": {
+    "en": [
+      "Jane Austen (1775–1817) grew up in a crowded rectory in the Hampshire village of Steventon, the seventh of eight children, writing comic sketches to amuse her family. She never married, lived quietly in Bath and then in a cottage at Chawton, and published her novels anonymously, signed only 'By a Lady'. She died in Winchester at forty-one.",
+      "Her six novels, from [Pride and Prejudice](/book/38?lang=en) to [Emma](/book/39?lang=en) and [Persuasion](/book/41?lang=en), turn the small world of country families, marriages and money into sharp, funny studies of character. Her ironic narration, slipping in and out of her heroines' thoughts, changed the way novels are written."
+    ]
+  },
+  "twain": {
+    "en": [
+      "Samuel Clemens (1835–1910) grew up in Hannibal, Missouri, on the banks of the Mississippi, and worked as a printer's apprentice, a steamboat pilot, a silver prospector in Nevada and a newspaper reporter before he became Mark Twain. A comic story about a jumping frog made his name in 1865, and his lectures and travel books made him the most famous American writer of his time.",
+      "He drew on his boyhood for [The Adventures of Tom Sawyer](/book/48?lang=en) and [Adventures of Huckleberry Finn](/book/49?lang=en), and on his piloting years for [Life on the Mississippi](/book/53?lang=en). Late in life he lost his fortune in bad investments and paid his debts with a lecture tour around the world. He was born in a year of Halley's Comet and died when it returned."
+    ]
+  },
+  "doyle": {
+    "en": [
+      "Arthur Conan Doyle (1859–1930) was born in Edinburgh, trained as a doctor and wrote stories while waiting for patients at his practice in Southsea. Sherlock Holmes, modelled partly on his old teacher Joseph Bell, who could diagnose a patient's life at a glance, first appeared in 1887 and soon made Doyle one of the best-paid writers in the world.",
+      "He grew tired of his detective, killed him off in 1893 and was forced by his readers to bring him back. Doyle also wrote historical novels, the adventure [The Lost World](/book/61?lang=en) and campaigns for wrongly convicted men. Start with [The Adventures of Sherlock Holmes](/book/54?lang=en) and [The Hound of the Baskervilles](/book/55?lang=en)."
+    ]
+  },
+  "wilde": {
+    "en": [
+      "Oscar Wilde (1854–1900) was born in Dublin, studied classics at Trinity College and Oxford, and became the most quotable man in London, the leading voice of the movement that preached art for art's sake. Between 1892 and 1895 his comedies filled the theatres, and his only novel, [The Picture of Dorian Gray](/book/62?lang=en), caused a sensation.",
+      "At the height of his fame he was convicted for his relationship with Lord Alfred Douglas and sentenced to two years of hard labour, an experience he wrote about in [De Profundis](/book/68?lang=en). He died in exile in Paris, poor and broken, at forty-six. [The Importance of Being Earnest](/book/63?lang=en) remains one of the funniest plays in English."
+    ]
+  },
+  "kafka": {
+    "en": [
+      "Franz Kafka (1883–1924) was born in Prague into a German-speaking Jewish family, studied law and spent his working life as a conscientious official at an insurance institute for workers' accidents. He wrote at night, in a few intense bursts, and published only a handful of stories in his lifetime.",
+      "Dying of tuberculosis at forty, he asked his friend Max Brod to burn all his manuscripts; Brod refused and published [The Trial](/book/70?lang=en), The Castle and much more. Kafka's dreamlike stories of guilt, bureaucracy and isolation gave the world the word 'Kafkaesque', and few twentieth-century writers have been more influential."
+    ]
+  },
+  "plato": {
+    "en": [
+      "Plato (c. 428–348 BC) was born into an aristocratic family in Athens and became the devoted student of Socrates. After his teacher's trial and execution in 399 BC, he travelled, returned to Athens and founded the Academy, a school that lasted for centuries and counted Aristotle among its students.",
+      "Almost all his writings are dialogues in which Socrates questions his fellow citizens about justice, love, knowledge and the soul, from the [Apology](/book/75?lang=en) to the [Symposium](/book/76?lang=en) and the [Republic](/book/74?lang=en). Known to Arab philosophers as Aflatun, he was read closely by al-Farabi and Ibn Rushd, and Western philosophy has been called a series of footnotes to him."
+    ]
+  },
+  "aristotle": {
+    "en": [
+      "Aristotle (384–322 BC), the son of a doctor from Stagira in northern Greece, studied at Plato's Academy for twenty years, tutored the young Alexander the Great and then founded his own school in Athens, the Lyceum, where he is said to have taught while walking.",
+      "He wrote on almost everything: logic, physics, biology, ethics, [politics](/book/84?lang=en), rhetoric and poetry, and his works became the foundation of learning for two thousand years. In the Arabic tradition he was called the First Teacher, and the great commentaries of [Ibn Rushd](/author/ibnrushd?lang=en) carried his thought back to medieval Europe."
+    ]
+  },
+  "nietzsche": {
+    "en": [
+      "Friedrich Nietzsche (1844–1900), the son of a Lutheran pastor, was appointed professor of classical philology at Basel at only twenty-four. His friendship with the composer Richard Wagner shaped his first book, [The Birth of Tragedy](/book/93?lang=en), and its bitter end shaped much of what followed. Ill health forced him to resign in 1879, and he spent ten restless years in Swiss and Italian lodgings, writing book after book.",
+      "In [Thus Spake Zarathustra](/book/91?lang=en), [Beyond Good and Evil](/book/92?lang=en) and his later works he questioned morality, religion and truth itself. He collapsed in Turin in 1889 and never recovered; his sister later bent his work toward nationalist causes he had despised. Few philosophers have been so influential, or so often misread."
+    ]
+  },
+  "avicenna": {
+    "en": [
+      "Abu Ali ibn Sina (980–1037), known in Europe as Avicenna, was born near Bukhara and had mastered the Quran, mathematics and medicine by his teens. After curing the Samanid ruler, he was allowed into the royal library, and he later said he had read Aristotle's Metaphysics forty times without understanding it until a small commentary by [al-Farabi](/author/farabi?lang=en) opened it for him.",
+      "He spent his life moving between courts in Persia, often as physician and vizier, writing at night and on the road. His Canon of Medicine was taught in European universities until the seventeenth century, and his Book of Healing is one of the great works of philosophy. The library holds several of his shorter treatises, on the soul, love and logic."
+    ]
+  },
+  "ghazali": {
+    "en": [
+      "Abu Hamid al-Ghazali (1058–1111), born in Tus in Khorasan, became the most celebrated scholar of his age as a professor at the Nizamiyya college in Baghdad. Then, in 1095, a spiritual crisis left him unable to speak in class. He gave up his post, lived for years as a wandering Sufi in Damascus and Jerusalem, and returned convinced that true knowledge comes from experience as well as reason.",
+      "His Incoherence of the Philosophers challenged the followers of Aristotle and provoked a famous reply from [Ibn Rushd](/author/ibnrushd?lang=en); his Revival of the Religious Sciences became one of the most read books in Islam; and his autobiography, The Deliverance from Error, is still studied, and was quoted by William James in [The Varieties of Religious Experience](/book/384?lang=en)."
+    ]
+  },
+  "rumi": {
+    "en": [
+      "Jalal al-Din Rumi (1207–1273) was born in the region of Balkh, in today's Afghanistan and Tajikistan, and as a boy fled the Mongol invasions with his family, who settled in Konya in Anatolia. He became a respected teacher of religious law, until in 1244 he met a wandering dervish, Shams of Tabriz, and the friendship transformed him into a poet.",
+      "His Persian lyric poems and his long Masnavi, a sea of stories and teachings sometimes called the Quran in Persian, are among the most loved works of Sufi literature, and his followers founded the Mevlevi order of whirling dervishes. Today he is one of the most widely read poets in the world, in Arabic, English and many other languages."
+    ]
+  },
+  "khayyam": {
+    "en": [
+      "Omar Khayyam (1048–1131) of Nishapur was famous in his own time as a mathematician and astronomer: he wrote a major treatise on algebra that solved cubic equations geometrically, and helped reform the Persian calendar into one of the most accurate ever made. The short four-line poems attributed to him were written, it seems, for himself and his friends.",
+      "Many of the quatrains credited to him may be by other poets, but their mix of doubt, wine and wonder at the shortness of life won the world through Edward FitzGerald's [Rubaiyat](/book/120?lang=en) of 1859. In Arabic they are best known in Ahmed Rami's version, parts of which Umm Kulthum sang."
+    ]
+  },
+  "verne": {
+    "en": [
+      "Jules Verne (1828–1905) grew up in the port city of Nantes, watching ships leave for distant lands. Sent to Paris to study law, he wrote for the theatre instead, until the publisher Pierre-Jules Hetzel accepted [Five Weeks in a Balloon](/book/126?lang=en) in 1863 and signed him for a series of 'extraordinary voyages' that lasted the rest of his life.",
+      "In more than sixty novels he took readers under the sea, to the Moon and around the world, mixing adventure with real science and geography. [Twenty Thousand Leagues Under the Sea](/book/121?lang=en) and [Around the World in Eighty Days](/book/122?lang=en) made him one of the most translated authors in history and inspired generations of scientists and explorers."
+    ]
+  },
+  "poe": {
+    "en": [
+      "Edgar Allan Poe (1809–1849) was born in Boston to travelling actors and orphaned before he was three. Raised by a Richmond merchant who later disowned him, he lived by his pen as a poet, critic and magazine editor, always short of money. His young wife Virginia died of tuberculosis in 1847, and two years later Poe was found delirious in Baltimore and died days later, in circumstances that are still a mystery.",
+      "He made the short story an art of total effect, wrote tales of terror such as [The Fall of the House of Usher](/book/128?lang=en), invented the detective story with 'The Murders in the Rue Morgue' and wrote 'The Raven', one of the most famous poems in English. French poets led by Baudelaire honoured him before America did."
+    ]
+  },
+  "dumas": {
+    "en": [
+      "Alexandre Dumas (1802–1870) was the grandson of a French nobleman and an enslaved woman of African descent in Saint-Domingue; his father became a general of the Revolution. Arriving in Paris as a clerk with little education, Dumas made his name in the theatre and then, with the collaborator Auguste Maquet, turned history into the most popular adventure novels of the century.",
+      "[The Three Musketeers](/book/133?lang=en) and [The Count of Monte Cristo](/book/132?lang=en) were followed by dozens more, earning fortunes that Dumas spent as fast as they came, on travel, newspapers and a fantastic château. In 2002 his remains were moved to the Panthéon in Paris among the great figures of France."
+    ]
+  },
+  "shelley": {
+    "en": [
+      "Mary Shelley (1797–1851) was the daughter of two radical writers, Mary Wollstonecraft, who died days after her birth, and the philosopher William Godwin. At sixteen she ran away with the poet Percy Bysshe Shelley, and at eighteen, during a rainy summer by Lake Geneva with Lord Byron, she began the story that became [Frankenstein](/book/137?lang=en).",
+      "Her life was marked by loss: three of her four children died young and Percy drowned in 1822. She supported herself by writing, edited her husband's poems and wrote [The Last Man](/book/138?lang=en), an early novel of a worldwide plague. Her mother's [Vindication of the Rights of Woman](/book/299?lang=en) is also in the library."
+    ]
+  },
+  "stoker": {
+    "en": [
+      "Bram Stoker (1847–1912) was born in Dublin, a sickly child confined to bed until he was seven, who grew into a university athlete. He worked as a civil servant and an unpaid theatre critic, until his admiration for the actor Henry Irving led him to London, where for twenty-seven years he managed Irving's Lyceum Theatre.",
+      "In his spare time he wrote novels and stories, and after years of research into folklore and Eastern Europe published [Dracula](/book/139?lang=en) in 1897. It was only moderately successful in his lifetime, but it gave the modern world its image of the vampire. His widow published [Dracula's Guest](/book/140?lang=en) after his death."
+    ]
+  },
+  "melville": {
+    "en": [
+      "Herman Melville (1819–1891) was born in New York to a family ruined when he was a boy. At twenty he went to sea, sailed on a whaler to the Pacific, deserted in the Marquesas Islands and turned the adventure into [Typee](/book/143?lang=en), a bestseller that made him famous at twenty-seven.",
+      "His ambitions grew with each book, and [Moby-Dick](/book/141?lang=en), published in 1851, was misunderstood and sold poorly. He spent nineteen years as a customs inspector on the New York docks, writing poems and the stories [Bartleby, the Scrivener](/book/142?lang=en) and [Billy Budd](/book/144?lang=en), and died almost forgotten; he was rediscovered as a great writer in the 1920s."
+    ]
+  },
+  "darwin": {
+    "en": [
+      "Charles Darwin (1809–1882) left medical school in Edinburgh because he could not bear to watch operations, and studied at Cambridge to become a clergyman. Instead, at twenty-two, he joined the five-year voyage of HMS Beagle, described in [The Voyage of the Beagle](/book/147?lang=en), which gave him the observations of a lifetime.",
+      "Back in England he worked for twenty years at his country home in Kent before a letter from the naturalist Alfred Russel Wallace, who had reached the same idea, pushed him to publish [On the Origin of Species](/book/145?lang=en) in 1859. He went on to write [The Descent of Man](/book/146?lang=en) and books on barnacles, orchids and earthworms, and was buried in Westminster Abbey."
+    ]
+  },
+  "newton": {
+    "en": [
+      "Isaac Newton (1643–1727) was born on a farm in Lincolnshire and studied at Cambridge. When the plague closed the university in 1665, he went home and, in about two years, laid the foundations of calculus, of his theory of light and colour and of the idea of universal gravitation.",
+      "His Principia of 1687 explained the movements of the planets and the tides with the same laws that govern a falling apple, and [Opticks](/book/150?lang=en) showed that white light is made of colours. Later in life he ran the Royal Mint, chasing counterfeiters, and presided over the Royal Society, while privately studying alchemy and theology."
+    ]
+  },
+  "marx": {
+    "en": [
+      "Karl Marx (1818–1883) was born in Trier in western Germany, studied law and philosophy and became a radical journalist. Expelled from Germany, France and Belgium for his writings, he settled in London in 1849, where he lived in poverty with his family, supported by his friend and collaborator Friedrich Engels.",
+      "With Engels he wrote [The Communist Manifesto](/book/151?lang=en) in 1848; in the reading room of the British Museum he spent years on Capital, his analysis of how capitalism works. Whatever one thinks of the movements made in his name, few thinkers have had as great an influence on politics, history and economics."
+    ]
+  },
+  "kant": {
+    "en": [
+      "Immanuel Kant (1724–1804) spent his whole life in and around Königsberg in East Prussia, where he taught at the university for decades and kept such regular habits that, according to legend, neighbours set their clocks by his afternoon walk. He was fifty-seven when he published the Critique of Pure Reason, which changed philosophy.",
+      "Answering [David Hume](/book/277?lang=en), who he said woke him from his dogmatic slumber, Kant asked what we can know, what we ought to do and what we may hope, and gave the world the categorical imperative and the motto of the Enlightenment, 'Dare to know'. His short essay [Perpetual Peace](/book/157?lang=en) is his most accessible work."
+    ]
+  },
+  "freud": {
+    "en": [
+      "Sigmund Freud (1856–1939) grew up in Vienna in a Jewish family and trained as a neurologist. After studying hypnosis with the famous Charcot in Paris, he began listening to his patients talk freely about their dreams and memories, and developed from this practice a new theory of the mind and a new kind of treatment: psychoanalysis.",
+      "From his consulting room at Berggasse 19 he published [The Interpretation of Dreams](/book/159?lang=en) and a stream of books that changed psychology, literature and everyday language. In 1938, after the Nazis took over Austria, he fled to London, where he died the following year. [A General Introduction to Psychoanalysis](/book/162?lang=en) is the best place to begin."
+    ]
+  },
+  "goethe": {
+    "en": [
+      "Johann Wolfgang von Goethe (1749–1832) was born in Frankfurt and trained as a lawyer, but at twenty-four his novel [The Sorrows of Young Werther](/book/166?lang=en) made him famous across Europe. Invited to the small court of Weimar, he served as a minister for years while writing poems, plays and novels, and pursuing serious research in botany, anatomy and the theory of colour.",
+      "His friendship with the poet Schiller and his journey to Italy shaped German classicism, and his [Faust](/book/165?lang=en), the work of sixty years, is the summit of German literature. Goethe admired the Persian poet Hafez and the Quran, and his West-Eastern Divan was an early bridge between European and Islamic poetry."
+    ]
+  },
+  "cervantes": {
+    "en": [
+      "Miguel de Cervantes (1547–1616) lived a life as adventurous as any novel. As a soldier he was wounded at the naval battle of Lepanto in 1571 and lost the use of his left hand; on his way home he was captured by Barbary corsairs and spent five years as a captive in Algiers, where he tried to escape four times before he was ransomed.",
+      "Back in Spain he worked as a tax collector, went to prison more than once and wrote plays and stories with little success, until [Don Quixote](/book/168?lang=en) in 1605 made him famous. He died in Madrid in April 1616, the same month as Shakespeare. Memories of Algiers, and a pretend Arab historian, appear throughout his work."
+    ]
+  },
+  "dante": {
+    "en": [
+      "Dante Alighieri (1265–1321) was born in Florence and, as a boy of nine, saw Beatrice Portinari, the woman who would inspire his poetry for the rest of his life, as he tells in [La Vita Nuova](/book/171?lang=en). He became a poet, a soldier and a politician, and in 1302 was exiled by his political enemies under threat of death.",
+      "He never returned to Florence. In exile, moving between the courts of northern Italy, he wrote [The Divine Comedy](/book/170?lang=en), placing friends and enemies in Hell, Purgatory and Paradise. He died in Ravenna, where he is buried, and the city of Florence still keeps an empty tomb for him."
+    ]
+  },
+  "homer": {
+    "en": [
+      "Homer is the name the Greeks gave to the poet of the [Iliad](/book/172?lang=en) and the [Odyssey](/book/173?lang=en), probably composed in Ionia in the eighth century BC. Ancient tradition pictured him as a blind singer, and modern scholars have shown that the poems grew out of a long tradition of oral poetry, sung by bards who used repeated phrases to compose as they performed.",
+      "Whether one poet or many, Homer stands at the beginning of European literature, and the Greeks learned their heroes, gods and values from him. Sulayman al-Bustani's verse translation of the Iliad, published in 1904 with a long introduction, was a milestone in Arabic letters."
+    ]
+  },
+  "chekhov": {
+    "en": [
+      "Anton Chekhov (1860–1904) was the grandson of a serf who bought his family's freedom. He studied medicine in Moscow and paid for his studies and his family's keep by writing hundreds of humorous sketches for magazines. 'Medicine is my lawful wife and literature my mistress,' he once wrote, and he practised both all his life.",
+      "In 1890 he crossed Siberia to study the prison island of Sakhalin. His short stories, like [The Lady with the Dog](/book/178?lang=en), and his plays for the Moscow Art Theatre, like [Uncle Vanya](/book/175?lang=en), transformed both forms with their quiet, open endings. He died of tuberculosis in Germany at forty-four."
+    ]
+  },
+  "wells": {
+    "en": [
+      "H. G. Wells (1866–1946) was the son of a failing shopkeeper and a lady's maid, and worked as a draper's apprentice before winning a scholarship to study science under T. H. Huxley, Darwin's great defender. Between 1895 and 1901 he wrote the scientific romances that founded modern science fiction, [The Time Machine](/book/179?lang=en), [The War of the Worlds](/book/180?lang=en) and The Invisible Man among them.",
+      "He went on to write social novels, popular history such as [A Short History of the World](/book/184?lang=en) and books urging world government, met Lenin and Roosevelt, and imagined tanks, air war and the atomic bomb before they existed. Few writers have thought so hard about the future."
+    ]
+  },
+  "stevenson": {
+    "en": [
+      "Robert Louis Stevenson (1850–1894) came from a family of Edinburgh lighthouse engineers and was expected to follow them, but chose writing, despite lungs so weak he was often bedridden. He travelled constantly in search of health, married the American Fanny Osbourne and wrote [Treasure Island](/book/185?lang=en) for her son.",
+      "[Kidnapped](/book/187?lang=en), Strange Case of Dr Jekyll and Mr Hyde and [A Child's Garden of Verses](/book/188?lang=en) followed, and in 1890 he settled in Samoa, where the islanders called him Tusitala, the teller of tales. He died there at forty-four and is buried on a hilltop above his home."
+    ]
+  },
+  "carroll": {
+    "en": [
+      "Lewis Carroll was the pen name of Charles Lutwidge Dodgson (1832–1898), a shy mathematics lecturer at Christ Church, Oxford, who was also a deacon, a pioneering photographer and the author of books on logic. On a boat trip in July 1862 he made up a story for the three daughters of the college dean, and ten-year-old Alice Liddell asked him to write it down.",
+      "The result, [Alice's Adventures in Wonderland](/book/189?lang=en), followed by [Through the Looking-Glass](/book/190?lang=en) and [The Hunting of the Snark](/book/191?lang=en), changed children's books forever with nonsense, wordplay and logic games that delight adults as much as children."
+    ]
+  },
+  "andersen": {
+    "en": [
+      "Hans Christian Andersen (1805–1875) was the son of a poor shoemaker and a washerwoman in Odense, Denmark. At fourteen he went alone to Copenhagen to become a singer or an actor, failed at both, and was saved by patrons who sent him to school. He wrote novels, plays and travel books, but his fame came from the tales he began publishing in 1835.",
+      "Stories like The Little Mermaid and The Ugly Duckling, many drawn from his own sense of being an outsider, have been translated into more languages than almost any other books. His [Fairy Tales](/book/192?lang=en) are in the library. He once stayed so long as a guest in Charles Dickens's house that Dickens pinned a note to the mirror after he left."
+    ]
+  },
+  "ibnrushd": {
+    "en": [
+      "Abu al-Walid ibn Rushd (1126–1198), known in Europe as Averroes, came from a family of judges in Córdoba and served as chief judge of Seville and Córdoba and as physician to the Almohad caliphs. When the philosopher [Ibn Tufail](/author/ibntufail?lang=en) introduced him to the caliph, he was asked to explain the works of Aristotle, a task that became his life's work.",
+      "His commentaries made him 'the Commentator' for medieval European scholars, and his Decisive Treatise argued that philosophy and religion do not contradict each other. His Incoherence of the Incoherence answered [al-Ghazali](/author/ghazali?lang=en). Late in life he fell from favour and his books were burned, before he was pardoned shortly before his death in Marrakesh."
+    ]
+  },
+  "haytham": {
+    "en": [
+      "Abu Ali al-Hasan ibn al-Haytham (c. 965–c. 1040), known in Europe as Alhazen, was born in Basra and went to Cairo to serve the Fatimid caliph al-Hakim, who wanted to control the floods of the Nile. According to a famous story, when he realised the project was impossible, he pretended to be mad to escape the caliph's anger, and used his years of confinement to study.",
+      "His Book of Optics showed through careful experiments that we see because light enters the eye, and described the camera obscura. Translated into Latin, it influenced European science for centuries, down to Kepler and [Newton](/book/150?lang=en), and his insistence on testing ideas by experiment makes him one of the founders of scientific method."
+    ]
+  },
+  "shawqi": {
+    "en": [
+      "Ahmed Shawqi (1868–1932) was born in Cairo and raised near the court of the Khedive, who sent him to study law in France. He became the court poet of Egypt, and when the British exiled him to Spain during the First World War, the years in Andalusia inspired some of his most beautiful poems of longing for home.",
+      "In 1927 poets from across the Arab world crowned him the Prince of Poets. His collected poems, al-Shawqiyyat, revived classical Arabic verse, and he brought verse drama into Arabic with plays such as [The Death of Cleopatra](/book/1966170?lang=en) and Majnun Layla. Many of his poems live on in the voices of Umm Kulthum and Mohammed Abdel Wahab."
+    ]
+  },
+  "amin": {
+    "en": [
+      "Qasim Amin (1863–1908) was an Egyptian judge who studied law in France and returned convinced that his country's progress depended on the education and freedom of women. His book [The Liberation of Women](/book/1966246?lang=en) (1899) argued for girls' education and against the seclusion of women, and caused one of the great debates of modern Arab thought.",
+      "He answered his critics the following year with The New Woman, and he was among the founders of the Egyptian University, the forerunner of Cairo University. He died at forty-five, but his books are still discussed wherever women's rights are debated in the Arab world."
+    ]
+  },
+  "abduh": {
+    "en": [
+      "Muhammad Abduh (1849–1905) was born in a village of the Nile Delta, studied at al-Azhar and became a disciple of the reformer Jamal al-Din al-Afghani. Exiled after the Urabi revolt of 1882, he published with al-Afghani in Paris the journal al-Urwa al-Wuthqa, which was read across the Muslim world.",
+      "Allowed to return to Egypt, he worked to reform al-Azhar and the religious courts and became Grand Mufti in 1899. His Treatise on the Unity of God and his lessons in Quranic commentary argued that Islam welcomes reason and modern science. Among those he influenced were [Qasim Amin](/author/amin?lang=en) and [al-Manfaluti](/author/manfaluti?lang=en)."
+    ]
+  },
+  "farabi": {
+    "en": [
+      "Abu Nasr al-Farabi (c. 872–950) came from Central Asia, studied in Baghdad and spent his last years at the court of Sayf al-Dawla in Aleppo before dying in Damascus. He was called the Second Teacher, after Aristotle himself, because he did so much to organise and explain Greek logic and philosophy in Arabic.",
+      "His most famous book, The Opinions of the People of the Virtuous City, imagines an ideal state ruled by a philosopher, in the spirit of Plato's [Republic](/book/74?lang=en). He also wrote one of the most important books on music theory in Arabic. [Ibn Sina](/author/avicenna?lang=en) said that only al-Farabi's commentary helped him understand Aristotle's Metaphysics."
+    ]
+  },
+  "ibntufail": {
+    "en": [
+      "Abu Bakr ibn Tufail (c. 1105–1185) was born near Granada and became physician and adviser to the Almohad caliph Abu Yaqub Yusuf in Marrakesh. He was a patron as well as a philosopher: it was he who introduced the young [Ibn Rushd](/author/ibnrushd?lang=en) to the caliph and encouraged him to explain Aristotle.",
+      "His only surviving book, [Hayy ibn Yaqzan](/book/1966195?lang=en), tells of a child raised by a gazelle on a desert island who discovers the truth about nature and God by reason alone. Translated into Latin in 1671 and English in 1708, it was read widely in Europe, and some see in it an ancestor of [Robinson Crusoe](/book/300?lang=en)."
+    ]
+  },
+  "hazm": {
+    "en": [
+      "Ibn Hazm (994–1064) was born in Córdoba, the son of a vizier, and grew up in the palace world of the Umayyad caliphate just as it was collapsing into civil war. He took part in politics, was imprisoned and exiled more than once, and finally devoted himself to scholarship, writing on law, theology, history and comparative religion.",
+      "He is best loved today for The Ring of the Dove, a book about love written in his youth in Játiva, full of stories and verses about falling in love, separation, loyalty and loss, many from his own life. It is one of the most personal and tender books of Andalusian literature."
+    ]
+  },
+  "masudi": {
+    "en": [
+      "Abu al-Hasan al-Mas'udi (c. 896–956) was born in Baghdad and spent much of his life travelling: through Persia, India, the coasts of East Africa and the lands around the Caspian Sea, before settling in Egypt, where he died. He was curious about everything, peoples, religions, kings, geography and wonders.",
+      "His most famous work, The Meadows of Gold and Mines of Gems, is a world history that begins with creation and runs through the histories of many nations to the caliphs of his own day, written with a storyteller's gift. European scholars have called him the Herodotus of the Arabs; see [Herodotus](/author/homerus?lang=en)."
+    ]
+  },
+  "tabari": {
+    "en": [
+      "Muhammad ibn Jarir al-Tabari (839–923) was born in Amol in Tabaristan, near the Caspian Sea, and travelled for years in search of knowledge before settling in Baghdad, where he taught and wrote until his death. He was so productive that later writers said he wrote forty pages a day for forty years.",
+      "His History of the Prophets and Kings is the most important early Arabic history, recording reports with their chains of transmitters so that readers could judge them, and his commentary on the Quran became a standard work. Later historians, among them [Ibn Khaldun](/author/khaldun?lang=en), built on his work."
+    ]
+  },
+  "mawardi": {
+    "en": [
+      "Abu al-Hasan al-Mawardi (974–1058) was born in Basra, became a judge and a leading scholar of the Shafi'i school of law, and served the Abbasid caliphs in Baghdad as an envoy and adviser at a time when real power was held by others.",
+      "His Ordinances of Government is one of the first systematic works of Islamic political theory, describing the duties of the caliph, ministers, judges and governors. His Ethics of Religion and of This World, a book of practical wisdom on learning, friendship and conduct, is still read today."
+    ]
+  },
+  "arabi": {
+    "en": [
+      "Muhyi al-Din ibn Arabi (1165–1240), known as the Greatest Master, was born in Murcia in al-Andalus. As a young man he met the philosopher [Ibn Rushd](/author/ibnrushd?lang=en) in Córdoba, and then followed the Sufi path across North Africa and the East, to Mecca, where he began his vast Meccan Revelations, and finally to Damascus, where he died.",
+      "His books, above all The Bezels of Wisdom, made him the most influential and most debated mystical thinker in Islam. His love poems, The Interpreter of Desires, include the famous lines in which the poet's heart becomes able to take every form. Compare the poetry of [Rumi](/author/rumi?lang=en), his younger contemporary."
+    ]
+  },
+  "zahrawi": {
+    "en": [
+      "Abu al-Qasim al-Zahrawi (936–1013), known in Europe as Albucasis, was born in Madinat al-Zahra near Córdoba and served as physician at the Umayyad court. He spent his life practising medicine and teaching, and is considered the greatest surgeon of the medieval Islamic world.",
+      "His medical encyclopedia, al-Tasrif, ends with a book on surgery that describes operations step by step and illustrates some two hundred instruments, many of his own design. Translated into Latin in the twelfth century, it was used in European medical schools for five hundred years."
+    ]
+  },
+  "jazari": {
+    "en": [
+      "Badi al-Zaman al-Jazari (1136–1206) was an engineer who served the Artuqid rulers of Diyarbakir, in the upper Mesopotamian region known as al-Jazira, for twenty-five years. At the request of his prince he wrote down everything he had built in his Book of Knowledge of Ingenious Mechanical Devices, completed in 1206.",
+      "The book describes some fifty machines with precise drawings, among them water clocks such as the famous elephant clock, musical automata, fountains and water-raising pumps, and uses mechanisms that anticipate later engineering. It shows a craftsman's joy in machines that are both useful and beautiful. Note that the library also lists, under his name, works by a later scholar of Quranic readings also called al-Jazari."
+    ]
+  },
+  "idrisi": {
+    "en": [
+      "Abu Abdallah al-Idrisi (1100–1165) was born in Ceuta, studied in Córdoba and travelled widely before the Norman king Roger II of Sicily invited him to Palermo to make a description of the whole known world. With the help of travellers and merchants, he worked on it for some fifteen years.",
+      "The result, completed in 1154, was The Book of Pleasant Journeys into Faraway Lands, with a world map in seventy sections and a great map engraved on silver. It was one of the most accurate geographies of the Middle Ages and is a monument to cooperation between Arab and European scholars."
+    ]
+  },
+  "jubayr": {
+    "en": [
+      "Ibn Jubayr (1145–1217), born in Valencia, was secretary to the governor of Granada when, according to a well-known story, he was forced to drink wine and, in remorse, set out on the pilgrimage to Mecca. His journey, from 1183 to 1185, took him through Egypt under Saladin, the Hejaz, Iraq, Syria and Norman Sicily.",
+      "His Rihla, the travel diary he kept along the way, is one of the most vivid travel books in Arabic, full of the cities, sea storms, pilgrims and rulers he saw. He made two more journeys east and died in Alexandria. Compare it with [The Travels of Marco Polo](/book/254?lang=en), written a century later."
+    ]
+  },
+  "hariri": {
+    "en": [
+      "Abu Muhammad al-Qasim al-Hariri (1054–1122) was a wealthy official of Basra and a master of the Arabic language. His fifty Maqamat follow the wanderings of the eloquent rogue Abu Zayd of Saruj, who in every episode tricks his audience with a dazzling speech, as told by the narrator al-Harith ibn Hammam.",
+      "The Maqamat are a festival of wordplay, rhymed prose and rare vocabulary, and for centuries they were memorised and studied across the Arab world; illustrated manuscripts such as the famous one painted by al-Wasiti in 1237 are treasures of Islamic art. He followed the model created by [al-Hamadhani](/author/hamadhani?lang=en)."
+    ]
+  },
+  "hamadhani": {
+    "en": [
+      "Badi al-Zaman al-Hamadhani (969–1007), the Wonder of the Age, was born in Hamadan and became famous for his memory and his gift for improvisation, winning a celebrated contest of eloquence against the older scholar al-Khwarizmi. He died in Herat at about forty.",
+      "He invented the maqama, a short story in rhymed prose in which the narrator Isa ibn Hisham keeps meeting the brilliant trickster Abu al-Fath al-Iskandari. The form was perfected by [al-Hariri](/author/hariri?lang=en), and centuries later al-Muwaylihi borrowed his narrator's name for [Hadith Isa ibn Hisham](/book/1966000?lang=en)."
+    ]
+  },
+  "nuwas": {
+    "en": [
+      "Abu Nuwas (c. 756–814) was born in Ahvaz to an Arab father and a Persian mother, grew up in Basra and went to Baghdad, where he became a companion of the caliph Harun al-Rashid and, above all, his son al-Amin. He was famous for his wit, his learning and his scandalous life.",
+      "He mocked the old custom of opening poems with weeping over abandoned campsites and made wine and pleasure his subjects instead, but he also wrote hunting poems and, late in life, poems of repentance. He became a legendary figure, appearing as a clever trickster in the Arabian Nights."
+    ]
+  },
+  "imru": {
+    "en": [
+      "Imru al-Qais (c. 501–544), the son of a king of the tribe of Kinda, is said to have been banished by his father for writing love poetry. When he heard that his father had been murdered, he declared, 'Today wine, tomorrow business', and spent the rest of his life trying to avenge him and win back the kingdom.",
+      "According to legend, he travelled to Constantinople to seek the emperor's help and died on the way home. His Mu'allaqa, which begins 'Stop, let us weep at the memory of a beloved and a dwelling', is one of the most famous poems in Arabic, and he is often called the prince of the pre-Islamic poets."
+    ]
+  },
+  "tahtawi": {
+    "en": [
+      "Rifa'a al-Tahtawi (1801–1873), from Tahta in Upper Egypt, was a young scholar of al-Azhar when he was sent to Paris in 1826 as the religious guide of an Egyptian student mission. He spent five years there, learned French and recorded everything he saw in [Takhlis al-Ibriz](/book/1966273?lang=en), a classic of Arabic travel writing.",
+      "Back in Egypt he founded the School of Languages, translated or supervised the translation of many European books and edited the official gazette. He is one of the founders of the Arab renaissance of the nineteenth century, and his ideas on education, the nation and women's learning prepared the way for later reformers."
+    ]
+  },
+  "homerus": {
+    "en": [
+      "Herodotus (c. 484–425 BC) was born in Halicarnassus, today's Bodrum in Turkey, and travelled widely in Egypt, Babylon, the Black Sea and Greece, asking questions everywhere he went. His Histories tell the story of the wars between the Greeks and the Persian Empire, and of the peoples involved, their customs, their gods and their legends.",
+      "Cicero called him the Father of History, and he was the first to set out to investigate the causes of events rather than simply record them. His book on Egypt, which the library also holds on its own as An Account of Egypt, is full of wonders, some true and some not, and remains a delight to read."
+    ]
+  },
+  "thucydides": {
+    "en": [
+      "Thucydides (c. 460–400 BC) was an Athenian general who survived the great plague of Athens and was exiled for twenty years after failing to save the city of Amphipolis. He used his exile to write the history of the Peloponnesian War between Athens and Sparta, interviewing participants on both sides.",
+      "His History, left unfinished, is famous for its rigour and its speeches, among them Pericles' Funeral Oration and the cold debate between Athens and the island of Melos. It is still read by students of politics and war as a study of power, fear and human nature."
+    ]
+  },
+  "plutarch": {
+    "en": [
+      "Plutarch (c. 46–after 119) lived in the small town of Chaeronea in Greece and served as a priest at the oracle of Delphi. He was a philosopher, a teacher and a tireless writer who knew the Roman elite of his day while remaining devoted to his home town.",
+      "His Parallel Lives pair famous Greeks and Romans, Alexander and Caesar, Demosthenes and Cicero, to compare their characters, and his many essays on morals cover everything from anger to the education of children. Shakespeare took the plot of [Julius Caesar](/book/9?lang=en) from Plutarch, as did many writers after him."
+    ]
+  },
+  "gibbon": {
+    "en": [
+      "Edward Gibbon (1737–1794) was a sickly child from a wealthy English family. At sixteen he converted to Catholicism at Oxford, and his father sent him to Lausanne, where he returned to Protestantism and educated himself in history and languages. In Rome in 1764, sitting among the ruins of the Capitol, he conceived the idea of writing about the city's decline.",
+      "The six volumes of his History of the Decline and Fall of the Roman Empire, published between 1776 and 1788, cover more than thirteen centuries, from the Antonine emperors to the fall of Constantinople, in a famously elegant and ironic style. His chapters on the rise of Islam were remarkably sympathetic for their time."
+    ]
+  },
+  "marcopolo": {
+    "en": [
+      "Marco Polo (1254–1324) was born in Venice into a family of merchants. At seventeen he set out with his father and uncle across Asia to the court of Kublai Khan, where he served the Mongol emperor for many years and travelled on his behalf through China and beyond.",
+      "Returning to Venice after twenty-four years away, he was captured in a war with Genoa, and in prison dictated his adventures to a fellow prisoner, producing [The Travels of Marco Polo](/book/254?lang=en). For centuries it was Europe's main source of knowledge about the East, and it inspired explorers, Columbus among them."
+    ]
+  },
+  "marcus": {
+    "en": [
+      "Marcus Aurelius (121–180) was adopted as heir by the emperor Antoninus Pius and ruled Rome from 161 until his death. He had been trained in Stoic philosophy since his youth, and he tried to live by it through a reign full of trouble: a devastating plague, floods and long wars on the Danube frontier.",
+      "He never wrote for the public. His private notes, the [Meditations](/book/255?lang=en), were kept by those around him and survived by chance, and today they are among the most widely read books of antiquity. His son Commodus, who succeeded him, could hardly have been more different."
+    ]
+  },
+  "sunzi": {
+    "en": [
+      "Sun Tzu, Master Sun, is traditionally said to have been a general in the service of the king of Wu in the sixth century BC. According to a famous story, the king tested him by asking him to drill the palace women as soldiers, and when they laughed at his orders, Sun Tzu executed the king's two favourite concubines who commanded them, and the rest obeyed.",
+      "Historians are not sure he existed, and the book bearing his name may have been put together later, but [The Art of War](/book/256?lang=en) is the most famous work on strategy ever written. Its ideas on deception, preparation and winning without fighting are studied in business and politics as well as in war."
+    ]
+  },
+  "laozi": {
+    "en": [
+      "Lao Tzu, the Old Master, is said to have been a keeper of the archives at the Zhou court in the sixth century BC. According to legend, tired of the decline of the kingdom, he rode west on a water buffalo, and the guardian of the frontier pass asked him to write down his wisdom before he left. The result was the Tao Te Ching, in about five thousand characters.",
+      "Whether he was one man or a legend, the Tao Te Ching, with its teachings on simplicity, gentleness and non-action, became the founding text of Taoism and one of the most translated books in the world. Tradition says that Confucius once met him; read [The Analects](/book/258?lang=en) to compare their visions."
+    ]
+  },
+  "confucius": {
+    "en": [
+      "Kong Qiu, known as Confucius (551–479 BC), was born in the state of Lu, in today's Shandong, into a family of modest means. He held minor official posts, then spent some fourteen years travelling from state to state looking for a ruler who would put his ideas of good government into practice, without success.",
+      "He devoted himself to teaching, and tradition says he had three thousand students. His conversations, recorded by his disciples in [The Analects](/book/258?lang=en), put humaneness, learning, family duty and proper conduct at the centre of life, and shaped Chinese civilisation for more than two thousand years."
+    ]
+  },
+  "machiavelli": {
+    "en": [
+      "Niccolò Machiavelli (1469–1527) served the Florentine republic for fourteen years as a senior official and diplomat, meeting kings, popes and the ruthless Cesare Borgia. When the Medici family returned to power in 1512 he lost his post, was imprisoned and tortured, and retired to his small farm outside Florence.",
+      "There, in the evenings, he put on his best clothes to read the ancient historians, and wrote [The Prince](/book/259?lang=en), his Discourses on Livy and the comedy The Mandrake. His frank description of how power really works made his name a byword for cunning, but he was also a passionate defender of republics."
+    ]
+  },
+  "smith": {
+    "en": [
+      "Adam Smith (1723–1790) was born in Kirkcaldy, Scotland, studied at Glasgow and Oxford and became professor of moral philosophy at Glasgow. His [Theory of Moral Sentiments](/book/263?lang=en) made his name in 1759, and a few years later he travelled in France as tutor to a young duke, meeting Voltaire and the French economists.",
+      "Back in Scotland he spent ten years on An Inquiry into the Nature and Causes of the Wealth of Nations (1776), which explained the division of labour, markets and free trade and founded modern economics. He ended his life, with some irony, as a commissioner of customs in Edinburgh."
+    ]
+  },
+  "mill": {
+    "en": [
+      "John Stuart Mill (1806–1873) received one of the most intense educations ever recorded: his father taught him Greek at three and Latin at eight, and by his teens he was writing on economics. At twenty he fell into a deep depression and found his way out through the poetry of Wordsworth, an experience that taught him the value of feeling alongside reason.",
+      "He worked for thirty-five years at the East India Company, wrote on logic, economics and politics, and shared his intellectual life with Harriet Taylor, whom he married in 1851. As a Member of Parliament he proposed votes for women in 1867. His [On Liberty](/book/264?lang=en), [Utilitarianism](/book/265?lang=en) and [The Subjection of Women](/book/266?lang=en) are still at the centre of debate."
+    ]
+  },
+  "locke": {
+    "en": [
+      "John Locke (1632–1704) trained as a physician at Oxford and became adviser to the Earl of Shaftesbury, a leading opponent of the king. Suspected of plotting, he fled to the Netherlands in 1683 and returned only after the Revolution of 1688, when he published the works that made him famous.",
+      "His Essay Concerning Human Understanding argued that the mind begins as a blank slate filled by experience, and his Two Treatises of Government defended natural rights to life, liberty and property and government by consent. His Letter Concerning Toleration argued for religious freedom. His ideas shaped the American Declaration of Independence and modern liberal thought."
+    ]
+  },
+  "hobbes": {
+    "en": [
+      "Thomas Hobbes (1588–1679) liked to say that he was born prematurely when his mother heard that the Spanish Armada was coming, so that 'fear and I were born twins'. He spent much of his life as tutor and secretary to the aristocratic Cavendish family, met Galileo in Italy and was fascinated by geometry.",
+      "During the English Civil War he lived in exile in Paris, where he taught mathematics to the future King Charles II and wrote [Leviathan](/book/270?lang=en) (1651), arguing that only a powerful sovereign can save people from a war of all against all. He lived to ninety-one and was translating Homer in his eighties."
+    ]
+  },
+  "rousseau": {
+    "en": [
+      "Jean-Jacques Rousseau (1712–1778) was born in Geneva, lost his mother days after his birth, ran away from an apprenticeship at fifteen and lived for years as a wanderer, a music copyist and the protégé of Madame de Warens. In 1750 an essay arguing that civilisation had corrupted humanity won a prize and made him famous overnight.",
+      "In 1762 he published both [The Social Contract](/book/271?lang=en) and [Emile](/book/273?lang=en); both were condemned, and he had to flee. His Confessions, one of the first modern autobiographies, admits among other things that he placed his own five children in a foundling hospital. Few writers have influenced politics, education and the romantic idea of the self so deeply."
+    ]
+  },
+  "descartes": {
+    "en": [
+      "René Descartes (1596–1650) was educated by the Jesuits, served as a gentleman soldier, and on a winter night in 1619, shut in a stove-heated room in Germany, had the series of dreams that convinced him to rebuild all knowledge from scratch. He spent most of his adult life in the Netherlands, where he could work in peace.",
+      "His [Discourse on the Method](/book/274?lang=en) and Meditations made 'I think, therefore I am' the starting point of modern philosophy, and his invention of coordinate geometry joined algebra and geometry for good. Invited to Stockholm by Queen Christina, who wanted lessons at five in the morning, he caught pneumonia and died there in the winter of 1650."
+    ]
+  },
+  "spinoza": {
+    "en": [
+      "Baruch Spinoza (1632–1677) was born in Amsterdam to a family of Portuguese Jewish merchants. At twenty-three he was expelled from the Jewish community for his views, and he spent the rest of his life quietly, grinding lenses for telescopes and microscopes and corresponding with the scientists of Europe. He refused a professorship at Heidelberg so as to keep his freedom of thought.",
+      "His Theological-Political Treatise, published anonymously in 1670, argued for freedom of thought and a historical reading of scripture; it is also in the library in Arabic. His [Ethics](/book/276?lang=en) appeared after his death at forty-four, probably hastened by the glass dust of his work, and made him one of the great philosophers of freedom."
+    ]
+  },
+  "hume": {
+    "en": [
+      "David Hume (1711–1776) was born in Edinburgh and wrote his [Treatise of Human Nature](/book/278?lang=en) in his twenties, in France. His scepticism about religion cost him professorships at Edinburgh and Glasgow, but his essays and his History of England made him famous and comfortable.",
+      "As secretary to the British embassy in Paris he was adored in the salons, and in Edinburgh he was the warm centre of the Scottish Enlightenment and a close friend of [Adam Smith](/author/smith?lang=en). His [Enquiry Concerning Human Understanding](/book/277?lang=en) woke Kant from his dogmatic slumber. He faced death with a calm and humour that astonished his visitors."
+    ]
+  },
+  "voltaire": {
+    "en": [
+      "François-Marie Arouet (1694–1778), who called himself Voltaire, was imprisoned twice in the Bastille as a young man for his satirical verses. Exiled to England, he returned full of admiration for its freedoms and wrote the [Letters on England](/book/281?lang=en), which were burned in Paris.",
+      "He lived for years with the scientist Émilie du Châtelet, spent a stormy period at the court of Frederick the Great and finally settled at Ferney, near the Swiss border, from where he campaigned against religious intolerance and miscarriages of justice. He wrote plays, history and poetry, but his tales, [Candide](/book/279?lang=en) and [Zadig](/book/280?lang=en), are what most readers love today."
+    ]
+  },
+  "schopenhauer": {
+    "en": [
+      "Arthur Schopenhauer (1788–1860) was the son of a wealthy Danzig merchant and a successful novelist. His great work, The World as Will and Representation, appeared in 1818 and was almost entirely ignored; when he taught in Berlin, he scheduled his lectures at the same hour as Hegel's, and almost no students came.",
+      "He spent the rest of his life in Frankfurt with a succession of poodles, convinced of his own genius, until his collection of essays, Parerga and Paralipomena, finally brought him fame in 1851; a selection is in the library as [Essays](/book/284?lang=en). He was the first major Western philosopher to draw seriously on Indian thought, calling the Upanishads the consolation of his life."
+    ]
+  },
+  "emerson": {
+    "en": [
+      "Ralph Waldo Emerson (1803–1882) was a Boston minister who resigned his church in 1832 because he could no longer accept its rituals. After meeting Carlyle, Coleridge and Wordsworth in Europe, he settled in Concord, Massachusetts, and became America's best-known lecturer and the centre of the Transcendentalist movement.",
+      "His essay Nature and his address The American Scholar urged Americans to think for themselves, and his [Essays](/book/286?lang=en) gave the world 'Self-Reliance'. He encouraged the young Thoreau, praised the unknown Whitman, and loved the Persian poets Hafez and Saadi, some of whose verses he translated into English."
+    ]
+  },
+  "thoreau": {
+    "en": [
+      "Henry David Thoreau (1817–1862) was born in Concord, Massachusetts, studied at Harvard and worked in his family's pencil business, as a surveyor and as a handyman in Emerson's house. From 1845 to 1847 he lived alone in a cabin by Walden Pond, the experience behind [Walden](/book/287?lang=en).",
+      "In 1846 he spent a night in jail for refusing to pay a tax that supported slavery and the war with Mexico, and his essay Civil Disobedience, born from that night, inspired Gandhi and Martin Luther King. He died of tuberculosis at forty-four, leaving journals that fill thousands of pages of observations of nature."
+    ]
+  },
+  "whitman": {
+    "en": [
+      "Walt Whitman (1819–1892) grew up on Long Island and in Brooklyn, left school at eleven and worked as a printer, teacher and newspaper editor. In 1855 he published the first [Leaves of Grass](/book/289?lang=en) himself, and spent the rest of his life revising and expanding it.",
+      "During the Civil War he went to Washington to look for his wounded brother and stayed for years, volunteering in the military hospitals, sitting with thousands of wounded soldiers. His elegies for Abraham Lincoln are among his most famous poems. The library also holds an Arabic selection of Leaves of Grass."
+    ]
+  },
+  "dickinson": {
+    "en": [
+      "Emily Dickinson (1830–1886) spent almost all her life in her family's house in Amherst, Massachusetts. After a year at a women's seminary she withdrew more and more from society, dressing in white and receiving few visitors, though she kept up a lively correspondence with friends and with the critic Thomas Wentworth Higginson.",
+      "She wrote nearly eighteen hundred poems, sewing many into small handmade booklets, and published only a handful. Her sister discovered them after her death, and a complete edition faithful to her dashes and capital letters appeared only in 1955. Her [Poems](/book/290?lang=en) made her one of the greatest poets in English."
+    ]
+  },
+  "wordsworth": {
+    "en": [
+      "William Wordsworth (1770–1850) was born in Cockermouth in the Lake District and orphaned young. As a student he went to France during the Revolution and was swept up in its hopes, and he left behind a French daughter. Back in England he formed a close friendship with Samuel Taylor Coleridge, and together they published [Lyrical Ballads](/book/291?lang=en) in 1798.",
+      "He settled with his sister Dorothy at Dove Cottage in Grasmere and spent his life writing about nature, memory and the growth of the mind, above all in his long autobiographical poem, The Prelude, published after his death. He became Poet Laureate in 1843."
+    ]
+  },
+  "keats": {
+    "en": [
+      "John Keats (1795–1821) was the son of a London stable keeper, lost both parents young, and trained as a surgeon at Guy's Hospital before giving up medicine for poetry. His first books were savagely reviewed, but in a few months of 1819, while nursing his grief for his brother Tom and in love with Fanny Brawne, he wrote the great odes.",
+      "Already ill with tuberculosis, he went to Rome hoping the climate would save him, and died there at twenty-five. His [Poems](/book/293?lang=en) and [Endymion](/book/294?lang=en), together with his remarkable letters, made him one of the most loved poets in English."
+    ]
+  },
+  "byron": {
+    "en": [
+      "George Gordon, Lord Byron (1788–1824) was born with a club foot and inherited his title at ten. When the first cantos of [Childe Harold's Pilgrimage](/book/296?lang=en) appeared in 1812 he became the most famous man in England, and after a series of scandals he left the country in 1816, never to return.",
+      "In Switzerland and Italy, often in the company of the Shelleys, he wrote his comic masterpiece [Don Juan](/book/295?lang=en). He died of fever in 1824 at Missolonghi, where he had gone to support the Greek war of independence, and he is still honoured in Greece. His daughter Ada Lovelace worked with [Charles Babbage](/author/babbage?lang=en) on the first computer program."
+    ]
+  },
+  "milton": {
+    "en": [
+      "John Milton (1608–1674) was a London scholar-poet who wrote Lycidas and other early poems before devoting twenty years to politics. He wrote pamphlets defending divorce and the freedom of the press, in his famous Areopagitica, and served Cromwell's government as Latin secretary, losing his sight around 1652.",
+      "After the monarchy was restored he was briefly imprisoned and lucky to escape execution. Blind, poor and disappointed, he dictated [Paradise Lost](/book/297?lang=en), published in 1667, followed by Paradise Regained and Samson Agonistes. He is often ranked second only to Shakespeare among English poets."
+    ]
+  },
+  "chaucer": {
+    "en": [
+      "Geoffrey Chaucer (c. 1343–1400) was the son of a London wine merchant and spent his life in royal service: as a page, a soldier captured in France and ransomed with the king's help, a diplomat on missions to Italy and a controller of customs in the port of London.",
+      "In his spare time he wrote Troilus and Criseyde and [The Canterbury Tales](/book/298?lang=en), and he was one of the first to make English, rather than French or Latin, the language of serious poetry. He was buried in Westminster Abbey, beginning the tradition of Poets' Corner."
+    ]
+  },
+  "wollstonecraft": {
+    "en": [
+      "Mary Wollstonecraft (1759–1797) grew up with a violent father and worked as a companion, a schoolmistress and a governess before she made her living as a writer in London. She answered Edmund Burke's attack on the French Revolution with A Vindication of the Rights of Men, and two years later wrote [A Vindication of the Rights of Woman](/book/299?lang=en).",
+      "She lived in Paris during the Revolution, travelled in Scandinavia and wrote a fine book of letters about it, and in 1797 married the philosopher William Godwin. She died eleven days after giving birth to their daughter, [Mary Shelley](/author/shelley?lang=en), the future author of Frankenstein."
+    ]
+  },
+  "defoe": {
+    "en": [
+      "Daniel Defoe (c. 1660–1731) was the son of a London butcher, became a merchant, went bankrupt more than once and turned to writing pamphlets. In 1703 he was put in the pillory for a satire on religious intolerance, and he later worked as a secret agent for the government in Scotland.",
+      "He was nearly sixty when he published [Robinson Crusoe](/book/300?lang=en) in 1719, and in the next few years he wrote [Moll Flanders](/book/301?lang=en) and A Journal of the Plague Year. He wrote hundreds of works in all, and is often called one of the fathers of the English novel."
+    ]
+  },
+  "swift": {
+    "en": [
+      "Jonathan Swift (1667–1745) was born in Dublin after his father's death, studied at Trinity College and worked as secretary to the diplomat Sir William Temple in England. Disappointed in his hopes of advancement, he became Dean of St Patrick's Cathedral in Dublin in 1713 and a fierce defender of the Irish against English policy.",
+      "His satires, [Gulliver's Travels](/book/302?lang=en) and [A Modest Proposal](/book/303?lang=en) above all, are among the sharpest in any language. He left most of his fortune to found a hospital for the mentally ill, and his epitaph speaks of the savage indignation that tore at his heart."
+    ]
+  },
+  "cbronte": {
+    "en": [
+      "Charlotte Brontë (1816–1855) grew up in the parsonage at Haworth, on the Yorkshire moors, where she and her brother and sisters invented imaginary kingdoms and wrote tiny books about them. Her two elder sisters died after a harsh boarding school, the model for Lowood in [Jane Eyre](/book/304?lang=en).",
+      "After working as a teacher and governess and studying in Brussels, she published poems with her sisters under the names Currer, Ellis and Acton Bell, and in 1847 Jane Eyre made her famous. She outlived all her siblings, married in 1854 and died the following year. Her sister [Emily](/author/ebronte?lang=en) wrote Wuthering Heights."
+    ]
+  },
+  "ebronte": {
+    "en": [
+      "Emily Brontë (1818–1848) spent almost her whole life at Haworth parsonage on the Yorkshire moors, which she loved and could hardly bear to leave. With her sister Anne she invented the imaginary world of Gondal and wrote poems about it, which Charlotte discovered in 1845 and persuaded her to publish.",
+      "Her only novel, [Wuthering Heights](/book/305?lang=en), appeared in 1847 under the name Ellis Bell and puzzled its first readers. She died of tuberculosis a year later, at thirty, refusing a doctor until her last day. Her poems and her novel have made her one of the most original voices in English literature."
+    ]
+  },
+  "hardy": {
+    "en": [
+      "Thomas Hardy (1840–1928) was the son of a stonemason in a Dorset hamlet and trained as an architect, restoring country churches. His novels, set in the imaginary region of Wessex, began with modest success, and [Far from the Madding Crowd](/book/307?lang=en) (1874) allowed him to write full time.",
+      "After the storm of criticism over [Jude the Obscure](/book/308?lang=en) in 1895 he gave up novels for poetry and wrote some of the best English poems of the twentieth century, many of them about his first wife Emma after her death. His ashes were buried in Westminster Abbey and his heart in his home parish."
+    ]
+  },
+  "london": {
+    "en": [
+      "Jack London (1876–1916) grew up poor in San Francisco and Oakland and lived a life as wild as his books: an oyster pirate at fifteen, a sailor on a sealing ship to Japan, a tramp, a socialist agitator and a gold seeker in the Klondike in 1897, where he caught scurvy and gathered material for a lifetime.",
+      "[The Call of the Wild](/book/309?lang=en) made him famous in 1903, and he became one of the best-paid writers of his day, producing [White Fang](/book/310?lang=en), [The Sea-Wolf](/book/311?lang=en) and [Martin Eden](/book/312?lang=en) among more than fifty books. He died on his California ranch at forty."
+    ]
+  },
+  "alcott": {
+    "en": [
+      "Louisa May Alcott (1832–1888) grew up in Concord, Massachusetts, daughter of the idealistic and often penniless educator Bronson Alcott; Emerson and Thoreau were family friends and teachers. To support her family she sewed, taught, worked as a servant and wrote sensational thrillers under a pen name.",
+      "During the Civil War she nursed soldiers in Washington until she fell gravely ill. When her publisher asked for a book for girls, she wrote [Little Women](/book/313?lang=en) (1868), drawn from her own family, and it made her famous and secure. She campaigned against slavery and for women's right to vote."
+    ]
+  },
+  "baum": {
+    "en": [
+      "L. Frank Baum (1856–1919) tried many careers before he found his calling: actor, breeder of fancy chickens, shopkeeper and newspaper editor in South Dakota, and travelling salesman. In Chicago he began writing for children, and in 1900, with illustrations by W. W. Denslow, published [The Wonderful Wizard of Oz](/book/314?lang=en).",
+      "Its success led to thirteen more Oz books, written partly because children demanded them, and Baum moved to Hollywood, where he even founded a film company. He wanted to write American fairy tales that entertained without frightening children with moral lessons."
+    ]
+  },
+  "burnett": {
+    "en": [
+      "Frances Hodgson Burnett (1849–1924) was born in Manchester. After her father's death the family emigrated to Tennessee, where as a teenager she began selling stories to magazines to support them. She became one of the most successful writers of her day, and Little Lord Fauntleroy (1886) started a fashion for velvet suits for boys.",
+      "She lived between America and England, and the walled garden of the house she rented in Kent inspired [The Secret Garden](/book/315?lang=en) (1911). Together with [A Little Princess](/book/316?lang=en), it remains one of the best-loved children's books ever written."
+    ]
+  },
+  "grimm": {
+    "en": [
+      "Jacob (1785–1863) and Wilhelm Grimm (1786–1859) were brothers from Hanau in Germany who studied law and became librarians and scholars of language. In an age of national awakening, they began collecting folk tales told by friends, relatives and storytellers, publishing the first volume of their Children's and Household Tales in 1812.",
+      "They revised the collection through seven editions, and [Grimms' Fairy Tales](/book/317?lang=en) became one of the most read books in the world. They were also great linguists: Jacob described the sound changes of the Germanic languages, and the brothers began the great German dictionary."
+    ]
+  },
+  "aesop": {
+    "en": [
+      "Aesop is said to have been a slave on the Greek island of Samos in the sixth century BC who won his freedom through his wit. The historian Herodotus mentions him, and a later popular romance, The Life of Aesop, made him an ugly, clever storyteller who outwitted his masters and died unjustly at Delphi.",
+      "Whether or not he wrote them, the short animal fables told under his name, collected in [Aesop's Fables](/book/318?lang=en), have been retold for two and a half thousand years. Their cousin in Arabic literature is [Kalila wa Dimna](/book/1965500?lang=en)."
+    ]
+  },
+  "maupassant": {
+    "en": [
+      "Guy de Maupassant (1850–1893) grew up in Normandy, fought in the Franco-Prussian War and worked as a clerk in Paris ministries while learning to write under the guidance of Gustave Flaubert, an old friend of his mother. [Boule de Suif](/book/320?lang=en), in 1880, made him famous.",
+      "In barely ten years he wrote some three hundred short stories and six novels, including [Bel-Ami](/book/319?lang=en), and became the master of the short story in France. He loved rowing on the Seine and the sea, but illness clouded his last years, and he died in a clinic at forty-two."
+    ]
+  },
+  "balzac": {
+    "en": [
+      "Honoré de Balzac (1799–1850) was born in Tours, trained as a lawyer and failed as a printer and publisher, leaving debts that pursued him all his life. To pay them he wrote at night, fuelled by enormous quantities of coffee, producing nearly a hundred novels and stories in twenty years.",
+      "He gathered them into The Human Comedy, a vast portrait of French society with characters who reappear from book to book; [Eugénie Grandet](/book/323?lang=en) is one of its best-known parts. After eighteen years of letters he married the Polish countess Ewelina Hańska, months before his death."
+    ]
+  },
+  "flaubert": {
+    "en": [
+      "Gustave Flaubert (1821–1880), the son of a surgeon in Rouen, gave up studying law after a nervous illness and spent most of his life at his family's house at Croisset on the Seine. In 1849 he travelled for nearly two years through Egypt and the Middle East, a journey whose colours run through [Salammbô](/book/326?lang=en).",
+      "He worked for years on each book, shouting his sentences aloud to test them, in search of the exact word. [Madame Bovary](/book/324?lang=en) brought him a trial and fame, and [Sentimental Education](/book/325?lang=en) followed. He was a mentor to [Maupassant](/author/maupassant?lang=en) and a friend of Turgenev."
+    ]
+  },
+  "zola": {
+    "en": [
+      "Émile Zola (1840–1902) grew up in Aix-en-Provence, where his best friend was the future painter Cézanne, and worked as a clerk for a Paris publisher before becoming a journalist and novelist. He planned and wrote a cycle of twenty novels following one family under the Second Empire, including [Germinal](/book/327?lang=en) and [Nana](/book/328?lang=en).",
+      "In 1898 his open letter 'J'accuse...!' defended the wrongly convicted Captain Dreyfus and forced him into exile in England. He died in 1902, poisoned by fumes from a blocked chimney, and his remains were later moved to the Panthéon. [Thérèse Raquin](/book/329?lang=en) was his first success."
+    ]
+  },
+  "proust": {
+    "en": [
+      "Marcel Proust (1871–1922) was born in Paris to a wealthy family, suffered from asthma from childhood and spent his youth in the fashionable salons of Paris society, which he later described with ironic precision. He supported Dreyfus, wrote essays and translated John Ruskin.",
+      "After his parents' deaths he withdrew to a cork-lined bedroom and worked through the nights on In Search of Lost Time. Publishers rejected the first volume, [Swann's Way](/book/330?lang=en), and he paid to publish it in 1913; the second volume won the Goncourt Prize in 1919. He died before the last volumes were published."
+    ]
+  },
+  "gogol": {
+    "en": [
+      "Nikolai Gogol (1809–1852) was born in the Ukrainian countryside and moved to St Petersburg to make his name, where his comic tales of Ukrainian village life won the friendship of Pushkin. His play The Government Inspector, his story The Overcoat and his novel [Dead Souls](/book/331?lang=en) made him the great satirist of Russian life.",
+      "He spent years in Rome, became increasingly religious and tormented, and shortly before his death burned most of the second part of Dead Souls. Later Russian writers, Dostoevsky among them, acknowledged their debt to him; read Dostoevsky's [Poor Folk](/book/19?lang=en) to see it."
+    ]
+  },
+  "turgenev": {
+    "en": [
+      "Ivan Turgenev (1818–1883) grew up on an estate in central Russia owned by his tyrannical mother, who controlled thousands of serfs. He studied in Berlin, and his [Sportsman's Sketches](/book/335?lang=en), with their sympathetic portraits of serfs, made him famous; an obituary of Gogol earned him a month in detention and exile to his estate.",
+      "He spent much of his life abroad, following the singer Pauline Viardot, whom he loved for forty years, and became a friend of Flaubert and a bridge between Russian and Western literature. His novel [Fathers and Sons](/book/334?lang=en) gave the world the word nihilist."
+    ]
+  },
+  "pushkin": {
+    "en": [
+      "Alexander Pushkin (1799–1837) is Russia's national poet. His great-grandfather, Abram Gannibal, was an African boy taken to Russia who became a favourite of Peter the Great and a general. Pushkin was educated at the imperial lyceum at Tsarskoye Selo and was exiled to the south of Russia for poems against tyranny.",
+      "His novel in verse Eugene Onegin, his drama Boris Godunov, his poem The Bronze Horseman and his short stories created modern Russian literature. He died at thirty-seven after a duel with a French officer who had pursued his wife. The library holds his works in Russian, English and Arabic."
+    ]
+  },
+  "ibsen": {
+    "en": [
+      "Henrik Ibsen (1828–1906) was born in Skien in Norway; his family lost its money when he was a boy, and at fifteen he became a pharmacist's apprentice. He worked in theatres in Bergen and Christiania with little success, and then spent twenty-seven years in Italy and Germany, where he wrote his greatest works.",
+      "His verse dramas Brand and [Peer Gynt](/book/341?lang=en) were followed by realistic prose plays about modern life, [A Doll's House](/book/338?lang=en), [Ghosts](/book/340?lang=en) and [Hedda Gabler](/book/339?lang=en), which shocked audiences and changed theatre forever. He is often called the father of modern drama."
+    ]
+  },
+  "conrad": {
+    "en": [
+      "Joseph Conrad (1857–1924) was born Józef Korzeniowski to Polish parents in today's Ukraine. His father was exiled for patriotic activities, and Conrad was orphaned at eleven. At sixteen he went to sea from Marseille, and he spent twenty years as a sailor, rising to captain in the British merchant navy.",
+      "A voyage up the Congo in 1890 marked him for life and led to [Heart of Darkness](/book/342?lang=en). He began writing in English, his third language, and became one of its great novelists with [Lord Jim](/book/343?lang=en) and [Nostromo](/book/344?lang=en). His books ask what people do when no one is watching."
+    ]
+  },
+  "joyce": {
+    "en": [
+      "James Joyce (1882–1941) was born in Dublin, educated by the Jesuits, and left Ireland in 1904 with Nora Barnacle, never to live there again. They lived in Trieste, Zurich and Paris, where he taught English and struggled with poverty and failing eyesight, while writing almost entirely about the city he had left.",
+      "[Dubliners](/book/345?lang=en) and [A Portrait of the Artist as a Young Man](/book/346?lang=en) were followed by [Ulysses](/book/347?lang=en), published in Paris in 1922 and banned for years in Britain and America, and by the even more experimental Finnegans Wake. He changed what a novel could be."
+    ]
+  },
+  "woolf": {
+    "en": [
+      "Virginia Woolf (1882–1941) was the daughter of the critic Leslie Stephen and grew up in a London house full of books. With her sister and friends she formed the circle of artists and writers known as the Bloomsbury Group, and with her husband Leonard she founded the Hogarth Press, which published her own books and those of T. S. Eliot.",
+      "Her novels [Mrs Dalloway](/book/348?lang=en), To the Lighthouse and Orlando changed the way fiction follows the mind, and her essay A Room of One's Own argued that a woman needs money and a room of her own to write. She suffered all her life from depression, and drowned herself in 1941."
+    ]
+  },
+  "fitzgerald": {
+    "en": [
+      "F. Scott Fitzgerald (1896–1940) was born in St Paul, Minnesota, left Princeton for the army and became famous at twenty-three with his first novel, This Side of Paradise. He married the brilliant Zelda Sayre, named the Jazz Age and lived its glamour in New York and on the French Riviera.",
+      "[The Great Gatsby](/book/351?lang=en) (1925), now considered one of the greatest American novels, sold poorly in his lifetime. Zelda's illness, debts and drink darkened his later years, and he died in Hollywood at forty-four, writing film scripts and believing himself a failure."
+    ]
+  },
+  "jamesh": {
+    "en": [
+      "Henry James (1843–1916) was born in New York, the brother of the philosopher [William James](/author/james?lang=en), and was educated in Europe and America. In 1876 he settled in London, and later in the small town of Rye, and spent his life writing about Americans in Europe and the clash of innocence and experience.",
+      "In some twenty novels and more than a hundred stories, including [The Portrait of a Lady](/book/352?lang=en) and [The Turn of the Screw](/book/353?lang=en), he developed a subtle, psychological style that influenced modern fiction. He became a British citizen in 1915, a year before his death."
+    ]
+  },
+  "lawrence": {
+    "en": [
+      "D. H. Lawrence (1885–1930) was born in a mining town in Nottinghamshire, the son of a coal miner and a former teacher, and trained as a teacher himself. In 1912 he eloped with Frieda Weekley, the German wife of his former professor, and his novel [Sons and Lovers](/book/354?lang=en) (1913), drawn from his own family, made his name.",
+      "His next novel, The Rainbow, was banned, and he spent his last years travelling restlessly through Italy, Australia, Mexico and New Mexico, writing novels, poems, travel books and essays and painting. He died of tuberculosis in France at forty-four."
+    ]
+  },
+  "kipling": {
+    "en": [
+      "Rudyard Kipling (1865–1936) was born in Bombay, sent to England at five to an unhappy foster home, and returned to India at sixteen to work as a journalist in Lahore. His stories of Anglo-Indian life made him famous in London in his twenties.",
+      "[The Jungle Book](/book/355?lang=en), written in Vermont, [Kim](/book/356?lang=en) and [Just So Stories](/book/357?lang=en) became classics, and in 1907 he became the first English-language writer to win the Nobel Prize. His poem 'If—' is still widely quoted, though his support for empire makes him a controversial figure today. His only son was killed in the First World War."
+    ]
+  },
+  "tagore": {
+    "en": [
+      "Rabindranath Tagore (1861–1941) was born in Calcutta, the youngest son of a great Bengali family of reformers and artists. He wrote poems, stories, novels, plays and some two thousand songs, and his songs became the national anthems of both India and Bangladesh.",
+      "He founded a school in the countryside at Santiniketan, which grew into a university, and in 1913 became the first non-European to win the Nobel Prize, for [Gitanjali](/book/358?lang=en). In 1919 he returned his British knighthood in protest at the massacre at Amritsar. [The Home and the World](/book/359?lang=en) and [The Post Office](/book/360?lang=en) show his range."
+    ]
+  },
+  "hippocrates": {
+    "en": [
+      "Hippocrates (c. 460–370 BC) was a physician from the Greek island of Kos who taught that diseases have natural causes, not divine ones, and that doctors should observe their patients carefully and record what they see. Little is known of his life, and the collection of some sixty medical texts that bears his name was written by many authors.",
+      "The Hippocratic writings include the famous Oath and the aphorism 'Life is short, the art is long'. Known in Arabic as Buqrat, Hippocrates was translated by Hunayn ibn Ishaq and his school, and his ideas shaped medicine in the Islamic world and Europe for two thousand years."
+    ]
+  },
+  "harvey": {
+    "en": [
+      "William Harvey (1578–1657) studied medicine at Cambridge and at Padua, the leading medical school of Europe, and became physician to Kings James I and Charles I. Through years of careful dissections and experiments on animals, he showed that the heart pumps the blood in a continuous circle through the body.",
+      "His short book On the Motion of the Heart and Blood (1628) overturned theories that had stood since antiquity, and it is in the library in English translation. Four centuries earlier, the Arab physician Ibn al-Nafis had already described how blood passes through the lungs, a discovery that Europe learned of much later."
+    ]
+  },
+  "gray": {
+    "en": [
+      "Henry Gray (1827–1861) was a young anatomist and surgeon at St George's Hospital in London. With his colleague Henry Vandyke Carter, who drew the illustrations from their own dissections, he produced Anatomy, Descriptive and Surgical in 1858, a clear and practical textbook for medical students.",
+      "Gray died of smallpox at thirty-four, caught while nursing his nephew, only three years after the book appeared. Revised many times, Gray's Anatomy is still in print more than a century and a half later, one of the most famous medical books ever written."
+    ]
+  },
+  "nightingale": {
+    "en": [
+      "Florence Nightingale (1820–1910) was named after Florence, the city where she was born. Her wealthy family opposed her wish to become a nurse, but she trained in Germany, and in 1854 led a team of nurses to the British military hospital at Scutari during the Crimean War, where soldiers called her the Lady with the Lamp.",
+      "Back in England she used statistics, and diagrams she designed, to prove that most soldiers died of disease, not wounds, and to reform hospitals and sanitation. She founded a school of nursing at St Thomas' Hospital and wrote [Notes on Nursing](/book/367?lang=en). She was the first woman to receive the Order of Merit."
+    ]
+  },
+  "euclid": {
+    "en": [
+      "Euclid lived in Alexandria around 300 BC, under the first Ptolemy, and almost nothing else is known of him. He is said to have told the king who wanted an easier way to learn mathematics that there is no royal road to geometry.",
+      "His Elements, thirteen books on geometry and numbers built from a few definitions and axioms, has been taught for more than two thousand years. It was translated into Arabic in the age of the Abbasids, studied and improved by Arab mathematicians, and first reached Latin Europe through a translation from the Arabic."
+    ]
+  },
+  "galileo": {
+    "en": [
+      "Galileo Galilei (1564–1642) was born in Pisa and taught mathematics there and at Padua. He studied falling bodies and pendulums, and in 1609 built a telescope with which he discovered the moons of Jupiter, the phases of Venus and the mountains of the Moon, which he announced in The Sidereal Messenger.",
+      "His defence of the idea that the Earth moves around the Sun brought him before the Inquisition in 1633; forced to recant, he spent his last years under house arrest near Florence, where, going blind, he completed his book on motion that prepared the way for [Newton](/author/newton?lang=en)."
+    ]
+  },
+  "copernicus": {
+    "en": [
+      "Nicolaus Copernicus (1473–1543) was born in Toruń in Poland, studied in Kraków and in Italy, at Bologna, Padua and Ferrara, and spent most of his life as a canon of Frombork cathedral, working as an administrator and physician while observing the sky.",
+      "His book On the Revolutions of the Heavenly Spheres, published in the year of his death, placed the Sun, not the Earth, at the centre of the universe. Historians have shown that he used mathematical models developed earlier by astronomers of the Islamic world, at the observatory of Maragha. [Galileo](/author/galileo?lang=en) took up his cause."
+    ]
+  },
+  "maxwell": {
+    "en": [
+      "James Clerk Maxwell (1831–1879) was born in Edinburgh and published his first scientific paper at fourteen. He explained the rings of Saturn, produced the first colour photograph and helped found the theory of gases, but his greatest achievement was a set of equations uniting electricity, magnetism and light.",
+      "He predicted that light is an electromagnetic wave, opening the way to radio and the physics of the twentieth century; Einstein kept his portrait on his study wall. He became the first director of the Cavendish Laboratory at Cambridge and died at forty-eight."
+    ]
+  },
+  "faraday": {
+    "en": [
+      "Michael Faraday (1791–1867) was the son of a London blacksmith and left school early to become a bookbinder's apprentice, educating himself by reading the books he bound. After attending lectures by the chemist Humphry Davy, he sent Davy his notes and was taken on as his assistant at the Royal Institution.",
+      "He discovered electromagnetic induction, the principle of the electric generator, and laid the foundations of electrochemistry, as recorded in his [Experimental Researches in Electricity](/book/375?lang=en). He started the Royal Institution's Christmas lectures for young people, among them [The Chemical History of a Candle](/book/374?lang=en), and refused a knighthood."
+    ]
+  },
+  "tesla": {
+    "en": [
+      "Nikola Tesla (1856–1943) was born to a Serbian family in a village in today's Croatia, studied engineering in Graz and emigrated to America in 1884, where he worked briefly for Thomas Edison. His alternating-current motor and power system, backed by George Westinghouse, won the battle of the currents against Edison's direct current.",
+      "He experimented with wireless power, radio and high-voltage electricity, and dreamed of a worldwide wireless network, but died poor in a New York hotel. The unit of magnetic field is named after him, and the library holds his lectures on alternating currents."
+    ]
+  },
+  "babbage": {
+    "en": [
+      "Charles Babbage (1791–1871) was a Cambridge mathematician, Lucasian professor like Newton before him, who grew frustrated with the errors in printed mathematical tables and set out to build a machine to calculate them. His Difference Engine, and then his more ambitious Analytical Engine, programmed with punched cards, anticipated the computer by a century.",
+      "Neither was finished in his lifetime, but Ada Lovelace, daughter of [Lord Byron](/author/byron?lang=en), wrote notes on the Analytical Engine that included the first published computer program. He also wrote on industry in [On the Economy of Machinery and Manufactures](/book/378?lang=en) and told his own story in [Passages from the Life of a Philosopher](/book/377?lang=en)."
+    ]
+  },
+  "vitruvius": {
+    "en": [
+      "Marcus Vitruvius Pollio (c. 80–15 BC) was a Roman architect and military engineer who built siege machines for Julius Caesar's armies. In later life, with a pension from the emperor Augustus, he wrote a treatise on everything he knew about building, the only complete work on architecture to survive from antiquity.",
+      "[The Ten Books on Architecture](/book/379?lang=en) cover materials, temples, houses, water, machines and city planning, and teach that good buildings must be strong, useful and beautiful. Rediscovered in the fifteenth century, the book shaped Renaissance architecture and inspired [Leonardo da Vinci](/author/vinci?lang=en)."
+    ]
+  },
+  "agricola": {
+    "en": [
+      "Georgius Agricola (1494–1555), born Georg Bauer in Saxony, was a scholar and physician who worked in the mining towns of Bohemia and Saxony. Instead of dismissing mining as work for the uneducated, he spent years studying the miners, their tools, machines and methods, and the minerals they dug.",
+      "His great book De Re Metallica, published in 1556, with nearly three hundred woodcuts, was the standard work on mining and metallurgy for two centuries; in 1912 it was translated into English by Herbert Hoover, the future American president, and his wife Lou. He is often called the father of mineralogy."
+    ]
+  },
+  "vinci": {
+    "en": [
+      "Leonardo da Vinci (1452–1519) was born near the town of Vinci, the illegitimate son of a Florentine notary, and trained in the workshop of the painter Verrocchio. He worked for the rulers of Florence and Milan, where he painted The Last Supper, and spent his last years in France as the guest of King Francis I.",
+      "His paintings, among them the Mona Lisa, are few, but his notebooks are full of studies of anatomy, flight, water, optics and machines, written in mirror script. [The Notebooks of Leonardo da Vinci](/book/381?lang=en) let us follow his endless curiosity; for one of his sources, see [Vitruvius](/book/379?lang=en)."
+    ]
+  },
+  "abbott": {
+    "en": [
+      "Edwin A. Abbott (1838–1926) became headmaster of the City of London School at twenty-six and led it for nearly twenty-five years, while writing books on English grammar, on Shakespeare's language, on how to write clearly and on theology.",
+      "He is remembered today for one small book, [Flatland](/book/382?lang=en), published in 1884 under the pen name A Square: a mathematical fantasy about a two-dimensional world that is also a satire of Victorian society. Mathematicians still recommend it as an introduction to the idea of other dimensions."
+    ]
+  },
+  "james": {
+    "en": [
+      "William James (1842–1910), the older brother of the novelist [Henry James](/author/jamesh?lang=en), studied painting and then medicine, and after years of depression became a professor at Harvard, where he taught the first course in psychology in America and set up one of the first psychology laboratories.",
+      "His [Principles of Psychology](/book/383?lang=en) made the new science readable, his [Varieties of Religious Experience](/book/384?lang=en) studied faith with sympathy, and his philosophy of pragmatism asked what difference an idea makes in practice. He wrote with a warmth and clarity rare among philosophers."
+    ]
+  },
+  "lebon": {
+    "en": [
+      "Gustave Le Bon (1841–1931) was a French physician who became a traveller, anthropologist and popular writer on society and psychology. He journeyed through North Africa, the Middle East and India, and his book The Civilisation of the Arabs (1884) admired the achievements of Arab science and culture at a time when such views were rare in Europe; translated by Adel Zuaiter, it became a classic in Arabic.",
+      "His most influential book, [The Crowd](/book/745?lang=en) (1895), argued that people in a crowd lose their individual judgement, and was read by Freud as well as by politicians of every kind. The library holds several of his works in Arabic translation."
+    ]
+  },
+  "veblen": {
+    "en": [
+      "Thorstein Veblen (1857–1929) was born in Wisconsin to Norwegian immigrant farmers, earned a doctorate in philosophy at Yale and then, unable to find work, spent seven years on his family's farm reading. At the University of Chicago he published [The Theory of the Leisure Class](/book/386?lang=en) (1899), which made him famous.",
+      "An eccentric teacher and a sharp, ironic writer, he moved from university to university and spent his career criticising business culture and wasteful consumption. He died in August 1929, a few months before the stock market crash that seemed to prove him right."
+    ]
   }
 }

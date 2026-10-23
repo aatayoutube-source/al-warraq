@@ -397,7 +397,7 @@ def seed_curated(conn: sqlite3.Connection) -> int:
 
 
 DESCS_FILE = os.path.join(DATA_DIR, "book_descriptions.json")
-DESCS_VERSION = "2"  # bump when book_descriptions.json changes significantly (2: the six other interface languages)
+DESCS_VERSION = "3"  # bump when book_descriptions.json changes (2: the other interface languages; 3: every hand-picked book)
 
 
 def seed_descriptions(conn: sqlite3.Connection) -> int:
